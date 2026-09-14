@@ -1,0 +1,134 @@
+\section{Theory bridge: what geometry can justify}
+\label{theory:bridge}
+
+The useful theory connects a change in an embedding to a change in its programmed energy landscape. It does not identify the best embedding from chain length alone. This section supplies explicit definitions for the cut quantities left implicit in the source architecture and states exactly which conclusions follow. The chain-integrity argument belongs to the sufficient-condition tradition for minor embedding~\cite{choi2008}; the proposition and proof below use the particular coefficient-allocation contract specified here. They are mathematical design support, not a new experimental result or, without a separate literature comparison, a novelty claim.
+
+\subsection{Structural graph, programmed graph, and effective load}
+\label{theory:objects}
+
+Fix a structurally valid embedding with disjoint nonempty branch sets $C_i$. Let $E_i^{\mathrm{ch}}$ contain the internal hardware couplers actually programmed ferromagnetically. The induced hardware graph $H[C_i]$ tells us what is available; $(C_i,E_i^{\mathrm{ch}})$ tells us what the physical program uses. These coincide only under the baseline rule that programs every active internal edge.
+
+Write the exact pre-scale Hamiltonian as
+\begin{equation}
+ E_F(z)=\sum_q \widetilde h_q z_q+
+ \sum_{(q,r)\in E_{\mathrm{ext}}}\widetilde J_{qr}z_qz_r
+ -F\sum_i\sum_{(q,r)\in E_i^{\mathrm{ch}}}w_{qr}z_qz_r,
+ \qquad z_q\in\{-1,+1\},
+ \label{theory:physical}
+\end{equation}
+where $w_{qr}>0$ is a fixed relative chain-edge weight and $w_{qr}=1$ in the initial uniform-strength implementation. The scalar $F$ is selected from the four strengths in the registered objective context. Every external coupler has endpoints in different branch sets. The compiler must satisfy
+\[
+ \sum_{q\in C_i}\widetilde h_q=h_i,
+ \qquad
+ \sum_{(q,r)\in R_{ij}}\widetilde J_{qr}=J_{ij}.
+\]
+Consequently, every chain-consistent state has logical energy plus a state-independent chain offset. The theorem below assumes these exact coefficients, fixed active hardware, and no undeclared physical couplings.
+
+Define an absolute external-load bound at each qubit by
+\[
+ a_q=|\widetilde h_q|+
+       \sum_{r\notin C_i:(q,r)\in E_{\mathrm{ext}}}|\widetilde J_{qr}|,
+ \qquad q\in C_i.
+\]
+For a nonempty proper subset $S\subset C_i$, let
+\begin{align}
+ D_i(S)&=\sum_{q\in S}a_q,\nonumber\\
+ d_i(S)&=\min\{D_i(S),D_i(C_i\setminus S)\},\nonumber\\
+ c_i(S)&=\sum_{(q,r)\in\delta_{E_i^{\mathrm{ch}}}(S)}w_{qr},
+ \qquad
+ m_i(S;F)=F c_i(S)-d_i(S).
+ \label{theory:cutquantities}
+\end{align}
+Here $c_i$ is programmed cut capacity, $d_i$ is a conservative bound on the drive available to pull the two sides apart, and $m_i$ is a sufficient-condition margin. All quantities depend on the actual compiler allocation. Counting nearby hardware edges that are unprogrammed, faulty, or claimed by another chain creates fictitious capacity.
+
+\subsection{A sufficient chain-integrity condition, with proof}
+\label{theory:certificate}
+
+\begin{proposition}[Cut-load sufficient condition]
+\label{theory:cutproposition}
+Under Equation~\eqref{theory:physical}, fix the spins outside $C_i$. For any mixed-spin assignment within $C_i$, let $S$ be its $+1$ side. If $z^{(+)}$ and $z^{(-)}$ replace this chain by its two uniform assignments while leaving the exterior fixed, then
+\begin{equation}
+ E_F(z)-\min\{E_F(z^{(+)}),E_F(z^{(-)})\}
+ \ge 2m_i(S;F).
+ \label{theory:repairgap}
+\end{equation}
+If $m_i(S;F)>0$ for every proper cut of every nonsingleton chain, every global ground state of the physical model is chain-consistent. Under faithful coefficient allocation, its decoded logical state is a logical ground state.
+\end{proposition}
+
+\begin{proof}
+With the exterior fixed, the effective local field is
+$b_q=\widetilde h_q+\sum_{r\notin C_i}\widetilde J_{qr}z_r$, so $|b_q|\le a_q$. Put $B_S=\sum_{q\in S}b_q$ and $B_T=\sum_{q\in C_i\setminus S}b_q$. A mixed chain pays internal energy $2F c_i(S)$ above a uniform chain. Its external-field energy is $B_S-B_T$, whereas the better uniform assignment has external-field energy $-|B_S+B_T|$. Their energy difference is therefore
+\[
+ 2F c_i(S)+B_S-B_T+|B_S+B_T|.
+\]
+Using $x-y+|x+y|=2\max\{x,-y\}$ and the bounds on $B_S,B_T$ gives a lower bound
+$2F c_i(S)-2\min\{D_i(S),D_i(C_i\setminus S)\}$, proving Equation~\eqref{theory:repairgap}. A physical ground state containing a mixed chain would then admit a strictly lower-energy uniform replacement, a contradiction. Among chain-consistent states, faithful programming preserves logical energy ordering, proving the final statement.
+\end{proof}
+
+For connected programmed chains, $c_i(S)>0$, and the sufficient threshold is
+\[
+ F>\tau_{\mathrm{cut}},\qquad
+ \tau_{\mathrm{cut}}=\max_i\max_{\varnothing\ne S\subsetneq C_i}
+                       \frac{d_i(S)}{c_i(S)}.
+\]
+Singleton chains have no nontrivial cuts and contribute threshold zero. Strict inequality matters: equality can leave degenerate broken ground states. Failure of this condition establishes only that this certificate is unavailable. Absolute loads ignore cancellation, and the bound can be conservative. It is neither a necessary minimum chain strength nor the strength that maximizes the registered decoded success probability.
+
+A cheaper conservative certificate avoids exhaustive cut-ratio optimization. Let
+\[
+ A_i=\sum_{q\in C_i}a_q,
+ \qquad \kappa_i=\min_{\varnothing\ne S\subsetneq C_i}c_i(S).
+\]
+Then $d_i(S)\le A_i/2$ and $c_i(S)\ge\kappa_i$, hence
+\begin{equation}
+ \tau_{\mathrm{cut}}
+ \le\max_{i:|C_i|>1}\frac{A_i}{2\kappa_i}.
+ \label{theory:mincutcertificate}
+\end{equation}
+The weighted global minimum cut $\kappa_i$ is computable without enumerating all bipartitions. This bound can certify some chains even when only a small number of cut tokens enter the neural network. It should not be confused with solving the generally more difficult maximum load-to-capacity ratio exactly.
+
+\subsection{Certificates and neural cut tokens have different roles}
+\label{theory:tiers}
+
+The registered $K_c=16$ token cap is a representation budget. It does not make a sample of cuts exhaustive. A chain with $n_i$ vertices has $2^{n_i-1}-1$ proper bipartitions modulo complement; a 16-token representation can contain every cut only for very small chains. Keep the proof receipt separate from the token subset.
+
+{\small
+\begin{longtable}{@{}p{0.22\textwidth}p{0.72\textwidth}@{}}
+\toprule
+Evidence tier & Permitted interpretation \\
+\midrule
+\endhead
+All-cut exact & Every proper cut was checked under the stated exact coefficient map. A strictly positive minimum margin certifies the proposition's conclusion. \\
+Global-mincut bound & Equation~\eqref{theory:mincutcertificate} was checked with a verified minimum-cut value. Positive clearance is sufficient but can be loose. \\
+Sampled cuts & Singleton cuts and selected tree-induced or other deterministic cuts provide explanatory features. Their best and worst observed values describe this pool only. \\
+Hypothetical relaxed state & Features describe a declared provisional allocation or an executable disjoint successor. They are marked unavailable wherever overlap prevents a physical program. \\
+\bottomrule
+\end{longtable}}
+
+For every candidate replacement, recompute the affected valid successor's allocation before computing cut deltas. Record pre/post capacity, load, minimum sampled margin over each registered strength, contact multiplicity, side balance, and certificate tier. Pooling should expose both the worst observed cut and the distribution of observed cuts. Canonicalization and token selection use structure and programmed coefficients only, never terminal labels. A cut with zero capacity and positive load needs a separate indicator; clipping an infinite ratio to a large finite number must preserve that indicator.
+
+\subsection{Autoscaling, quantization, and the limit of the guarantee}
+\label{theory:limits}
+
+The handbook's expression $\alpha(F)=\max(1,F/J_{\max})$ describes a special normalization regime. A general ideal compiler must also account for physical fields and all programmed problem couplers. With symmetric field and coupling limits, a simple example is
+\[
+ a_F=\left[\max\left\{1,
+       \frac{\max_q|\widetilde h_q|}{h_{\rm lim}},
+       \frac{\max_{q,r}|J^{\mathrm{pre}}_{qr}(F)|}{J_{\rm lim}}
+       \right\}\right]^{-1}.
+\]
+An actual device may impose additional constraints; its versioned compiler remains authoritative. The physical coefficients are scaled by $a_F>0$. Exact common positive scaling preserves ground-state ordering and multiplies the cut margin by $a_F$. It changes the distribution sampled at a fixed device temperature or fixed annealing protocol, however. Raising $F$ can improve chain integrity while reducing the energy scale of the logical problem. The theorem therefore does not justify selecting the largest registered strength.
+
+Quantization is a separate issue. If every physical state's compiled energy differs from its ideal scaled energy by at most $\varepsilon_{\mathrm{all}}$, a sufficient robust repair gap is
+\[
+ 2a_Fm_i(S;F)>2\varepsilon_{\mathrm{all}}.
+\]
+A coefficient-error $\ell_1$ bound gives a conservative all-state energy-error bound because every Ising monomial has magnitude one. A guarantee checked only on chain-consistent states cannot certify this mixed-versus-uniform comparison. Store the coefficient representation, error model, and certificate assumptions together; otherwise retain the exact-model certificate as a diagnostic only.
+
+Finally, the proposition concerns ground states. A finite-read sampler can produce excited states, and majority decoding can map a broken chain assignment to a correct logical solution. Thus neither a chain-break rate nor a cut certificate is identical to the IF-Q3 success event. The connection to downstream quality must be measured with the registered sampler and decoder.
+
+\subsection{Consequences for the architecture and its ablations}
+\label{theory:architecture}
+
+This analysis supports giving the actor access to coefficient allocation, internal cuts, cross-chain contacts, and candidate-specific changes. It does not support hard-coding a monotone preference for more qubits, more edges, lower maximum chain length, or larger $F$. Under uniform same-sign allocation, the total absolute drive on a chain is $|h_i|+\sum_j|J_{ij}|$; geometry redistributes this drive and changes the cut capacities exposed to it. Additional qubits can improve that distribution, or simply create a longer vulnerable chain.
+
+The decisive controlled experiment holds the logical instance, active host, four strengths, compiler, sampler, decoder, and resource cap fixed, then changes one geometric mechanism. Compare a candidate with added useful redundancy to a resource-matched lengthening control; compare distributed contacts to concentrated contacts; and compare cut-aware selection to the same candidate pool scored without cut features. Report margins and decoded quality together. A cut-only surrogate may guide warm starts or serve as an auxiliary target, but the policy is selected by its failure-aware downstream outcome. This preserves the theory's explanatory role without promoting a conservative certificate into an unproved deployment objective.

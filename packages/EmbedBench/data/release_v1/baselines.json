@@ -1,0 +1,266 @@
+{
+ "structural_chimera5.jsonl": {
+  "n_test": 58,
+  "local_greedy": 0.8793103448275862,
+  "random": 0.13793103448275862,
+  "structural_model_s0": 0.9310344827586207,
+  "structural_model_s1": 0.9482758620689655
+ },
+ "structural_pegasus3.jsonl": {
+  "n_test": 63,
+  "local_greedy": 0.36507936507936506,
+  "random": 0.14285714285714285,
+  "structural_model_s0": 0.9523809523809523,
+  "structural_model_s1": 0.9206349206349206
+ },
+ "structural_zephyr2.jsonl": {
+  "n_test": 61,
+  "local_greedy": 0.39344262295081966,
+  "random": 0.11475409836065574,
+  "structural_model_s0": 0.9180327868852459,
+  "structural_model_s1": 0.9180327868852459
+ },
+ "quality_chimera5_app.jsonl": {
+  "n_test": 13,
+  "resource": {
+   "regret": 0.04269230769230769,
+   "top1_within_0.02": 0.46153846153846156
+  },
+  "original_chain": {
+   "regret": 0.04269230769230769,
+   "top1_within_0.02": 0.46153846153846156
+  },
+  "random": {
+   "regret": 0.04615384615384616,
+   "top1_within_0.02": 0.3076923076923077
+  },
+  "chain_scorer_s0": {
+   "regret": 0.03673076923076923,
+   "top1_within_0.02": 0.5384615384615384
+  },
+  "chain_scorer_s1": {
+   "regret": 0.04269230769230769,
+   "top1_within_0.02": 0.46153846153846156
+  },
+  "chain_scorer_s2": {
+   "regret": 0.03307692307692307,
+   "top1_within_0.02": 0.5384615384615384
+  }
+ },
+ "quality_chimera5_inkdrop.jsonl": {
+  "n_test": 114,
+  "resource": {
+   "regret": 0.02478070175438597,
+   "top1_within_0.02": 0.6578947368421053
+  },
+  "original_chain": {
+   "regret": 0.024999999999999998,
+   "top1_within_0.02": 0.6578947368421053
+  },
+  "random": {
+   "regret": 0.021622807017543863,
+   "top1_within_0.02": 0.6140350877192983
+  },
+  "chain_scorer_s0": {
+   "regret": 0.01831140350877193,
+   "top1_within_0.02": 0.7280701754385965
+  },
+  "chain_scorer_s1": {
+   "regret": 0.020701754385964912,
+   "top1_within_0.02": 0.6754385964912281
+  },
+  "chain_scorer_s2": {
+   "regret": 0.017236842105263158,
+   "top1_within_0.02": 0.7280701754385965
+  }
+ },
+ "quality_chimera5_random.jsonl": {
+  "n_test": 16,
+  "resource": {
+   "regret": 0.03749999999999999,
+   "top1_within_0.02": 0.5
+  },
+  "original_chain": {
+   "regret": 0.03984374999999999,
+   "top1_within_0.02": 0.5
+  },
+  "random": {
+   "regret": 0.03156249999999999,
+   "top1_within_0.02": 0.5
+  },
+  "chain_scorer_s0": {
+   "regret": 0.03562499999999999,
+   "top1_within_0.02": 0.5625
+  },
+  "chain_scorer_s1": {
+   "regret": 0.03984374999999999,
+   "top1_within_0.02": 0.5
+  },
+  "chain_scorer_s2": {
+   "regret": 0.02687499999999999,
+   "top1_within_0.02": 0.5625
+  }
+ },
+ "quality_pegasus3_app.jsonl": {
+  "n_test": 25,
+  "resource": {
+   "regret": 0.055600000000000004,
+   "top1_within_0.02": 0.52
+  },
+  "original_chain": {
+   "regret": 0.0538,
+   "top1_within_0.02": 0.56
+  },
+  "random": {
+   "regret": 0.0316,
+   "top1_within_0.02": 0.4
+  },
+  "chain_scorer_s0": {
+   "regret": 0.0391,
+   "top1_within_0.02": 0.44
+  },
+  "chain_scorer_s1": {
+   "regret": 0.044000000000000004,
+   "top1_within_0.02": 0.48
+  },
+  "chain_scorer_s2": {
+   "regret": 0.0227,
+   "top1_within_0.02": 0.56
+  }
+ },
+ "quality_pegasus3_inkdrop.jsonl": {
+  "n_test": 187,
+  "resource": {
+   "regret": 0.04066844919786096,
+   "top1_within_0.02": 0.5026737967914439
+  },
+  "original_chain": {
+   "regret": 0.040026737967914436,
+   "top1_within_0.02": 0.5240641711229946
+  },
+  "random": {
+   "regret": 0.027820855614973265,
+   "top1_within_0.02": 0.5614973262032086
+  },
+  "chain_scorer_s0": {
+   "regret": 0.031163101604278078,
+   "top1_within_0.02": 0.5775401069518716
+  },
+  "chain_scorer_s1": {
+   "regret": 0.03127005347593583,
+   "top1_within_0.02": 0.5454545454545454
+  },
+  "chain_scorer_s2": {
+   "regret": 0.03327540106951872,
+   "top1_within_0.02": 0.5508021390374331
+  }
+ },
+ "quality_pegasus3_random.jsonl": {
+  "n_test": 15,
+  "resource": {
+   "regret": 0.014666666666666658,
+   "top1_within_0.02": 0.6666666666666666
+  },
+  "original_chain": {
+   "regret": 0.014666666666666658,
+   "top1_within_0.02": 0.6666666666666666
+  },
+  "random": {
+   "regret": 0.02199999999999998,
+   "top1_within_0.02": 0.6666666666666666
+  },
+  "chain_scorer_s0": {
+   "regret": 0.014333333333333325,
+   "top1_within_0.02": 0.7333333333333333
+  },
+  "chain_scorer_s1": {
+   "regret": 0.014666666666666658,
+   "top1_within_0.02": 0.6666666666666666
+  },
+  "chain_scorer_s2": {
+   "regret": 0.01416666666666666,
+   "top1_within_0.02": 0.7333333333333333
+  }
+ },
+ "quality_zephyr2_app.jsonl": {
+  "n_test": 53,
+  "resource": {
+   "regret": 0.024622641509433964,
+   "top1_within_0.02": 0.7547169811320755
+  },
+  "original_chain": {
+   "regret": 0.02707547169811321,
+   "top1_within_0.02": 0.7358490566037735
+  },
+  "random": {
+   "regret": 0.03929245283018868,
+   "top1_within_0.02": 0.41509433962264153
+  },
+  "chain_scorer_s0": {
+   "regret": 0.019858490566037734,
+   "top1_within_0.02": 0.7547169811320755
+  },
+  "chain_scorer_s1": {
+   "regret": 0.02018867924528302,
+   "top1_within_0.02": 0.7358490566037735
+  },
+  "chain_scorer_s2": {
+   "regret": 0.015754716981132077,
+   "top1_within_0.02": 0.7735849056603774
+  }
+ },
+ "quality_zephyr2_inkdrop.jsonl": {
+  "n_test": 138,
+  "resource": {
+   "regret": 0.03929347826086956,
+   "top1_within_0.02": 0.5507246376811594
+  },
+  "original_chain": {
+   "regret": 0.0466304347826087,
+   "top1_within_0.02": 0.5362318840579711
+  },
+  "random": {
+   "regret": 0.03230072463768116,
+   "top1_within_0.02": 0.5797101449275363
+  },
+  "chain_scorer_s0": {
+   "regret": 0.036394927536231886,
+   "top1_within_0.02": 0.5942028985507246
+  },
+  "chain_scorer_s1": {
+   "regret": 0.03893115942028986,
+   "top1_within_0.02": 0.5579710144927537
+  },
+  "chain_scorer_s2": {
+   "regret": 0.02878623188405797,
+   "top1_within_0.02": 0.6086956521739131
+  }
+ },
+ "quality_zephyr2_random.jsonl": {
+  "n_test": 18,
+  "resource": {
+   "regret": 0.003611111111111102,
+   "top1_within_0.02": 1.0
+  },
+  "original_chain": {
+   "regret": 0.003611111111111102,
+   "top1_within_0.02": 1.0
+  },
+  "random": {
+   "regret": 0.02152777777777777,
+   "top1_within_0.02": 0.4444444444444444
+  },
+  "chain_scorer_s0": {
+   "regret": 0.0047222222222222145,
+   "top1_within_0.02": 1.0
+  },
+  "chain_scorer_s1": {
+   "regret": 0.003611111111111102,
+   "top1_within_0.02": 1.0
+  },
+  "chain_scorer_s2": {
+   "regret": 0.003333333333333324,
+   "top1_within_0.02": 1.0
+  }
+ }
+}

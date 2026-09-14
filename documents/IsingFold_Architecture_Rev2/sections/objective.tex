@@ -1,0 +1,118 @@
+\section{Problem, programming map and deployable objective}\label{sec:objective}
+\subsection{Objects and notation}
+Let the logical instance be $I=(G_L,h,J)$, where $G_L=(V_L,E_L)$ and
+\begin{equation}
+E_I(s)=\sum_{i\in V_L}h_i s_i+\sum_{(i,j)\in E_L}J_{ij}s_i s_j,\qquad s\in\{-1,+1\}^{n}.
+\end{equation}
+Combine duplicate terms and remove zero logical couplings before constructing $E_L$. Preserve isolated logical variables, including zero-field variables: they remain part of the declared domain. The active hardware graph $H=(V_H,E_H)$ includes the actual qubit and coupler fault map. An ideal topology name alone is insufficient.
+
+An embedding $\phi=\{C_i\}_{i\in V_L}$ assigns each logical variable a nonempty connected branch set. Terminal branch sets are disjoint. Define the contact set
+\begin{equation}
+R_{ij}(\phi)=\{(q,r)\in E_H:q\in C_i,\ r\in C_j\}.
+\end{equation}
+For every nonzero logical edge $(i,j)$, $R_{ij}$ must be nonempty. Extra physical contacts between variables with no logical coupling are permitted as graph edges but programmed with coefficient zero. Let $Q(\phi)=\sum_i|C_i|$ for a disjoint embedding, and require $Q(\phi)\le B_Q$.
+
+An immutable context $\Omega$ binds the compiler, hardware ranges, quantization rules, fault and calibration snapshot, uniform strength registry, sampler, decoder, ground-energy tolerance, work caps and endpoint version. Different sampler or decoder settings define different objectives even if their results happen to have the same numerical value.
+
+\subsection{A concrete baseline programming policy}
+For a disjoint embedding, divide fields uniformly over branch sets and logical couplings uniformly over all realized contacts:
+\begin{equation}
+\widetilde h_q=\frac{h_i}{|C_i|}\quad(q\in C_i),\qquad
+\widetilde J_{qr}=\frac{J_{ij}}{|R_{ij}|}\quad((q,r)\in R_{ij}).
+\end{equation}
+Program every active intra-chain edge with $-F$. An alternative allocation policy is allowed only as a separately versioned compiler. The pre-scale program is
+\begin{equation}
+E^{\rm pre}_{\phi,F}(z)=\sum_q\widetilde h_qz_q+
+\sum_{(i,j)\in E_L}\sum_{(q,r)\in R_{ij}}\widetilde J_{qr}z_qz_r
+-F\sum_i\sum_{(q,r)\in E_H[C_i]}z_qz_r.
+\end{equation}
+For any chain-consistent $z$ decoding to $s$,
+\begin{equation}
+E^{\rm pre}_{\phi,F}(z)=E_I(s)-F\sum_i|E_H[C_i]|.
+\label{eq:program-identity}
+\end{equation}
+The independent compiler checker verifies coefficient sums, support, signs and this state-independent offset. Full enumeration of logical assignments is unnecessary for this algebraic check. Tiny enumerated tests still provide an independent conformance path.
+
+\subsection{Autoscaling and precision}
+The handbook expression $\alpha(F)=\max(1,F/J_{\max})$ is a restricted model, not a general autoscaler. For a deliberately defined symmetric-range simulation with limits $h_{\rm lim},J_{\rm lim}>0$, an explicit shrink-only rule is
+\begin{equation}
+a_{\phi,F}=\left[\max\left\{1,
+\frac{\max_q|\widetilde h_q|}{h_{\rm lim}},
+\frac{\max_{(q,r)}|J^{\rm pre}_{qr}|}{J_{\rm lim}}\right\}\right]^{-1}.
+\label{eq:scale}
+\end{equation}
+This rule is the registered simulator contract; it is not asserted to reproduce every device's default. A QPU compiler must use its actual signed field/coupler limits and any total coupling constraints. D-Wave documentation describes range and per-qubit coupling restrictions and an automatic scaling policy\cite{dwave2026}. Bind the full returned/submitted coefficient payload and avoid accidental second autoscaling.
+
+For quantization, write $c^{\rm compiled}=a_{\phi,F}c^{\rm pre}+e$ over all fields and couplers, including explicit zeros. A convenient all-spin energy bound is
+\begin{equation}
+|E^{\rm compiled}(z)-a_{\phi,F}E^{\rm pre}(z)|\le \|e\|_1=\epsilon_E^{\rm prog}.
+\end{equation}
+A positive exact global rescaling preserves minimizers but changes thermal or annealing behavior. Quantization can change minimizers. Consequently, graph validity, faithful programming, and downstream sampling performance require separate checks. Physical noise is not eliminated by passing a deterministic compiler validator.
+
+\subsection{Three quantities that must not be conflated}
+Let $D_\phi^{\rm MV}$ decode each physical chain by majority vote, with uniform random ties under a registered independent stream. Given a certified logical optimum $E_0(I)$,
+\begin{equation}
+p_j(\phi;\Omega)=\Pr_{z\sim P_{\phi,F_j,\Omega}}
+\left[E_I(D_\phi^{\rm MV}(z))\le E_0(I)+\varepsilon_I\right].
+\label{eq:pj}
+\end{equation}
+Use exact integer/rational comparisons when available. For floating coefficients, an initial declared rule is $\varepsilon_I=10^{-8}\max\{1,\sum_i|h_i|+\sum_{ij}|J_{ij}|\}$; certify that it does not merge distinct energy levels on the primary population. This differs from the legacy absolute $10^{-6}$ and must not be retroactively applied to old labels.
+
+\begin{enumerate}
+\item \textbf{Ideal four-strength oracle:} $V_{\rm oracle}(\phi)=\max_{j\le4}p_j(\phi)$. This describes headroom assuming the best population strength is known.
+\item \textbf{Legacy noisy maximum:} $\max_j K_j/N_j$. This is generally optimistic as an estimate of the oracle maximum. It is not an independent evaluation of a realizable selector.
+\item \textbf{Deployable fixed-selector quality:} $Y_\psi(\phi)=p_{j_\psi(\phi)}(\phi)$, where $j_\psi$ uses only information available when the system is deployed.
+\end{enumerate}
+Knowing $E_0$ during training or benchmark scoring is legitimate privileged supervision. Feeding it to the embedding policy or using it to choose a deployed strength is a different information model. Even on a planted benchmark, giving the selector its hidden planted solution would make the test artificially easier.
+
+\subsection{New endpoint contract: IF-Q3-S0}
+\begin{decisionbox}
+\textbf{Version change.} This document proposes \code{IF-Q3-S0}: majority-decoded ground-state solve probability under a \emph{frozen program-feature strength selector}. It retains exactly four uniform strengths. It does not silently rename or replace the project's historical Quality Value V2 data. Existing V2 records remain tagged with their original protocol.
+\end{decisionbox}
+
+Define a training-only coefficient scale $S_I$ deterministically from the input, for example
+\begin{equation}
+S_I=\max\left\{\epsilon_S,\sqrt{\frac{\sum_i h_i^2+\sum_{ij}J_{ij}^2}{\max(1,n+|E_L|)}}\right\}.
+\end{equation}
+Here ``training-only'' means the rule is chosen using training data; the scale itself is computed from each deployment input as well. The positive floor $\epsilon_S$ is a numerical constant registered in $\Omega$. The v1 registry is $F_j=r_jS_I$ with $r=(0.5,1,2,4)$. These four ratios define the experiment rather than constitute tuning evidence. All comparisons under this registry use the same frozen values.
+
+A distinct terminal-program predictor $q_\psi(\Pi_\phi,F_j)$ is trained on independently scored training embeddings, then frozen before RL:
+\begin{equation}
+j_\psi(\phi)=\argmax_{j\in\{1,2,3,4\}}q_\psi(\Pi_\phi,F_j),
+\label{eq:strength-selector}
+\end{equation}
+with smallest registry index breaking exact ties. Write $F_\psi(\phi)=F_{j_\psi(\phi)}$; the argument may equivalently be its deterministic program-ready bundle $\Pi_\phi$. $\Pi_\phi$ denotes reconstructible input, embedding, compiler and program features. It contains no optimum, witness, reference energy, true probability or evaluation random key. Section~\ref{sec:model} specifies a practical predictor interface. The fixed strength $F_2$ is the no-learning selector control. Keep $q_\psi$ identical across competing embedding methods. This prevents a better strength policy from being mistaken for a better embedder.
+
+At a committed embedding, draw a fresh block of $N_{\rm est}$ reads only at the selected strength and record $(K_{\rm est},N_{\rm est})$. Then
+\begin{equation}
+\widehat Y_\psi=K_{\rm est}/N_{\rm est},\qquad
+\E[\widehat Y_\psi\mid\phi,\psi,\Omega]=Y_\psi(\phi)
+\label{eq:unbiased}
+\end{equation}
+for the registered sampling process with the appropriate marginal read distribution. Independent reads simplify variance estimation; for correlated device blocks use block-level uncertainty. No selection shots are needed in S0. Evaluate all four strengths on a separately budgeted audit subset to measure selector regret and oracle headroom. Their outcomes never update the actor's observation or choose the tested embedding.
+
+A second, separately named profile may select strengths from observed decoded energies, for example by lowest empirical mean energy or a fixed lower-tail energy statistic. Such a rule does not need $E_0$, but it consumes four probe blocks and changes the deployed algorithm. Reserve a disjoint assessment block. Do not mix S0 and probe-based results in one endpoint column.
+
+\subsection{Failure-aware terminal utility and constraints}
+Let $A_T=1$ only if a returned embedding passes fresh independent graph, programming and resource validation. Define ordinary search failures to have $A_T=0$, and
+\begin{equation}
+U_T=\begin{cases}Y_\psi(\phi_T),&A_T=1,\\0,&A_T=0,\end{cases}
+\qquad \widehat U_T=A_T\widehat Y_\psi.
+\label{eq:utility}
+\end{equation}
+The target is
+\begin{equation}
+\max_\theta \E_{I,H,\tau\sim\pi_\theta}[U_T]
+\quad\text{subject to}\quad
+\Pr_\theta(A_T=1)\ge p_{\rm ref}-\delta,
+\quad Q(\phi_T)\le B_Q,
+\quad W(\tau)\le B_W.
+\end{equation}
+Use $\delta=0.02$ as an initial noninferiority design margin inherited from the source, subject to a powered confirmatory protocol. Qubit and work caps are hard constraints. More qubits earn no direct reward inside the cap. Compare the same input population and exact deployed action rule.
+
+A zero-hit but valid block is a legitimate reward zero. Invalid program bytes, missing samples, nonfinite coefficients or evaluator crashes are experiment errors, not zero quality. Keep an attrition ledger, repair the cause and rerun the fixed job identity; do not repeatedly resample difficult evaluations until a favorable result appears. If a hardware submission is predictably unsupported by the actual deployed system, that is a system limitation requiring a separately defined failure treatment, not silent removal from the target population.
+
+\subsection{Scope at scale and the role of T0}
+When all embeddings produce essentially zero ground-state hits at the available budget, IF-Q3 lacks useful action signal. Define an independent scale protocol using decoded mean energy or residual energy against a certified/best-known reference, with its own targets, normalization and reporting. Even a nonoptimal constant reference cancels in paired mean-energy differences, but it does not certify optimality gaps. Do not fill missing IF-Q3 rewards with this scale target.
+
+T0 remains exact Gibbs probability of \emph{chain-consistent and logically optimal} physical states. Majority-decoded success also counts some broken-chain states, so it is a different event. Exact logical ground energy may be feasible for a small $n$ while exact physical Gibbs enumeration is infeasible because $Q\gg n$. Use T0 only at tractable physical sizes. A simulated-annealing sample distribution is neither exact Gibbs by definition nor a QPU model; all transfer claims require measured agreement.

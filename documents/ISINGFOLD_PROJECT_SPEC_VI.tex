@@ -1,0 +1,604 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+\documentclass[
+  vietnamese,
+  10pt,
+  a4paper,
+]{article}
+\usepackage{xcolor}
+\usepackage[margin=22mm]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T5]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\ifLuaTeX
+\usepackage[bidi=basic,shorthands=off,]{babel}
+\else
+\usepackage[bidi=default,shorthands=off,]{babel}
+\fi
+\ifLuaTeX
+  \usepackage{selnolig} % disable illegal ligatures
+\fi
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Đặc tả Dự án IsingFold},
+  pdfauthor={Dự án IsingFold},
+  pdflang={vi-VN},
+  colorlinks=true,
+  linkcolor={Maroon},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={Blue},
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Đặc tả Dự án IsingFold}
+\usepackage{etoolbox}
+\makeatletter
+\providecommand{\subtitle}[1]{% add subtitle to \maketitle
+  \apptocmd{\@title}{\par {\large #1 \par}}{}{}
+}
+\makeatother
+\subtitle{Minor embedding ưu tiên chất lượng với validity chính xác,
+reinforcement learning trên typed graph và evaluation có xác thực}
+\author{Dự án IsingFold}
+\date{12 tháng 9 năm 2026}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{3}
+\tableofcontents
+}
+\section{Mục tiêu và luận điểm nghiên
+cứu}\label{mux1ee5c-tiuxeau-vuxe0-luux1eadn-ux111iux1ec3m-nghiuxean-cux1ee9u}
+
+IsingFold xem minor embedding là một bài toán quyết định tuần tự có xét
+chất lượng. Một hệ thống hữu ích phải trả về embedding hợp lệ, giữ đủ
+khả năng kết nối để sửa các trạng thái khó, và cải thiện chất lượng
+nghiệm Ising sau khi lập trình và lấy mẫu. Chỉ giảm số physical qubit
+hoặc độ dài chain không phải là mục tiêu cuối.
+
+Thí nghiệm chính dùng Profile I. Một classical initializer đã đăng ký
+tạo embedding khả thi khi có thể. Learned policy sau đó thực hiện các
+phép rewrite nhiều chain có giới hạn, trong đó cho phép overlap tạm thời
+có kiểm soát, còn protected archive giữ một phương án hợp lệ dự phòng.
+Independent validator là thành phần duy nhất chấp nhận embedding cuối.
+Construction từ trạng thái rỗng là một profile riêng, có phân phối khởi
+tạo và failure constraint khác.
+
+Giả thuyết trung tâm phải được đo trực tiếp:
+
+\begin{quote}
+Trên population đã niêm phong, cùng deployment selector, giới hạn tài
+nguyên rõ ràng và cùng online wall-clock envelope, chuỗi learned rewrite
+cải thiện failure-aware downstream Ising utility so với same-support
+control và hệ stock minorminer được tune chỉ trên validation.
+\end{quote}
+
+Đây là giả thuyết, không phải hệ quả mặc nhiên của kiến trúc. Muốn khẳng
+định learned model tốt hơn phải dùng held-out evaluation ba seed theo
+đúng registry.
+
+\section{Objective và validity}\label{objective-vuxe0-validity}
+
+Với logical Ising instance \(I=(G_L,h,J)\),
+
+\[
+E_I(s)=\sum_i h_i s_i+\sum_{(i,j)\in E_L}J_{ij}s_i s_j,
+\qquad s_i\in\{-1,+1\}.
+\]
+
+Một embedding gán mỗi logical variable \(i\) vào một branch set \(C_i\)
+khác rỗng và liên thông trên realized active hardware graph. Embedding
+được trả về phải thỏa tất cả điều kiện sau:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  mọi branch set khác rỗng, liên thông và chỉ dùng phần cứng đang hoạt
+  động;
+\item
+  các branch set đôi một rời nhau tại thời điểm return;
+\item
+  mọi logical coupling khác zero có ít nhất một physical contact giữa
+  hai branch set;
+\item
+  physical-qubit cap và mọi prospective work cap đều được thỏa;
+\item
+  chương trình vật lý bảo toàn tổng field và coupling logic theo
+  compiler đã đăng ký.
+\end{enumerate}
+
+Search state có thể chưa đầy đủ hoặc còn overlap trong envelope O1.
+Search legality, embeddability, return validity và terminal success là
+bốn predicate khác nhau. Neural model chỉ được xếp hạng những action mà
+environment đã materialize và đánh dấu legal. Dự đoán của model không
+thể tự tạo ra validity.
+
+Endpoint đăng ký là IF-Q3-S0. Một program-feature selector đã đóng băng
+chọn đúng một strength trong \((0.5,1,2,4)S_I\) mà không quan sát ground
+energy, planted solution, sample count hoặc evaluator result. Với
+terminal embedding hợp lệ \(\phi\), selected-strength quality là
+
+\[
+Y_\psi(\phi)=p_{j_\psi(\phi)}(\phi),
+\]
+
+trong đó \(p_j\) là xác suất majority decoding đạt certified logical
+ground energy trong tolerance đã đăng ký. Failure-aware utility là
+
+\[
+U=A\,Y_\psi(\phi),
+\]
+
+với \(A=1\) chỉ khi embedding trả về vượt qua fresh independent
+validation. Các failure thông thường ở initializer, search, budget,
+timeout, compilation hoặc invalid return vẫn nằm trong mẫu số với
+\(U=0\). Integrity failure như artifact hỏng hoặc thiếu read sẽ làm thí
+nghiệm dừng, không bị đổi thành utility zero.
+
+Physical-qubit count, maximum chain length, connectivity, native work,
+latency, memory và read count là hard constraint, Pareto axis hoặc
+explanatory metric. Dùng thêm qubit đôi khi có thể cải thiện sampling
+landscape, nhưng số qubit không bao giờ tự tạo positive reward.
+
+\section{Kiến trúc hệ thống}\label{kiux1ebfn-truxfac-hux1ec7-thux1ed1ng}
+
+Runtime tách learned preference khỏi exact mechanics.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Lớp
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Trách nhiệm
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Shortcut bị cấm
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Data authority & Xác thực CandidateBank, lineage design, evaluator
+target và ground certificate & Dùng self-signed corpus làm scientific
+authority \\
+Classical initializer & Tạo embedding khởi đầu của Profile I trong
+prospective work limit & Restart không tính phí hoặc fallback ẩn \\
+Exact environment & Quản lý state, candidate materialization, action
+mask, overlap, archive, transition và work & Learned validity hoặc sinh
+candidate sau khi đã xem outcome \\
+IF-Core & Mã hóa graph và bound action, rồi sinh masked policy và critic
+& Truy cập witness, optimum energy hoặc evaluator outcome \\
+Strength selector & Chọn một terminal program strength từ
+deployment-visible feature & Dùng oracle bốn strength khi deployment \\
+Independent evaluator & Compile, sample, decode và chấm fresh terminal
+read & Tái dùng training read cho confirmation \\
+Evidence layer & Gắn raw row, sidecar, receipt, identity và aggregate
+rule & Lọc chỉ success hoặc dùng mutable result folder \\
+\end{longtable}
+
+Bốn giai đoạn cổ điển ordering, placement, routing và repair đều được
+biểu diễn. Ordering xuất hiện trong proposal priority và construction
+action. Placement và routing được mở trong construction profile. Repair
+và refinement là các action family chính của Profile I. Learned policy
+thay thế quyết định preference trong luồng này, còn exact graph check và
+programming check luôn nằm ngoài model.
+
+\subsection{State, action và work}\label{state-action-vuxe0-work}
+
+Một decision state chứa logical instance, active host, immutable
+objective context, relaxed branch set, đầy đủ ownership claim, valid
+archive, search memory, vector work chín tọa độ còn lại, và một
+candidate batch đã materialize hoàn chỉnh. Action bind cả membership OLD
+lẫn NEW. Group rewrite được áp dụng nguyên tử để một coordinated move
+hợp lệ không bị loại chỉ vì thứ tự tuần tự tùy ý.
+
+Finite action grammar gồm \texttt{PLACE}, \texttt{ROUTE},
+\texttt{REWRITE}, \texttt{GROUP\_REWRITE}, \texttt{REPAIR},
+\texttt{RESTART}, \texttt{COMMIT} và stop behavior đã đăng ký. Profile I
+chủ yếu dùng rewrite, repair, restart, restore và commit. Action cap gồm
+64 state-changing candidate, tám archive commit và một optional stop.
+Archive gồm một protected initializer và bảy entry FIFO.
+
+Candidate construction không dùng outcome. Nó trộn route length,
+occupancy pressure, contact multiplicity, local free neighborhood,
+bottleneck feature và fixed random perturbation. Mọi attempted route,
+rejected proposal, materialization, validation, archive operation và
+optional cut feature đều được tính phí trước khi actor chọn. C++ kiểm
+tra từng prospective work delta và trả về exact non-exceeding ledger
+cùng tọa độ làm cạn budget.
+
+\section{Kiến trúc model IF-Core}\label{kiux1ebfn-truxfac-model-if-core}
+
+IF-Core là typed graph actor-critic với hidden width 128. Kích thước này
+đủ gọn để thực hiện các controlled comparison.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Ba dual local block xử lý riêng logical graph và hardware graph.
+\item
+  Hai typed fusion block trao đổi thông tin qua ownership relation và
+  conflict relation.
+\item
+  Phase-aware factor encoder giữ riêng identity của chain OLD, NEW và
+  ARCHIVE.
+\item
+  Gated one-dimensional convolution hai layer mã hóa route có thứ tự.
+\item
+  Action encoder kết hợp descriptor, chain factor, route, conflict và
+  archive reference.
+\item
+  Segmented mean/max pooling tạo state summary và action-set summary.
+\item
+  Masked categorical actor chỉ chấm exact support.
+\item
+  Utility critic ước lượng failure-aware terminal return. Failure critic
+  riêng được bật trong construction experiment.
+\end{enumerate}
+
+Core tensor width được cố định: logical node có 20 value slot cộng
+knownness bit, hardware node có 18 cộng knownness bit, global context có
+32 cộng knownness bit, và action descriptor có 24 cộng knownness bit
+cùng opcode encoding. Implementation batch graph trunk thành một
+disjoint union rồi tách lại từng observation trước các phép factor,
+route, archive, action và categorical reduction. Environment collection
+vẫn tuần tự vì support kế tiếp phụ thuộc action vừa chọn.
+
+Model ladder gồm IF-MLP, IF-Dual và IF-Core. IF-MLP kiểm tra liệu
+engineered action feature đã đủ hay chưa. IF-Dual kiểm tra
+logical/hardware message passing tách biệt mà chưa có typed fusion đầy
+đủ. IF-Core kiểm tra relational structure của ownership, conflict và
+joint action. Optional cut token, global relay attention, recurrent
+memory và learned proposal generation phải có mechanism cell riêng,
+không được đưa vào ngầm.
+
+\section{Learning objective và
+optimization}\label{learning-objective-vuxe0-optimization}
+
+Quality-v7 row ước lượng \(Q_U^\mu(s,a)\) dưới frozen continuation
+policy \(\mu\) đã đặt tên. Semantic target vẫn là
+\texttt{if-q3-s0-qmu-5}. Mỗi row giữ complete action support, exact
+observation, continuation seed, terminal outcome và independent
+evaluator count. Supervised warm start dùng simultaneous plausible-best
+set \(B_s\), không ép một strict winner khi finite-read uncertainty chưa
+phân giải được tie:
+
+\[
+L_{\mathrm{sup}}
+=-\frac{1}{|\mathcal S|}\sum_s
+\log\sum_{a\in B_s}\pi_\theta(a\mid s).
+\]
+
+PPO dùng complete episode, generalized advantage estimation, exact
+action-support replay và episode-sum reduction. Với ratio
+\(r_t(\theta)\) và advantage \(\widehat A_t\),
+
+\[
+L_{\mathrm{clip}}
+=-\mathbb E\!\left[
+\min\left(r_t\widehat A_t,
+\operatorname{clip}(r_t,1-\epsilon,1+\epsilon)\widehat A_t\right)
+\right].
+\]
+
+Joint loss cộng utility-value error, construction failure-value term khi
+được bật, và entropy schedule đã đăng ký. Dropout cùng stochastic tensor
+augmentation bị tắt trong PPO để unchanged policy replay đúng likelihood
+ratio một. Gradient không đi qua old behavior output, environment
+validity, proposal generation hoặc frozen selector.
+
+Reference value gồm horizon 32 decision, 64 complete episode mỗi
+rollout, bốn PPO epoch, minibatch 256 transition, \(\gamma=1\), GAE
+\(\lambda=0.95\), clip 0.2, AdamW learning rate \(3\times10^{-4}\),
+gradient cap 0.5 và full-buffer KL stop 0.02. Ba scientific seed là
+1103, 2207 và 3301.
+
+\section{Data preparation và
+authority}\label{data-preparation-vuxe0-authority}
+
+EmbedBench là một package độc lập. IsingFold chỉ dùng authenticated
+CandidateBank-v2 export, không fork generator vào training runtime.
+Export kết hợp feasible ink-drop witness trên Chimera, Pegasus và
+Zephyr, realized fault map, exact structural motif, planted
+frustrated-loop Ising instance, application-derived instance và
+replayable quality record. Embedding witness chỉ chứng nhận feasibility.
+Planted logical certificate chỉ thiết lập ground energy. Không loại nào
+xác định quality-optimal embedding.
+
+Production importer còn yêu cầu corpus-design manifest v2 được pin độc
+lập. Nó xuất prepared schema v4 và kiểm tra:
+
+\begin{itemize}
+\tightlist
+\item
+  exact quota trên immutable base lineage;
+\item
+  ít nhất 1.024 base lineage cho train, 512 cho validation và 1.546 cho
+  sealed test;
+\item
+  cả application-derived lẫn synthetic origin, nhiều host family và
+  faulted condition;
+\item
+  ba trục riêng cho embedding difficulty, sampling difficulty và
+  decision-quality difficulty;
+\item
+  hard/OOD coverage được cố định mà không dùng outcome của phương pháp;
+\item
+  confirmatory power/precision target bao phủ toàn bộ realized test
+  population;
+\item
+  validation-only baseline-tuning target bao phủ toàn bộ realized
+  validation population.
+\end{itemize}
+
+Thiết kế tuning trên validation yêu cầu ít nhất 128 independent lineage.
+Phép tính paired valid return đã đăng ký cho kết quả 127 với one-sided
+alpha 0.05, power 0.8, discordance 0.1, true difference 0.05 và margin
+0.02. Phép tính precision của bounded paired utility cho kết quả 97 với
+two-sided 95 percent half-width 0.2. Cả hai đều được làm tròn lên
+prospective floor 128.
+
+Prepared v4 tách vật lý evaluator target thành ba file \texttt{train},
+\texttt{val} và \texttt{test}; public manifest chỉ chứa hash, count và
+set digest. Mọi command mở target đều cần publisher ID và attestation
+record digest từ kênh ngoài. Publisher attestation v2 bind prepared
+manifest, partitioned target authority và các evidence manifest có hash
+riêng. \texttt{verify-ground-certificates} chạy standalone verifier được
+pin riêng theo protocol v2, ghi ba partition receipt trước rồi mới
+publish \texttt{root.json}. Root chỉ chứa commitment và census metadata
+nên load root không thể mở target. Downstream stage chỉ mở đúng một
+partition đã được authorize và giữ cả \texttt{TargetAccessReceipt} lẫn
+ground-partition receipt.
+
+Selector label và quality label là hai loại khác nhau. Selector data
+chứa four-strength count block đầy đủ trên train và calibration
+partition. Quality-v7 data chứa exact-replay action counterfactual.
+Quality job dài dùng deterministic whole-lineage shard. Merger nhận mỗi
+registered shard đúng một lần, loại gap và overlap, replay toàn bộ row,
+tính lại denominator và xuất canonical corpus. Quality preflight yêu cầu
+tối thiểu 128 resolved row và 128 resolved independent lineage. Không
+shard đơn lẻ nào được đi vào training.
+
+\section{Model selection và
+training}\label{model-selection-vuxe0-training}
+
+Bốn gate phải vượt qua trước khi chọn architecture:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  exact conformance của graph, program, structural label và certificate;
+\item
+  candidate support có quality headroom đo được;
+\item
+  frozen strength selector phân biệt được strength và hơn
+  fixed-strength/random control;
+\item
+  đủ valid return và utility signal không bão hòa.
+\end{enumerate}
+
+Main grid có đúng (9+18) cell.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2143}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2143}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2857}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2857}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Giai đoạn
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Family và method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Seed
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Cell
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Representation & IF-MLP, IF-Dual, IF-Core với supervised training & 3 &
+9 \\
+RL value & selected simpler family và IF-Core, kết hợp supervised-only,
+PPO warm-start, PPO from scratch & 3 & 18 \\
+\end{longtable}
+
+Validation selection cho mỗi registered seed và immutable base lineage
+trọng số bằng nhau, áp dụng valid-return noninferiority gate so với
+\texttt{return\_initial}, rồi xếp survivor theo unconditional IF-Q3-S0
+utility và online cost. Test partition không được tham gia. Capacity
+control nằm ngoài main grid: nếu IF-Dual được chọn làm simpler family,
+IF-Dual width 128 với chín local block được so với IF-Core trên đủ ba
+seed, với chênh lệch parameter count không quá 0,1 percent.
+
+PPO không dùng hand-authored CandidateBank incumbent như thể đó là
+deployment sample. Với mỗi training seed, một target-free
+initializer-bank plan cố định lineage-equal episode schedule, public
+task identity, exact LAC runtime và complete-system config. Mỗi
+conditional episode có một chuỗi hữu hạn các initializer draw xác định.
+Generation dừng ở lần thành công đầu tiên, vẫn hạch toán work của các
+draw thất bại, và fail closed nếu hết draw cap. Bank chỉ được seal khi
+mọi conditional episode đã resolve. PPO chỉ gắn train target sau khi
+bank được xác thực. Vì vậy training distribution của policy được khai
+báo rõ là conditional trên deployment initializer thành công, còn final
+estimand vẫn giữ initializer failure trong denominator.
+
+Sau khi RL-value receipt được đóng băng, complete-system confirmation
+train mới cả ba seed, không resume. Evaluation bắt đầu từ mọi sealed
+task và repetition trước initializer. Raw terminal evidence, outcome
+projection, runtime source digest, model identity, selector identity,
+quality authority, target-access receipt, ground-partition receipt và
+work ledger đều phải được xác thực trước khi tính crossed
+seed-by-lineage interval.
+
+\section{Baseline và evaluation}\label{baseline-vuxe0-evaluation}
+
+Same-support control gồm \texttt{return\_initial}, random masked choice,
+resource-lexicographic choice, classical quality-aware ranking, IF-MLP,
+IF-Dual, supervised IF-Core và các PPO variant. Chúng tách proposal
+headroom, representation value và sequential-policy value.
+
+Stock minorminer là một whole-system arm riêng. Finite registry chứa
+default được viết rõ và các variant time-saturating xếp hạng theo
+resource hoặc frozen-selector quality. Mọi candidate chạy trên toàn bộ
+validation population ở cả ba registered seed, với một machine identity
+cho mỗi seed. Một immutable receipt đóng băng candidate, không chọn seed
+thuận lợi, trước khi mở test. Test arm dùng cùng sealed
+pre-initialization census, pair key, seed schedule, selector, evaluator
+read, prospective cap và total online wall-clock envelope với learned
+arm. Solver-specific internal work coordinate được công bố, không bị
+tuyên bố là bằng nhau.
+
+Publication comparison dùng fixed-sequence familywise rule. Nó kiểm định
+valid-return noninferiority với margin 0.02 trước. Utility superiority
+chỉ là confirmatory khi noninferiority đạt, paired unconditional
+IF-Q3-S0 lower confidence bound lớn hơn zero, và sample-size/precision
+guard đạt. Conditional quality, qubit use, chain length, connectivity,
+work, latency, memory và failure reason là secondary analysis.
+
+Các complete-system evaluation và stock tuning dài dùng chung một
+resumable protocol cho ba workflow: learned confirmation, tuned-stock
+confirmation và external validation tuning. Plan commit toàn bộ public
+population, run coordinate, seed derivation, execution contract và
+lineage shard trước khi mở target partition. Mỗi shard sở hữu trọn
+immutable base lineage và giữ nguyên identity-derived seed như khi chạy
+không shard. Shard receipt chứa partition target access, ground
+authority, compute class, actual node provenance, raw receipt, outcome
+và terminal evidence. Merger yêu cầu complete nonoverlapping key census
+và tự tính lại unsharded sufficient statistics. Publication run dùng
+\texttt{pinned-venv} trên Apollo hoặc \texttt{apptainer} trên Goose;
+\texttt{bare-metal} chỉ dành cho diagnostic.
+
+Final four-strength diagnostic được niêm phong sau khi hai arm và cả ba
+seed đã đóng băng. Config đăng ký là
+\texttt{configs/final\_strength\_audit\_v1.json}; registry pin cả record
+digest và file SHA-256. Nó cố định tối thiểu 128 base lineage, tối đa 16
+lineage mỗi signed stratum, 4.096 read mỗi block, 20.000 bootstrap
+replicate và 128 shard. Outcome-blind plan được niêm phong trước test
+outcome. Sáu source run được xác thực trước khi execution manifest được
+niêm phong, và manifest này được niêm phong trước khi bắt đầu audit
+read. Với mỗi valid return, block A lấy mẫu mới trên cả bốn strength và
+chọn empirical oracle với lowest-index tie rule. Block B lại lấy mẫu mới
+trên cả bốn strength và ước lượng oracle-minus-deployed regret. Invalid
+return vẫn nằm trong coverage và worst-case sensitivity denominator.
+Deterministic shard phân hoạch complete opportunity key; merger yêu cầu
+full nonoverlapping census, xác thực lại source evidence, phục hồi
+canonical order, tính lại summary và publish nguyên tử. Audit này không
+thể thay đổi training, model selection, baseline tuning hoặc primary
+endpoint, và không phải primary evidence cho learned-method superiority.
+
+\section{Reproducibility và HPC}\label{reproducibility-vuxe0-hpc}
+
+Compatibility chain gồm:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  prepared-v4, publisher attestation v2 và ground-certificate protocol
+  v2 với target-free root cùng partition receipt;
+\item
+  selector-label manifest v4 và selector bundle v4;
+\item
+  quality record v7, shard/merge v5 và quality preflight v2;
+\item
+  release gate v6, representation selection v4 và RL-value freeze v4;
+\item
+  checkpoint v3 và training-run receipt v4;
+\item
+  learned complete-system receipt v3, evaluation report v4 và aggregate
+  v2;
+\item
+  external tuning run/selection v2, external complete-system receipt
+  v3/report v4 và paired aggregate v4;
+\item
+  resumable evaluation plan v2, shard receipt v3 và merge receipt v2;
+\item
+  final-strength config v1, sampler identity v1, plan v2, row v1,
+  execution manifest v2, shard v1, merge v1 và audit receipt v2.
+\end{enumerate}
+
+Mọi scientific output là canonical finite JSON, có self-digest, được ghi
+nguyên tử, immutable theo mặc định, và được kiểm tra với caller-supplied
+file pin khi trust boundary yêu cầu. Runtime identity gồm loaded
+native-extension byte và imported Python source.
+
+Apollo không có Slurm nên launcher chạy trực tiếp. Mọi computation trên
+Goose chỉ chạy qua Slurm và dùng \texttt{srun} bên trong allocation.
+Seed-to-host assignment giữ nguyên giữa training và validation.
+Distributed initializer generation, labeling, evaluation và auditing
+phân hoạch immutable whole key, không cắt một evaluator block.
+Publication evaluation bind cluster, scheduler, Slurm partition khi áp
+dụng, CPU/GPU identity, thread count, deterministic setting, runtime
+hoặc environment image, và source digest.
+
+\section{Giới hạn của claim}\label{giux1edbi-hux1ea1n-cux1ee7a-claim}
+
+Kiến trúc thiết lập exact interface và falsifiable test. Nó không tự
+chứng minh checkpoint đã train tốt, learned method thắng minorminer,
+simulator gain chuyển được lên QPU, hoặc IsingFold thắng mọi graph
+family. Claim chỉ được nâng lên sau registered gate, fresh three-seed
+confirmation, complete failure-aware denominator, strong baseline và
+independently auditable receipt.
+
+Phương trình model và tensor slot chi tiết nằm trong model
+specification. Exact execution command nằm trong training operations
+guide. Modular architecture nằm trong thư mục
+\texttt{IsingFold\_Architecture\_Rev2}, còn stock-baseline tuning có
+specification riêng trong thư mục này.
+
+\end{document}

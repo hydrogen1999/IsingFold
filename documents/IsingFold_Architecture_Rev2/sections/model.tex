@@ -1,0 +1,193 @@
+\section{Neural architecture: an implementable IF-Core}
+\label{sec:model}
+
+\subsection{Architecture decision and learning boundary}
+
+The first trainable model is \textbf{IF-Core}: a width-128 typed graph actor--critic with three local logical/hardware message-passing blocks, two ownership/conflict fusion blocks, and a sparse action--chain factor encoder. It chooses fully materialized macro-actions. It does not generate qubit sets, decide whether an overlap is legal, or certify a physical program. A frozen classical generator supplies the same batch $G(s)$ on shared states to learned and classical selection baselines; their batches naturally diverge when their trajectories visit different states. In particular, a multi-chain replacement is represented as one joint action, not as independent chain scores whose preferred moves may be mutually incompatible.
+
+The first experiment is \emph{improvement from a common feasible seed}. The protected seed remains returnable while the workspace may enter bounded overlap. This makes the learned question concrete: which joint repairs and refinements improve the final downstream objective within the available search budget? Empty-state construction is a separately trained and reported regime. Mixing these regimes in the first training run would obscure whether the policy learned construction, useful escape, or merely the seed generator's distribution.
+
+The architecture intentionally starts below the original PNA--GraphGPS--HGT--gauge stack. Message passing and typed relations already supply the necessary inductive biases~\cite{mpnn2017,hgt2020}. PNA aggregation~\cite{pna2020}, relay attention inspired by GraphGPS~\cite{gps2022}, and gauge-specific representations are subsequent hypotheses. Their additional cost must earn a measurable gain under matched online work, not merely a lower training loss.
+
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[node distance=7mm and 7mm,
+box/.style={draw=Blue,fill=Pale,rounded corners=2pt,text width=43mm,minimum height=14mm,align=center,font=\small},
+wide/.style={box,text width=146mm,fill=Teal!5,draw=Teal},
+arr/.style={-{Latex[length=2mm]},thick,draw=Navy}]
+\node[box] (lh) {Weighted logical graph\\Active hardware graph};
+\node[box,right=of lh] (own) {All ownership claims\\Conflict factors};
+\node[box,right=of own] (payload) {Old/new action chains\\Routes + valid archive};
+\node[wide,below=of own] (trunk) {IF-Core shared representation, width 128\\3 dual local blocks $\to$ 2 typed fusion blocks $\to$ sparse action factors};
+\node[box,below=of trunk] (state) {State $z_s$ + action $v_a$\\Action-set context};
+\node[box,below left=8mm and 7mm of state] (actor) {Masked categorical actor\\One logit per bound action};
+\node[box,below right=8mm and 7mm of state] (critic) {Utility $V_U$ + failure $V_f$\\$V_A=1-V_f$};
+\draw[arr] (lh.south)--(lh.south|-trunk.north);
+\draw[arr] (own)--(trunk);
+\draw[arr] (payload.south)--(payload.south|-trunk.north);
+\draw[arr] (trunk)--(state);\draw[arr] (state)--(actor);\draw[arr] (state)--(critic);
+\end{tikzpicture}
+\caption{Concrete initial neural model. Exact masks are supplied by the environment. The separate frozen terminal strength predictor is outside this PPO network. Additional cut or global-attention modules are controlled extensions.}
+\label{fig:core}
+\end{figure}
+
+\subsection{Observation record, tensorization, and normalization}
+
+The exact environment record contains the weighted logical instance, hardware fault snapshot, all current claims, complete bound candidates, archive payloads, counters, and objective context. The model consumes a deterministic tensorization of that record. These are different objects: serialization can be sufficient to replay a transition, while a finite-dimensional neural embedding and pooled summaries are generally lossy. Neither message passing nor the absence of recurrence proves that the policy observation is Markov sufficient. Hidden generator state must be eliminated or recorded; any remaining observation aliasing is measured and documented.
+
+All integer identifiers are \emph{index keys}, never scalar features. Logical and hardware labels, candidate hashes, generator seeds, program digests, file names, dataset families, planted partitions, planted spin assignments, optimum energies, sampled success counts, and downstream labels do not enter learned feature channels. Counters and remaining budgets do enter as numerical values when they affect decisions. Immutable compiler, decoder, sampler, and normalization versions are bound by the experiment registry. A version mismatch rejects a batch; it is not mapped to an unseen trainable ID embedding.
+
+For each scalar slot store a value and a knownness bit. With slots \(u_1,\ldots,u_D\), the input is
+\[
+ x=\bigl[\widetilde u_1,\ldots,\widetilde u_D,
+         m_1,\ldots,m_D\bigr]\in\mathbb R^{2D},
+ \qquad \widetilde u_j=0\ \text{when }m_j=0.
+\]
+An observed zero has \(m_j=1\). Padding is a separate node/action mask. Binary quantities also retain a knownness bit so that absent calibration and a measured zero are distinguishable. Fit continuous normalizers using the training split only and freeze them for development, test, and deployment. For coefficient-like values use a signed logarithmic map
+\[
+ T_c(x)=\operatorname{sgn}(x)\log(1+|x|/c_{\rm train}),
+ \qquad c_{\rm train}>0,
+\]
+with a recorded train-set scale. Counts use \(\log(1+x)\); bounded fractions remain in \([0,1]\). Use distinct normalizers for logically different units. Avoid per-instance unit normalization that erases the physical difference between weak and strong instances. Keep both signed \(h,J\) and magnitude channels; also expose absolute coefficient scales and hardware ranges in the global context. All features below are available before the action is selected.
+
+\subsection{Exact core feature schema}
+
+The following schemas fix the first implementation. Slots are one-based. Their dimensions count knownness bits but exclude indexing tensors. Combinatorial fractions over an empty set are zero with knownness one; physically undefined ratios use knownness zero. A quantity that has no physical interpretation uses \(m=0\), rather than a fabricated zero.
+
+\begin{longtable}{@{}p{0.18\textwidth}p{0.10\textwidth}p{0.66\textwidth}@{}}
+\toprule
+Object & Width & Scalar slots before knownness bits \\
+\midrule
+\endfirsthead
+\toprule Object & Width & Scalar slots before knownness bits \\
+\midrule
+\endhead
+Logical node \(L_i\) & 40 &
+1 signed \(h_i\); 2 \(|h_i|\); 3 degree; 4 sum of incident \(|J|\); 5 maximum incident \(|J|\); 6 signed incident sum; 7 positive-coupler fraction; 8 nonempty-chain flag; 9 chain size; 10 programmed chain-edge count; 11 induced active edge count; 12 realized incident-demand fraction; 13 number of contested claims; 14 maximum occupancy on the chain; 15 chain boundary edge count; 16 distinct free neighboring qubits; 17 age since this chain changed; 18 remaining tabu duration; 19 physical distance to the nearest unrealized neighboring chain; 20 current connectedness flag. \\
+\addlinespace
+Hardware node \(H_q\) & 36 &
+1 active flag; 2 active degree; 3 nominal degree; 4 occupancy; 5 contested flag; 6 free-neighbor fraction; 7 occupied-neighbor fraction; 8 faulty-neighbor fraction; 9 distinct neighboring claimants; 10 signed compiled bias; 11 magnitude of compiled bias; 12 maximum incident compiled-coupler magnitude; 13 measured bias offset; 14 bias noise standard deviation; 15 readout error rate; 16 time since last occupancy change; 17 distance to an active free vertex; 18 local active two-hop vertex count. \\
+\addlinespace
+Logical edge \((i,j)\) & 12 &
+1 signed \(J_{ij}\); 2 \(|J_{ij}|\); 3 realized flag; 4 number of active physical inter-chain edges; 5 shortest active distance between the branch sets; 6 age of an unrealized demand. \\
+\addlinespace
+Hardware edge \((q,r)\) & 20 &
+1 active flag; 2 shared-claimant count; 3 distinct endpoint-claimant pair count; 4 programmed chain-edge flag; 5 programmed logical-coupler flag; 6 signed compiled coupling; 7 compiled-coupling magnitude; 8 measured coupling offset; 9 coupling noise standard deviation; 10 fraction of endpoint claims involved in overlap. \\
+\addlinespace
+Claim \((i,q)\) & 12 &
+1 claim age; 2 contested flag; 3 number of chain-internal active neighbors; 4 chain boundary flag; 5 chain articulation flag; 6 number of realized incident logical demands attached at \(q\). \\
+\addlinespace
+Conflict factor \(X_q\) & 8 &
+1 occupancy minus one; 2 conflict age; 3 number of distinct neighboring claimants; 4 number of adjacent active free vertices. \\
+\bottomrule
+\end{longtable}
+
+Define active distance using a capped breadth-first search with a registered radius. A distance not found inside the cap is marked unknown, and the reachability/cap outcome is retained in the exact record; zero is never used to mean ``far away.'' Nominal hardware is retained when available: disabled vertices and edges are observable with active flag zero, while route materialization uses only active support. If only an active host is supplied, nominal-degree and fault-neighborhood values are missing. Never infer a calibration feature from labels or fitted test residuals.
+
+Compiled-coefficient channels refer to a deterministic, currently valid physical program at the registered reference strength \(F_1\). They are missing in an overlapping or otherwise nonprogrammable workspace. Counts such as chain size, overlap, and active boundary remain defined there. A hypothetical local load may be useful in a later extension, but must use separate feature slots with an explicit hypothetical flag; it cannot populate a ``programmed physical bias'' slot. Singleton articulation flags are false by the registered convention. Expensive statistics, including articulation and distance, are charged to feature construction and cached only when their dependency keys match.
+
+The 32 scalar \textbf{global slots}, hence width 64, are: (1) logical vertex count; (2) logical edge count; (3) active hardware vertices; (4) active hardware edges; (5) qubit cap; (6) currently claimed union size; (7) total excess occupancy; (8) total unrealized demands; (9) remaining decision fraction; (10) remaining deterministic work fraction; (11) remaining restarts; (12) current archive size; (13) workspace-valid flag; (14) protected-seed-available flag; (15) absolute logical RMS coefficient scale; (16) maximum logical coefficient magnitude; (17--20) the four registered chain strengths; (21) hardware field range; (22) hardware coupler range; (23) current compile rescaling factor; (24) improvement-mode flag; (25--32) the remaining fractions for route expansions, candidate materializations, compiler calls, validator calls, cut-edge visits, initialization/restart work, reserved terminal work, and feature/inference work respectively. A nonbinding cap has knownness zero; a binding exhausted cap is known zero. Each cap and unit is fixed in the registry. This budget vector prevents two states with different applicable work constraints from being aliased into one generic remaining-work fraction. Slot 15 is exactly $S_I$ defined in Section~\ref{sec:objective}, including zero fields in its denominator and its registered numerical floor. Slot 23 is missing when the workspace cannot be compiled. Temperature, anneal schedule, quantization, and noise model are fixed within this first registry; if any varies, a versioned context extension must expose its deployment-available values before retraining.
+
+\subsection{Ownership and action tensors preserve relational identity}
+
+For a batch of \(b\) observations, concatenate disjoint graphs and keep a batch-index vector for each node type. Let \(n,m\) denote the total logical and nominal hardware vertices; \(e_L,e_H\) are directed edge counts, with both orientations stored. The core schema therefore has 120 named scalar slots across its eight object types, encoded as 240 value/knownness channels distributed across types, plus the eight opcode indicators. This is a schema count, not the input size of a particular graph: chain factors, routes, archive entries, and optional cuts add the explicitly listed relational features. The feature arrays are
+\[
+ X_L\!:\!n\times40,\quad X_H\!:\!m\times36,\quad
+ X_{E_L}\!:\!e_L\times12,\quad X_{E_H}\!:\!e_H\times20,
+ \quad X_g\!:\!b\times64.
+\]
+Index arrays \(I_L\in\mathbb N^{2\times e_L}\) and \(I_H\in\mathbb N^{2\times e_H}\) carry endpoints. The ownership index \(I_O\in\mathbb N^{2\times M}\), where \(M=\sum_i|C_i|\), contains \emph{every} pair \((i,q)\), with \(X_O\in\mathbb R^{M\times12}\). A contested qubit owned by three chains contributes three claims. A single owner ID or binary occupancy would lose precisely the information needed for joint repair.
+
+Create one conflict factor per contested qubit and connect it to that qubit and to every claimant logical node. A chain-pair conflict is consequently not reduced to whichever claimant was inserted first. Indexing tensors are int64; feature tensors are float32 at the input boundary; masks are Boolean. Sorting or hashing is permitted for canonical serialization and duplicate removal, not as a semantic neural feature.
+
+There are at most 64 state-changing candidates, eight archive commits, and one STOP candidate: \(A\le73\) per observation. The opcode one-hot has width eight, ordered as \code{PLACE}, \code{ROUTE}, \code{REWRITE\_ONE}, \code{REWRITE\_GROUP}, \code{REPAIR\_GROUP}, \code{RESTART}, \code{COMMIT}, \code{STOP}. PLACE and ROUTE are disabled in the initial improvement regime. Group rewrites use registered sizes from \(\{2,3,4,8\}\). Grow and shrink are attributes of REWRITE\_ONE. The same atomic action may improve or worsen immediate structural summaries within the permitted workspace constraints.
+
+Each action has 24 scalar descriptor slots, knownness bits, and its opcode, for \(X_A\in\mathbb R^{A\times56}\): (1) affected chains; (2) old claim incidences; (3) new claim incidences; (4) added claims; (5) removed claims; (6) union-size delta; (7) maximum-chain-length delta; (8) total-overlap delta; (9) contested-vertex delta; (10) unrealized-demand delta; (11) resulting maximum occupancy; (12) resulting structural-validity flag; (13) resulting qubit-cap slack; (14) exact charged proposal work; (15) bound transition-work upper bound; (16) maximum route length; (17) mean route length; (18) affected-boundary-edge delta; (19) affected-free-neighbor delta; (20) remaining restart count after action; (21) referenced archive age; (22) referenced archive union size; (23) restores an archived structure flag; (24) changes the workspace flag. Counterfactual structural features come from the already materialized successor, with no downstream sampling. Commit-only and STOP-inapplicable values are missing.
+
+\textbf{The descriptors supplement complete action incidence; they do not replace it.} For every changed logical chain create factors \(B_{a,i}^{\rm old}\) and \(B_{a,i}^{\rm new}\), connected to action \(a\), logical node \(i\), and all qubits in the corresponding old or new branch set. Each factor has eight scalar slots (width 16): phase-is-new, branch-set size, induced active edge count, programmed chain-edge count, boundary edge count, contested-claim count, connectedness, and changed-from-old flag. Set membership is unordered. When a bound payload contains an ordered route, attach a separate route factor and route--qubit incidences carrying normalized position, start flag, end flag, and logical-attachment flag (four values plus four knownness bits, width eight). Do not assign artificial positions to an unordered branch set.
+
+For programmed chain edges and inter-chain realizations, retain factor-to-hardware-edge indices, with relation labels distinguishing old chain edges, new chain edges, old realization, and new realization. Preserve the logical-edge reference for every realization. A route transit vertex always has an explicitly identified claimant. Thus two group actions that touch the same union of qubits but assign those qubits to different chains receive different incidence graphs. Store complete deterministic program payloads in the environment record, including all coefficient vectors and compiler context; program bytes must be reconstructible independently of the policy. Digests verify identity but neither replace those payloads nor become floating-point inputs. The neural encoder still need not be injective over these records.
+
+\subsection{Forward computation and prediction heads}
+
+Project each node or factor type independently to width \(d=128\), using a linear map, SiLU, and LayerNorm. Project edge and incidence feature vectors to width 32. The logical and hardware encoders have separate weights. Each of three local blocks uses a message MLP \(288\!\to\!128\!\to\!128\), because its concatenation contains two width-128 nodes and a width-32 edge:
+\[
+ m_{uv}^{(r)}=\operatorname{MLP}^{(r)}_m
+ [z_u,z_v,e_{uv}],\qquad
+ a_v=\bigl[\operatorname{mean}_{u}m_{uv},
+             \operatorname{max}_{u}m_{uv}\bigr]\in\mathbb R^{256},
+\]
+\[
+ z_v^+=\operatorname{LN}\!\left(z_v+
+ \operatorname{MLP}^{(r)}_u[z_v,a_v]\right),
+ \quad \operatorname{MLP}^{(r)}_u:384\to256\to128.
+\]
+Empty-neighborhood aggregates are zero. Degree is an explicit feature, so mean aggregation does not silently erase neighborhood cardinality. The two subsequent fusion blocks use relation-specific message maps and the same mean/max update for logical-to-hardware ownership, its reverse, claimant-to-conflict, conflict-to-claimant, conflict-to-qubit, and reverse relations. Sum relation contributions before the residual update. This is a sparse typed MPNN; it does not require full Transformer attention to express ownership. Before action pooling, contextualize each logical/hardware edge with a \(288\to64\to32\) MLP applied to the endpoint-embedding sum (128), their elementwise absolute difference (128), and the projected raw edge features (32). This preserves an endpoint-dependent edge representation while remaining insensitive to reversing an undirected edge.
+
+Encode each action-chain factor using its projected descriptor (128), logical-node embedding (128), membership-node mean/max (256), programmed-hardware-edge mean/max (64), and realized-logical-edge mean/max (64). The last two use the corresponding width-32 edge embeddings. A shared \(640\to256\to128\) MLP produces the factor embedding; old/new phases remain separate factors. For ordered routes, concatenate each hardware-node embedding with its width-32 projected positional incidence features and project \(160\to128\). Apply a shared one-dimensional gated convolution with kernel three and two layers, width 128. Concatenate sequence mean, maximum, first, and last embeddings and project \(512\to128\) to obtain a route factor; total route work is linear in recorded route incidences. Build an action vector from its projected descriptor (128), old/new chain-factor mean/max (256), route-factor mean/max (256), touched-conflict mean/max (256), and referenced archive token (128), then project \(1024\to256\to128\). Absent relation pools are zero, with presence recoverable from the typed incidences and descriptor masks. RESTART proposals bind their materialized initialization payload before scoring. COMMIT actions refer to the corresponding archived structure. Node-level edge messages distinguish endpoint assignments even where pooled summaries collide; no injectivity guarantee is assumed.
+
+Pool current logical, hardware, and conflict embeddings with type-specific mean and maximum pooling. Empty types contribute zeros and their count is retained. Include the archive representation described below. The six current-type pools contribute 768 channels, the archive summary contributes 128, and global context contributes 64. A \(960\to256\to128\) projection maps this result to \(z_s\in\mathbb R^{128}\). Let \(v_a\in\mathbb R^{128}\) denote the action representation. Introduce a permutation-invariant action-set summary
+\[
+ c_{\mathcal A}=\operatorname{MLP}_{\rm set}
+ \left[\operatorname{mean}_{a\in\mathcal A_{\rm live}}v_a,
+       \operatorname{max}_{a\in\mathcal A_{\rm live}}v_a\right]
+ \in\mathbb R^{128}.
+\]
+Only real, admissible candidates enter this summary; padded rows are excluded. The actor tower is \(512\to256\to128\to1\):
+\[
+ \ell_a=\operatorname{MLP}_\pi
+ [v_a,z_s,c_{\mathcal A},v_a\odot z_s],\qquad
+ \pi_\theta(a\mid o,\mathcal A)=
+ \frac{M_a\exp(\ell_a-\ell_{\max})}
+ {\sum_j M_j\exp(\ell_j-\ell_{\max})}.
+\]
+Masking is implemented as a logit operation before normalization. The environment guarantees a nonempty support; an all-false mask is an implementation error with a recorded fallback, not a distribution on invalid actions. Candidate permutations merely permute logits if all associated indices move with them. This is tensor-order equivariance; it does not imply invariance to changing a generator's canonical tie-break process.
+
+Separate towers read \([z_s,c_{\mathcal A}]\in\mathbb R^{256}\). The utility critic \(V_U\), with hidden widths \(128,64\), predicts expected \emph{unshaped terminal utility}, including fallback behavior. Its output is linear so shaping corrections need not force a sigmoid range. The failure critic \(V_f\) has the same widths and a sigmoid output, predicting the policy's probability of returning no admissible embedding; define \(V_A=1-V_f\). Conditional on successful initialization and ordinary execution, the protected feasible seed makes failure identically zero in improvement mode. The unconditional system still includes initializer failures. Its failure critic is therefore a monitoring/constraint head, not evidence of learning construction feasibility. Each tower receives only the current deployment-available observation and candidates. Terminal outcomes appear as stopped-gradient targets after rollout; they never enter the trunk as input features. Actor and critics share the trunk initially; a split trunk is justified only by measured interference.
+
+\subsection{Archive representation and separate strength predictor}
+
+A mutable archive influences future commits and therefore cannot be invisible to the critic. The default bound is eight entries, including the protected seed. For each entry create an archive token and a factor for each archived chain. Include archive age, protected status, admissibility, qubit use, and chain-length summaries as five scalars with knownness bits (width ten). Attach complete archived chain membership and programmed-edge/realization incidences to hardware nodes/edges, using archive-specific relation types. Do not reuse current ownership in place of archived ownership. The same chain-factor encoder can share weights while preserving its phase/archive type. Pool entries with mean/max operations to a width-128 archive summary; append this summary to state pooling. The full membership cost is paid explicitly. An archive-summary-only model is an ablation with partial observation, not a lossless optimization.
+
+The separately pretrained \(q_\psi\) is a \textbf{terminal chain-strength selector}, not the PPO critic and not an oracle for invalid workspace states. It receives a valid program-ready embedding bundle and its four compiled programs, with only deployment-available instance, program, strength, and hardware context. A shared program graph encoder, conditioned on the corresponding scalar strength, emits
+\[
+ q_\psi(\Pi)=
+ (\widehat p_\psi(\Pi_{F_1}),\ldots,
+  \widehat p_\psi(\Pi_{F_4}))\in[0,1]^4.
+\]
+A concrete first selector uses separate copies of the width-128 three-local/two-ownership-fusion graph trunk, with weights shared across strengths but not shared with PPO. Omit action, route, conflict and archive modules. For strength $F_j$, populate physical coefficient channels with that actual compiled program, pool logical and hardware nodes by mean/max (512 channels), and concatenate global context (64), a four-dimensional strength-index one-hot, and two scalars $F_j$ and $a_{\phi,F_j}$ (582 total). An MLP $582\to128\to64\to1$ with sigmoid emits the strength response. All four passes share weights; cache only strength-independent features. This is a fully specified initial predictor rather than an unspecified oracle. There are exactly four probability outputs and no leaked optimum-energy, success-count, or evaluator-receipt inputs. For example, train with aggregated binomial negative log-likelihood using training-only \((K_F,N_F)\) labels; cap or register weighting so heavily sampled items do not accidentally dominate. Fit any calibration on a reserved selector-calibration subpartition of training, disjoint from the RL architecture-selection development set. Freeze all selector weights, normalizers, calibration, and tie rules before PPO collection, then choose the terminal strength using its registered four-way selection rule. Evaluation labels must come from the independent evaluator specified elsewhere in this document. Predicted values are not substituted for final measured utility. No gradient passes from PPO through \(q_\psi\), and its predicted scores are not appended to intermediate action features in IF-Core. A scorer-guided proposal policy would be a separately costed, separately ablated method.
+
+\subsection{Optional cut tokens and physical interpretation}
+
+Add cut tokens only after IF-Core passes the mechanism and benchmark gates. A token references chain \(i\), an explicitly stored proper side \(S\), phase (current/old/new/archive), and strength index. At most 16 cuts per affected chain and phase are sampled by a frozen deterministic procedure. Its twelve scalar slots (width 24) are: strength; side-size fraction; boundary-edge count; programmed cut capacity; smaller-side absolute drive bound; capped drive/capacity ratio; capacity-zero flag; drive-zero flag; exhaustive-enumeration flag; physical-program-valid flag; smaller-side attachment load; and structurally determined violation flag. The cut-side membership is retained in index tensors. Capacity and drive are masked missing without a valid applicable physical program. They must not treat multiply claimed qubits as independent physical capacity.
+
+The exact drive/capacity convention comes from the registered programming theorem and compiler, not a new neural definition. A finite collection of sampled cuts is a diagnostic feature set. It supplies neither the minimum over every proper cut nor a chain-integrity certificate. ``Exhaustive'' is true only when every complement-distinct proper cut was checked. Any certificate auxiliary loss uses only exact or independently certified targets and an explicit applicability mask. The ablation must separate a richer cut representation from adding a certificate loss.
+
+\subsection{Training mechanics, cost, and model ladder}
+
+Use dropout zero in the actor trunk, factor encoder, and all PPO heads, including any pretrained components reused there. LayerNorm is deterministic and avoids train/evaluation BatchNorm drift. A rollout stores old logits or chosen-action log probabilities, exact masks, candidate payloads, feature-normalizer version, and observation reconstruction keys. During PPO epochs, reconstruct the \emph{same} action batch and observation; never rerun a randomized or updated proposal generator to recompute an importance ratio. The proposal generator does not learn during PPO. Changing quotas, generator weights, or strength-selector weights requires a new collection phase and experiment version.
+
+Let \(M\) be current claims, \(R\) all action old/new/route/edge incidences, \(B\) all archived memberships and edge incidences, and \(C\) all optional cut memberships. For fixed depth and width, sparse forward cost is linear in
+\[
+ n+m+e_L+e_H+M+R+B+C+A
+\]
+up to width-dependent message-MLP factors (typically \(O(d^2)\)). Activation memory has the corresponding \(O(d)\) factor. The bound \(A\le73\) does \emph{not} bound \(R\): a few long group replacements can dominate inference. Register maximum group size, route/chain payload lengths, total incidence count, and batch memory; reject or truncate proposals by the frozen rule before they reach the actor. Account separately for candidate construction, successor feature extraction, cut generation, compiler calls, exact validation, archive maintenance, and neural inference. No dense \(m\times m\) hardware attention is used. A later fixed-size relay module adds \(O(mrd)\) attention work for \(r\) relays, plus its projections; report the added cost.
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}p{0.16\textwidth}XX@{}}
+\toprule
+Model & Added mechanism & Question answered \\
+\midrule
+IF-MLP & Shared MLP on the same exact scalar state/action descriptors and action-set pooling & Are expensive graph encoders necessary beyond engineered observations? \\
+IF-Dual & Three separate local logical/hardware MPNNs plus phase-aware action-chain pooling & Does graph structure improve action selection? \\
+IF-Core & Two typed ownership/conflict fusion blocks over IF-Dual & Does explicit cross-graph and multi-claimant information improve joint repair? \\
+Core+cuts & Applicable sampled cut tokens; certificate head as a separate toggle & Does cut information add value beyond overlap and topology? \\
+Core+relay & Fixed-count sparse relay communication & Does long-range communication repay its inference cost? \\
+Gauge mode & Separately specified invariant/equivariant channels in a sign-symmetric objective context & Does the symmetry help beyond simple gauge augmentation? \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+All models share the generator, quotas, exact masking rules, seed structures, archive rules, terminal selector, evaluator, and budgets. On a shared state their candidate support is identical; different trajectories need not visit identical batches. Include width/parameter-matched controls when attributing a representation gain. For IF-Core specifically, compare multi-chain versus one-chain support, overlap allowed versus forbidden, full claimants versus binary occupancy, action-chain incidence versus union-only pooling, signs plus magnitudes versus magnitudes alone, and frozen uniform/classical selection versus learned selection. Disabling multi-chain support changes the search space, so report it as a search-space ablation rather than solely a network ablation. Gauge augmentation is the first inexpensive symmetry control; exact gauge invariance is not claimed when device calibration, quantization, decoder ties, or proposal rules break the required symmetry. Select the smallest model with reproducible terminal gains and acceptable runtime. A deeper architecture is a candidate to test, not the project's default conclusion.

@@ -1,0 +1,138 @@
+\section{Environment, macro-actions and complete search accounting}\label{sec:system}
+\subsection{Two operating profiles}
+\textbf{Profile I: improvement and repair.} A registered initializer attempts a feasible embedding using a fixed portion of the total work budget. The same initializer, seed and initial embedding are supplied to all within-environment controls. The first valid result is protected in the archive. The actor improves it through multi-chain rewrites and may explore bounded overlap. Initializer failure counts in unconditional system results. Conditional-on-initialization analysis is secondary. This profile establishes learned search value without simultaneously learning all of construction.
+
+\textbf{Profile C: construction.} Start with empty chains and no archive. PLACE and ROUTE actions are enabled. Failure before a valid archive entry exists is possible. Repair-state curricula are useful for learning, but final constructor evaluation must start empty. A policy trained only on witness-corrupted states is not established as a general constructor.
+
+The initializer may be minorminer, a deterministic topology method where applicable, or another public embedder. Its graph witness is not a downstream-quality label. All initialization work is charged. The paper calls Profile I an \emph{improvement system}, and explicitly reports its initializer dependence.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[node distance=8mm and 8mm,
+box/.style={draw=Blue,fill=Pale,rounded corners=2pt,text width=44mm,minimum height=16mm,align=center,font=\small},
+learn/.style={box,draw=Teal,fill=Teal!6},
+arr/.style={-{Latex[length=2mm]},thick,draw=Navy}]
+\node[box] (in) {Logical Ising + active host\\Compiler and budgets};
+\node[box,right=of in] (st) {Exact search state\\Claims + valid archive};
+\node[box,right=of st] (gen) {Bounded proposals\\Materialize and charge};
+\node[learn,below=of gen] (actor) {Typed graph policy\\Masked action choice};
+\node[box,left=of actor] (apply) {Atomic rewrite\\Exact successor check};
+\node[box,left=of apply] (gate) {Independent validator\\Commit valid embedding};
+\node[learn,below=of gate] (sel) {Frozen strength selector\\Program features only};
+\node[box,right=of sel] (eval) {Fresh terminal reads\\Ground truth in evaluator};
+\node[learn,right=of eval] (train) {PPO + two critics\\Train-only return};
+\draw[arr] (in)--(st);\draw[arr] (st)--(gen);\draw[arr] (gen)--(actor);
+\draw[arr] (actor)--(apply);\draw[arr] (apply)--(st);
+\draw[arr] (st.west) -- ++(-3mm,0) |- (gate.north);
+\draw[arr] (gate)--(sel);\draw[arr] (sel)--(eval);\draw[arr] (eval)--(train);
+\draw[arr,dashed,draw=Teal] (train)--(actor);
+\end{tikzpicture}
+\caption{Registered operating boundary. The search loop uses no true solve probabilities. The evaluator supplies rewards during training and independent scores during testing. The frozen strength selector is shared by all embedders.}
+\label{fig:system}
+\end{figure}
+
+\subsection{Environment state and semantic observation}
+At decision epoch $t$, the environment contains
+\begin{equation}
+s_t=(I,H,\Omega,\widetilde\phi_t,\mathcal O_t,\mathcal A_t^{\rm inc},m_t,b_t,\mathcal K_t).
+\end{equation}
+Here $\widetilde\phi_t$ is the relaxed branch-set assignment; $\mathcal O_t(q)$ is the full set of claiming logical variables; $\mathcal A_t^{\rm inc}$ is the valid archive; $m_t$ includes active search mode, revisit/tabu memory and restart counters; $b_t$ is the remaining work vector; and $\mathcal K_t$ is the current materialized candidate batch. The logical and hardware inputs and compiler context are immutable.
+
+The policy receives semantic graph tensors sufficient to describe those objects and their permitted action payloads. Archive program coefficients can be reconstructed from memberships and the deterministic compiler, so duplicating all program bytes into neural features is unnecessary. Hashes, version receipts and random tape identifiers are retained for replay but do not become numeric neural features. Expose an actual priority/rank only when the environment uses that priority to determine subsequent behavior; do not assume arbitrary node IDs are meaningful graph attributes.
+
+Randomized proposal choices are part of a registered transition kernel with fresh exogenous randomness. Full random state is retained for reproducibility; future evaluator randomness is inaccessible to the policy. If persistent random priorities influence later candidate construction, their current semantic values must be observable. A deterministic replay conditioned on a random tape and a stochastic MDP marginalizing that tape are compatible descriptions.
+
+A GNN compresses this structured observation. It is not guaranteed to distinguish every nonisomorphic state or predict every transition. A summary MLP is an intentionally information-limited control. The environment is Markov when it contains all relevant search memory; omitting relevant memory from the controller creates a partially observed approximation and must be disclosed.
+
+\subsection{Controlled overlap invariants}
+For $o_t(q)=|\mathcal O_t(q)|$, define
+\begin{equation}
+X_t=\sum_q(o_t(q)-1)_+,\quad
+Q_t^{\rm unique}=|\{q:o_t(q)>0\}|,\quad
+Q_t^{\rm claim}=\sum_i|C_i^t|=Q_t^{\rm unique}+X_t.
+\end{equation}
+A nonempty chain is connected in active hardware. Empty chains are allowed only for unplaced variables in construction mode or a separately registered partial-repair curriculum. All replacements are atomic, so an intermediate implementation buffer may not be published as an environment state.
+
+Initial profiles are O0: $o\le1,X=0$; O1: $o\le2,X\le\lceil0.10B_Q\rceil$; and optional O2: $o\le4,X\le\lceil0.25B_Q\rceil$. In all profiles $Q^{\rm unique}\le B_Q$ and $Q^{\rm claim}\le B_Q+X_{\max}$. O1 is a testable initial choice, not a theorem about the best overlap budget. The unique-qubit search cap may itself prevent useful detours; a later expanded-workspace experiment must distinguish a larger search cap from the unchanged terminal cap.
+
+Sharing a qubit never realizes a logical edge. A contact requires an active physical coupler between distinct endpoint qubits. Contested resources have no exclusive free-capacity credit. Residual-routability features for a chain remove its own claims while keeping all other claims occupied. This is a conservative \emph{feature} graph: absence of a route in it does not prove impossibility in the overlap-enabled action grammar and must not automatically mask a legal repair.
+
+No consistent physical Hamiltonian is assigned to a non-disjoint relaxed state. Program-derived cut or quality features for such a state are marked unavailable, or explicitly tagged as hypothetical local descriptors. The downstream evaluator accepts only independently valid terminal embeddings.
+
+\subsection{A finite, fully bound action grammar}
+Every candidate carries a state digest, opcode, affected logical set, old/new branch sets, path-role incidences, structural deltas, exact mask result and work receipt. The actor selects an already materialized successor; it does not emit raw sets for unchecked execution.
+
+{\small\begin{longtable}{@{}P{.20\textwidth}P{.73\textwidth}@{}}
+\toprule
+Opcode & Payload and semantics\\\midrule\endhead
+PLACE & Construction only. Logical variable and complete nonempty connected initial branch set. Placement order is selected through the identity of the variable in the candidate.\\
+ROUTE & Construction only. Logical demand, endpoint ownership split, complete path and resulting connected branch sets. Every transit qubit belongs to a named chain. The edge is represented by a contact between distinct endpoints.\\
+REWRITE\_ONE & A complete connected replacement for one chain. Grow, shrink, chord addition, boundary relocation and rerouting are attributes of this opcode. It may increase overlap within the envelope.\\
+REWRITE\_GROUP & Complete replacements for a logical group, initially $k\in\{2,3,4,8\}$ where size permits. Supports coordinated rerouting and destroy/reconstruct moves. Each successor chain is connected, and unchanged chains remain untouched.\\
+REPAIR\_GROUP & Same exact atomic representation as group rewrite, with a conflict/bottleneck-selected group and repair purpose. The repair may move a conflict before eliminating it.\\
+RESTART & A bound successor from a registered fresh initialization procedure, materialized and charged during proposal generation. The valid archive survives. Initializer-internal search is bounded and audited.\\
+COMMIT & Select one current valid archive entry. Fresh independent validation is mandatory. This is a real terminal action, not an automatic return at first validity.\\
+STOP & Explicit ordinary failure when no embedding is returned. Used in construction or a registered voluntary-abandonment experiment; it never disguises an invalid embedding as a valid result.\\
+\bottomrule
+\end{longtable}}
+
+In the recommended protected-incumbent improvement profile, an archive entry is always available after initialization, and failure-STOP is masked out: stop searching by COMMIT. In construction, STOP is permitted when no archive exists; with a valid archive, termination also uses COMMIT. This avoids learning an unnecessary choice between returning a known valid embedding and returning nothing. The source's voluntary failure action is retained only as a separately named ablation.
+
+\subsection{Candidate construction and diversity}
+A fixed generator supplies at most 64 state-changing actions. COMMIT entries (at most eight) and a possible STOP entry are additional, giving a padded maximum of 73. A candidate cap is not a global search guarantee. The generator must expose interacting alternatives, not just many nearly identical shortest routes.
+
+For seeded improvement, an initial per-batch allocation is 16 single-chain proposals, 24 group rewrites (eight each for $k=2,3,4$), eight $k=8$ proposals, 12 conflict/bottleneck repairs and four restarts/restores. If a family is inapplicable, fill from a fixed family order until the common work allowance is exhausted; record the resulting counts. Treat a restore to stored chains as a bound group rewrite, not an uncharged side operation. For construction, separately register quotas for PLACE and ROUTE instead of silently borrowing the improvement grid.
+
+Within a family, mix outcome-blind proposal costs: route length, occupancy pressure, contact multiplicity, free-neighborhood size, and limited randomized edge-cost perturbations. Use fixed coefficients and seeds within an experiment. These costs define proposal diversity, not the reward. Include multiple reconstruction orders for joint moves. A generator may use a frozen deployable proxy only in a separately ablated version shared by controls.
+
+Deduplicate candidates with identical complete successors and update semantics. Different provenance labels should not multiply one successor's policy mass. Do not deduplicate genuinely different persistent-memory updates. Candidate ordering is stable for replay; the actor must be equivariant to a consistent permutation of that order. No quality outcome, planted witness or ground-state reference may determine truncation, masking or candidate ranking.
+
+\subsection{Work must be charged before preference is learned}
+Define a work vector with decision count, route expansions, candidate materializations, compiler/validator calls, cut-edge processing, restart work and evaluator reads. Let
+\begin{align}
+(\mathcal K_t,w_t^{\rm gen})&=G(s_t;b_t^{\rm gen}),\\
+b_t^{\rm avail}&=b_t-w_t^{\rm gen},\\
+a_t&\sim\pi_\theta(\cdot\mid o_t,\mathcal K_t),\\
+b_{t+1}&=b_t^{\rm avail}-w_t^{\rm apply}(a_t).
+\end{align}
+The generator is interruptible at deterministic work boundaries. It charges attempted and rejected proposals. Budgets for duplicate removal, validity screening, archive admission and optional cut tokens are not free. Every ordinary decision consumes positive decision allowance, ensuring a finite horizon. Masks check whether the remaining \emph{application} cost fits after batch construction.
+
+The complete-system initializer receives its exact coordinatewise remainder before each native call, after reserving the top-level invocation, independent candidate screen, environment bootstrap and terminal policy path. Native counters check a prospective delta before the corresponding operation. An exhausted coordinate therefore terminates explicitly without incrementing beyond its cap. Post-hoc rejection of an initializer that already exceeded a registered operation budget is not a valid implementation of this contract.
+
+Keep a reserved terminal budget for archive replay, COMMIT inference and one final evaluation block. If a normal batch cannot fit, expose a bounded COMMIT-only decision when the archive is nonempty. If it is empty, terminate as a no-valid timeout. Never call softmax with an all-false mask. Wall-clock comparisons reserve enough completion time or return the protected validated object; an external supervisor handles solver timeouts, including calls whose internal timeout is unreliable.
+
+Matching every hardware-specific work coordinate across unrelated solvers is generally impossible. The controlled experiment matches native operation budgets inside a shared environment. External comparison uses a preregistered wall-clock budget on matched hardware plus equal evaluator/QPU resources, and reports operation counts as explanatory metrics. Do not assert exact apples-to-apples route-expansion matching when an external implementation exposes no such counter.
+
+\subsection{Sealed deployment-initializer bank}
+PPO in Profile I conditions on successful initialization, but that condition must not be implemented by substituting hand-authored CandidateBank witnesses. Before training, create one target-free initializer-bank plan for each registered training seed. The plan reads public train tasks only and assigns conditional episodes equally over immutable base lineages by canonical round robin. Within a lineage, a seeded cyclic offset chooses the instance. Each episode then receives a finite, deterministic sequence of complete LAC initializer draws. For a registered PPO cell, the bank contains exactly \code{updates $\times$ episodes} snapshots, which is $100\times64=6{,}400$ under the fixed grid. A supervised-only cell consumes no snapshot even though its complete-system interface retains the bank arguments.
+
+Generation executes the planned draw sequence and stops at its first valid initializer. Every rejected draw, failure reason, and work vector remains recorded. A bank cannot be sealed if any conditional episode exhausts its registered draw cap. The plan, snapshots, bank manifest, and access receipt each have immutable v1 schemas. Their identities bind the prepared-v4 public corpus, complete-system configuration, native-extension and Python runtime sources, work context, training seed, episode schedule, and every accepted or rejected draw. Only after the manifest and its out-of-band SHA-256 pin have been authenticated may the training loader open the train target partition and attach rewards. This order keeps initializer selection independent of evaluator targets while making the conditional training distribution exactly replayable.
+
+The bank is a training artifact, not a replacement for complete-system evaluation. Learned and external confirmation start from the full public population before initialization, execute their registered initializer schedules, and retain ordinary initializer failures as zero-utility outcomes. The protected-incumbent property therefore remains conditional, while the publication endpoint remains unconditional.
+
+\subsection{Archive design and publication boundary}
+Use eight outcome-blind slots: one protected initial valid embedding and up to seven later independently valid states. Apply deterministic deduplication and FIFO eviction to the seven mutable slots. Store exact memberships, compiler context, resource descriptors and creation order. This prevents losing the initial feasible result, although FIFO can still discard a high-quality unseen candidate. Archive-size and eviction effects are separate from policy effects.
+
+No archive entry contains solver outcomes during search. The actor can use input-derived features to choose COMMIT. Sampling is performed only after final selection in S0. If the system later probes archive quality online, it becomes an evaluator-assisted search algorithm with a charged budget and observation schema; it is a different profile.
+
+A fresh validator reconstructs the full logical domain, active qubit membership, connected programmed chains, disjoint ownership, realization of every logical edge, qubit cap, coefficient sums, exact compiled bytes and range/precision contract. Search caches are not authoritative. A mismatch aborts the affected experiment with its immutable record retained.
+
+\begin{proposition}[Conditional valid-return property]
+Assume the independent validator is correct and the only public return path requires its acceptance. Every nonempty embedding returned by the API satisfies the declared graph/program/resource contract, independently of the policy parameters. If Profile I successfully stores a protected admissible initializer and the reserved terminal path executes correctly, later search cannot remove the availability of at least one admissible return.
+\end{proposition}
+\begin{proof}
+The first statement follows directly from the return gate. For the second, induction over actions preserves the protected archive slot; budget exhaustion exposes COMMIT over admissible entries. Neither statement guarantees initialization success, improvement over the initial embedding, or correct operation under an implementation failure.
+\end{proof}
+
+In particular, protected feasibility does not guarantee protected \emph{quality}: a learned COMMIT selector can choose a worse archive entry. Detect this by comparing initial versus returned quality on fresh evaluation blocks, and include a return-initial baseline under identical initialization cost.
+
+\subsection{Action-support headroom before RL}
+On tiny enumerated cases, distinguish the unrestricted capped optimum $U^*$, the best reachable value in the registered action grammar $U_G^*$ and the deployed policy value $U_\pi$. At the level of optimal expected values,
+\begin{equation}
+U^*-U_\pi=(U^*-U_G^*)+(U_G^*-U_\pi).
+\end{equation}
+The first gap is proposal/support limitation; only the second can be removed by a perfect selector under the fixed environment. With stochastic generators, define reachability with their actual support and budgets, not a clairvoyant choice of random tapes.
+
+At larger sizes evaluate candidates with a frozen continuation rule and independent high-read scoring to estimate local ranking headroom. A best-of-$K$ oracle is an upper bound only for that exact candidate set and continuation protocol; it is not a bound over all multi-step policies. Compare neighborhood sizes, contact-diverse routing and non-greedy repair. If expanded candidates have no useful downstream spread, stop scaling the actor and revise the generator or objective regime.
+
+Release Gate 2 uses one selected task per immutable base lineage. For every lineage, it selects the best registered rewrite on one screening read block, then rescores that fixed rewrite and protected COMMIT on independent confirmation blocks. Let $h_i$ be the difference between those confirmed rates. The v6 decision requires the one-sided 95 percent normal lower confidence bound for the mean of the observed $h_i$ values to be at least the registered meaningful effect $\delta=0.02$. Its standard error combines between-lineage variation with the worst-case Bernoulli variance bound for the difference of the two finite-read confirmation rates. It also requires at least half of the sampled rows in every authenticated joint stratum to satisfy $h_i\geq\delta$. A sample with fewer than two eligible lineages fails closed because it cannot estimate between-lineage uncertainty. Support recall, within-support spread and the gap to the frozen broader proposal pool remain separate conjunctive requirements. This is a screening rule for the observed proposal pool, not an inferential claim about the unrestricted optimum $U^*$.

@@ -1,0 +1,190 @@
+{
+  "schema": "isingfold.external-minorminer-tuning-registry",
+  "schema_version": 1,
+  "registry_id": "stock-minorminer-0.2.22-validation-tuning-v1",
+  "stage": "validation-only-baseline-preregistration",
+  "partition": "validation",
+  "test_data_opened": false,
+  "grid": {
+    "schema": "isingfold.staged-grid",
+    "schema_version": 2,
+    "name": "if-core-v1-profile-i-registered",
+    "file_sha256": "2dbad2c68bf0a1ba32de41a039a3c87acda8d4e20a7d8a1ab60905b97e3157f3"
+  },
+  "external_config": {
+    "schema": "isingfold.external-complete-system-config",
+    "schema_version": 2,
+    "semantic_digest": "4e23daf016500c0e5acee391b026502d41034a051010fc1b43a62227f6580c50",
+    "file_sha256": "8ab966d4a7656ebbd630d22f2378d249d316a0a8330f40f4efc912b221231776"
+  },
+  "backend": {
+    "distribution": "minorminer",
+    "version": "0.2.22",
+    "entrypoint": "minorminer.find_embedding",
+    "implementation": "native-package-persistent-subprocess-hard-deadline"
+  },
+  "tuning_seeds": [1103, 2207, 3301],
+  "repetitions": 4,
+  "minimum_independent_lineages": 128,
+  "evaluation": {
+    "audit_reads": 4096,
+    "population_scope": "all-validation-policy-instances-before-initialization",
+    "aggregation": "equal-tuning-seed-then-equal-immutable-base-lineage",
+    "primary_metric": "unconditional-if-q3-s0-utility",
+    "failure_utility": 0.0,
+    "final_evaluator": "one-fresh-independent-4096-read-block-after-selection"
+  },
+  "bootstrap": {
+    "replicates": 20000,
+    "seed": 15485863,
+    "two_sided_alpha": 0.05,
+    "sampling": "crossed-tuning-seed-and-immutable-base-lineage-with-replacement",
+    "decision_use": "uncertainty-only-not-selection"
+  },
+  "selection": {
+    "complete_census_required": true,
+    "seed_selection_forbidden": true,
+    "primary": "maximize-unconditional-if-q3-s0-utility",
+    "tie_breaks": [
+      "higher-valid-return-rate",
+      "lower-mean-total-online-seconds",
+      "lower-known-outer-restart-work",
+      "earlier-registered-candidate"
+    ]
+  },
+  "failure_denominator": {
+    "ordinary_terminal_reasons": [
+      "EXTERNAL_VALID_RETURN",
+      "EXTERNAL_NO_VALID_EMBEDDING",
+      "EXTERNAL_COMPLETE_SYSTEM_WALLCLOCK_EXHAUSTED",
+      "EXTERNAL_KNOWN_WORK_CAP_EXHAUSTED"
+    ],
+    "all_attempts_in_denominator": true,
+    "integrity_errors_abort": true
+  },
+  "work_disclosure": {
+    "exact_coordinates": [
+      "compiler_calls",
+      "validator_calls",
+      "restart_work",
+      "evaluator_reads",
+      "feature_work"
+    ],
+    "unavailable_native_coordinates": [
+      "decisions",
+      "route_expansions",
+      "materializations",
+      "cut_edge_visits"
+    ],
+    "equal_internal_work_claimed": false,
+    "total_online_wallclock_comparable": true
+  },
+  "candidates": [
+    {
+      "candidate_id": "stock-default-v1",
+      "family": "stock-default",
+      "outer_restart_policy": "single-native-call",
+      "outer_restart_cap": 1,
+      "native_parameters": {
+        "tries": 10,
+        "threads": 1,
+        "max_no_improvement": 10,
+        "chainlength_patience": 10
+      },
+      "candidate_ranking": "qubits-max_chain-embedding_digest-restart_index",
+      "strength_rule": "frozen-selector-argmax-four-programs",
+      "online_evaluator_feedback": false
+    },
+    {
+      "candidate_id": "time-resource-p5-v1",
+      "family": "time-saturating-resource",
+      "outer_restart_policy": "until-wallclock-or-outer-cap",
+      "outer_restart_cap": 64,
+      "native_parameters": {
+        "tries": 1,
+        "threads": 1,
+        "max_no_improvement": 5,
+        "chainlength_patience": 5
+      },
+      "candidate_ranking": "qubits-max_chain-embedding_digest-restart_index",
+      "strength_rule": "frozen-selector-argmax-four-programs",
+      "online_evaluator_feedback": false
+    },
+    {
+      "candidate_id": "time-resource-p10-v1",
+      "family": "time-saturating-resource",
+      "outer_restart_policy": "until-wallclock-or-outer-cap",
+      "outer_restart_cap": 64,
+      "native_parameters": {
+        "tries": 1,
+        "threads": 1,
+        "max_no_improvement": 10,
+        "chainlength_patience": 10
+      },
+      "candidate_ranking": "qubits-max_chain-embedding_digest-restart_index",
+      "strength_rule": "frozen-selector-argmax-four-programs",
+      "online_evaluator_feedback": false
+    },
+    {
+      "candidate_id": "time-resource-p20-v1",
+      "family": "time-saturating-resource",
+      "outer_restart_policy": "until-wallclock-or-outer-cap",
+      "outer_restart_cap": 64,
+      "native_parameters": {
+        "tries": 1,
+        "threads": 1,
+        "max_no_improvement": 20,
+        "chainlength_patience": 20
+      },
+      "candidate_ranking": "qubits-max_chain-embedding_digest-restart_index",
+      "strength_rule": "frozen-selector-argmax-four-programs",
+      "online_evaluator_feedback": false
+    },
+    {
+      "candidate_id": "time-quality-p5-v1",
+      "family": "time-saturating-quality",
+      "outer_restart_policy": "until-wallclock-or-outer-cap",
+      "outer_restart_cap": 64,
+      "native_parameters": {
+        "tries": 1,
+        "threads": 1,
+        "max_no_improvement": 5,
+        "chainlength_patience": 5
+      },
+      "candidate_ranking": "frozen-selector-max-p_solve-then-qubits-max_chain-embedding_digest-restart_index",
+      "strength_rule": "same-frozen-selector-argmax-four-programs",
+      "online_evaluator_feedback": false
+    },
+    {
+      "candidate_id": "time-quality-p10-v1",
+      "family": "time-saturating-quality",
+      "outer_restart_policy": "until-wallclock-or-outer-cap",
+      "outer_restart_cap": 64,
+      "native_parameters": {
+        "tries": 1,
+        "threads": 1,
+        "max_no_improvement": 10,
+        "chainlength_patience": 10
+      },
+      "candidate_ranking": "frozen-selector-max-p_solve-then-qubits-max_chain-embedding_digest-restart_index",
+      "strength_rule": "same-frozen-selector-argmax-four-programs",
+      "online_evaluator_feedback": false
+    },
+    {
+      "candidate_id": "time-quality-p20-v1",
+      "family": "time-saturating-quality",
+      "outer_restart_policy": "until-wallclock-or-outer-cap",
+      "outer_restart_cap": 64,
+      "native_parameters": {
+        "tries": 1,
+        "threads": 1,
+        "max_no_improvement": 20,
+        "chainlength_patience": 20
+      },
+      "candidate_ranking": "frozen-selector-max-p_solve-then-qubits-max_chain-embedding_digest-restart_index",
+      "strength_rule": "same-frozen-selector-argmax-four-programs",
+      "online_evaluator_feedback": false
+    }
+  ],
+  "record_digest": "c9961cca90a810e0c08102bdbbecadb4b25f27c314110b1a9f0bdbb1c506f81f"
+}

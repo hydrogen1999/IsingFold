@@ -1,0 +1,126 @@
+{
+  "schema": "isingfold.staged-grid",
+  "schema_version": 2,
+  "name": "if-core-v1-profile-i-registered",
+  "description": "Normative full-corpus study with nine representation cells followed by eighteen RL-value cells. A cell is one registered model family, method and seed, not an informal rerun.",
+  "environment": {
+    "endpoint": "IF-Q3-S0",
+    "mode": "improvement",
+    "reward_reads": 256,
+    "macro_decisions": 32,
+    "overlap_profile": "O1"
+  },
+  "quality_policy_prior": {
+    "schema": "isingfold.action-quality-policy-coupling-v1",
+    "mode": "bounded-centered-v1",
+    "transform": "two-sigmoid-minus-one",
+    "output_interval": [-1.0, 1.0],
+    "policy_gradient_to_quality_head": true,
+    "publication_eligible": true
+  },
+  "selection": {
+    "representation_advance": "require IF-Core and at least one simpler family to pass the registered feasibility lower-bound gate, then retain IF-Core and the highest-utility passing aggregate among IF-MLP and IF-Dual",
+    "seed_selection_forbidden": true,
+    "validation_partition_only": true,
+    "test_partition_locked": true
+  },
+  "quality_resolution": {
+    "min_resolved_rows": 128,
+    "min_resolved_lineages": 128
+  },
+  "representation_evaluation": {
+    "partition": "validation",
+    "evaluation_seed": 33049,
+    "repetitions": 4,
+    "audit_reads": 4096,
+    "margin": 0.02,
+    "deployment_rule": "categorical-temperature-one",
+    "feasibility_reference": "return_initial",
+    "feasibility_alpha": 0.05,
+    "feasibility_bootstrap": 20000,
+    "selection_bootstrap_seed": 91037
+  },
+  "rl_value_evaluation": {
+    "partition": "validation",
+    "evaluation_seed": 44021,
+    "repetitions": 4,
+    "audit_reads": 4096,
+    "margin": 0.02,
+    "deployment_rule": "categorical-temperature-one",
+    "feasibility_reference": "return_initial",
+    "feasibility_alpha": 0.05,
+    "feasibility_bootstrap": 20000,
+    "selection_bootstrap_seed": 104729,
+    "aggregation": "equal-training-seed-then-equal-immutable-base-lineage",
+    "primary_metric": "unconditional-if-q3-s0-utility",
+    "tie_break": "lower-online-seconds-then-registered-configuration-order"
+  },
+  "complete_system_evaluation": {
+    "partition": "test",
+    "evaluation_seed": 55079,
+    "repetitions": 4,
+    "audit_reads": 4096,
+    "deployment_rule": "categorical-temperature-one",
+    "population_scope": "all-policy-instances-before-initialization",
+    "aggregation": "equal-training-seed-then-equal-immutable-base-lineage",
+    "primary_metric": "unconditional-if-q3-s0-utility",
+    "bootstrap_replicates": 20000,
+    "bootstrap_seed": 130363,
+    "two_sided_alpha": 0.05,
+    "feasibility_noninferiority_margin": 0.02,
+    "learned_config_digest": "5de9ce6a262328d45283132fd65d86a513d333aab150dfd487f66e55b2eeb7f1",
+    "learned_config_file_sha256": "f4e00f6b359c1b4ae18d609fd0126ccf4a424c5f891819a7f7fdb5320c11c10f",
+    "external_config_digest": "4e23daf016500c0e5acee391b026502d41034a051010fc1b43a62227f6580c50",
+    "external_config_file_sha256": "8ab966d4a7656ebbd630d22f2378d249d316a0a8330f40f4efc912b221231776"
+  },
+  "representation_lookup": {
+    "if-mlp": {
+      "1103": "rep-000-if-mlp-s1103",
+      "2207": "rep-001-if-mlp-s2207",
+      "3301": "rep-002-if-mlp-s3301"
+    },
+    "if-dual": {
+      "1103": "rep-003-if-dual-s1103",
+      "2207": "rep-004-if-dual-s2207",
+      "3301": "rep-005-if-dual-s3301"
+    },
+    "if-core": {
+      "1103": "rep-006-if-core-s1103",
+      "2207": "rep-007-if-core-s2207",
+      "3301": "rep-008-if-core-s3301"
+    }
+  },
+  "stages": {
+    "representation": [
+      {"cell_id": "rep-000-if-mlp-s1103", "model_family": "if-mlp", "seed": 1103, "epochs": 200, "minibatch": 32, "learning_rate": 0.0003, "weight_decay": 0.0},
+      {"cell_id": "rep-001-if-mlp-s2207", "model_family": "if-mlp", "seed": 2207, "epochs": 200, "minibatch": 32, "learning_rate": 0.0003, "weight_decay": 0.0},
+      {"cell_id": "rep-002-if-mlp-s3301", "model_family": "if-mlp", "seed": 3301, "epochs": 200, "minibatch": 32, "learning_rate": 0.0003, "weight_decay": 0.0},
+      {"cell_id": "rep-003-if-dual-s1103", "model_family": "if-dual", "seed": 1103, "epochs": 200, "minibatch": 32, "learning_rate": 0.0003, "weight_decay": 0.0},
+      {"cell_id": "rep-004-if-dual-s2207", "model_family": "if-dual", "seed": 2207, "epochs": 200, "minibatch": 32, "learning_rate": 0.0003, "weight_decay": 0.0},
+      {"cell_id": "rep-005-if-dual-s3301", "model_family": "if-dual", "seed": 3301, "epochs": 200, "minibatch": 32, "learning_rate": 0.0003, "weight_decay": 0.0},
+      {"cell_id": "rep-006-if-core-s1103", "model_family": "if-core", "seed": 1103, "epochs": 200, "minibatch": 32, "learning_rate": 0.0003, "weight_decay": 0.0},
+      {"cell_id": "rep-007-if-core-s2207", "model_family": "if-core", "seed": 2207, "epochs": 200, "minibatch": 32, "learning_rate": 0.0003, "weight_decay": 0.0},
+      {"cell_id": "rep-008-if-core-s3301", "model_family": "if-core", "seed": 3301, "epochs": 200, "minibatch": 32, "learning_rate": 0.0003, "weight_decay": 0.0}
+    ],
+    "rl_value": [
+      {"cell_id": "rl-000-selected-simpler-supervised-s1103", "model_family": "selected-simpler", "method": "supervised-only", "seed": 1103, "updates": 0, "episodes": 64, "ppo_epochs": 4, "minibatch": 256, "learning_rate": 0.0003},
+      {"cell_id": "rl-001-selected-simpler-supervised-s2207", "model_family": "selected-simpler", "method": "supervised-only", "seed": 2207, "updates": 0, "episodes": 64, "ppo_epochs": 4, "minibatch": 256, "learning_rate": 0.0003},
+      {"cell_id": "rl-002-selected-simpler-supervised-s3301", "model_family": "selected-simpler", "method": "supervised-only", "seed": 3301, "updates": 0, "episodes": 64, "ppo_epochs": 4, "minibatch": 256, "learning_rate": 0.0003},
+      {"cell_id": "rl-003-selected-simpler-warm-ppo-s1103", "model_family": "selected-simpler", "method": "ppo-warm-start", "seed": 1103, "updates": 100, "episodes": 64, "ppo_epochs": 4, "minibatch": 256, "learning_rate": 0.0003},
+      {"cell_id": "rl-004-selected-simpler-warm-ppo-s2207", "model_family": "selected-simpler", "method": "ppo-warm-start", "seed": 2207, "updates": 100, "episodes": 64, "ppo_epochs": 4, "minibatch": 256, "learning_rate": 0.0003},
+      {"cell_id": "rl-005-selected-simpler-warm-ppo-s3301", "model_family": "selected-simpler", "method": "ppo-warm-start", "seed": 3301, "updates": 100, "episodes": 64, "ppo_epochs": 4, "minibatch": 256, "learning_rate": 0.0003},
+      {"cell_id": "rl-006-selected-simpler-scratch-ppo-s1103", "model_family": "selected-simpler", "method": "ppo-from-scratch", "seed": 1103, "updates": 100, "episodes": 64, "ppo_epochs": 4, "minibatch": 256, "learning_rate": 0.0003},
+      {"cell_id": "rl-007-selected-simpler-scratch-ppo-s2207", "model_family": "selected-simpler", "method": "ppo-from-scratch", "seed": 2207, "updates": 100, "episodes": 64, "ppo_epochs": 4, "minibatch": 256, "learning_rate": 0.0003},
+      {"cell_id": "rl-008-selected-simpler-scratch-ppo-s3301", "model_family": "selected-simpler", "method": "ppo-from-scratch", "seed": 3301, "updates": 100, "episodes": 64, "ppo_epochs": 4, "minibatch": 256, "learning_rate": 0.0003},
+      {"cell_id": "rl-009-if-core-supervised-s1103", "model_family": "if-core", "method": "supervised-only", "seed": 1103, "updates": 0, "episodes": 64, "ppo_epochs": 4, "minibatch": 256, "learning_rate": 0.0003},
+      {"cell_id": "rl-010-if-core-supervised-s2207", "model_family": "if-core", "method": "supervised-only", "seed": 2207, "updates": 0, "episodes": 64, "ppo_epochs": 4, "minibatch": 256, "learning_rate": 0.0003},
+      {"cell_id": "rl-011-if-core-supervised-s3301", "model_family": "if-core", "method": "supervised-only", "seed": 3301, "updates": 0, "episodes": 64, "ppo_epochs": 4, "minibatch": 256, "learning_rate": 0.0003},
+      {"cell_id": "rl-012-if-core-warm-ppo-s1103", "model_family": "if-core", "method": "ppo-warm-start", "seed": 1103, "updates": 100, "episodes": 64, "ppo_epochs": 4, "minibatch": 256, "learning_rate": 0.0003},
+      {"cell_id": "rl-013-if-core-warm-ppo-s2207", "model_family": "if-core", "method": "ppo-warm-start", "seed": 2207, "updates": 100, "episodes": 64, "ppo_epochs": 4, "minibatch": 256, "learning_rate": 0.0003},
+      {"cell_id": "rl-014-if-core-warm-ppo-s3301", "model_family": "if-core", "method": "ppo-warm-start", "seed": 3301, "updates": 100, "episodes": 64, "ppo_epochs": 4, "minibatch": 256, "learning_rate": 0.0003},
+      {"cell_id": "rl-015-if-core-scratch-ppo-s1103", "model_family": "if-core", "method": "ppo-from-scratch", "seed": 1103, "updates": 100, "episodes": 64, "ppo_epochs": 4, "minibatch": 256, "learning_rate": 0.0003},
+      {"cell_id": "rl-016-if-core-scratch-ppo-s2207", "model_family": "if-core", "method": "ppo-from-scratch", "seed": 2207, "updates": 100, "episodes": 64, "ppo_epochs": 4, "minibatch": 256, "learning_rate": 0.0003},
+      {"cell_id": "rl-017-if-core-scratch-ppo-s3301", "model_family": "if-core", "method": "ppo-from-scratch", "seed": 3301, "updates": 100, "episodes": 64, "ppo_epochs": 4, "minibatch": 256, "learning_rate": 0.0003}
+    ]
+  }
+}

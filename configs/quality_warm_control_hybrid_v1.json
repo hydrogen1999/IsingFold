@@ -1,0 +1,97 @@
+{
+  "schema": "isingfold.quality-warm-control",
+  "schema_version": 1,
+  "protocol_id": "if-core-v2-hybrid-direct-qmu-warm-control-v1",
+  "stage": "post-representation-selection-diagnostic",
+  "mode": "improvement",
+  "main_grid": {
+    "sha256": "d3a7cd99c0c96c1c2f7fdd974d0856aee94ccbbe7a01f30b15d4724632712d09",
+    "selection_effect": "diagnostic-only-no-main-grid-reselection",
+    "representation_source_cells": [
+      {"seed": 1103, "cell_id": "rep-006-if-core-s1103"},
+      {"seed": 2207, "cell_id": "rep-007-if-core-s2207"},
+      {"seed": 3301, "cell_id": "rep-008-if-core-s3301"}
+    ]
+  },
+  "model": {
+    "model_family": "if-core",
+    "quality_prior_mode": "bounded-centered-v1",
+    "expected_parameter_signature_sha256": "25a4e9c00317b36a2b8e32918c06d4f91f17caf9b97ce145bfd27f4e44a323ab",
+    "expected_trainable_parameters": 5262435,
+    "expected_total_parameters": 5303652
+  },
+  "profiles": [
+    {
+      "profile_id": "full-qmu-v4",
+      "weights": {
+        "rank": 1.0,
+        "utility": 0.5,
+        "action_value": 1.0,
+        "commit_delta": 0.5
+      },
+      "q_mu_label_supervision": true,
+      "production_transfer_eligible": true,
+      "role": "authenticated-main-grid-treatment"
+    },
+    {
+      "profile_id": "rank-value-only-control-v1",
+      "weights": {
+        "rank": 1.0,
+        "utility": 0.5,
+        "action_value": 0.0,
+        "commit_delta": 0.0
+      },
+      "q_mu_label_supervision": false,
+      "production_transfer_eligible": false,
+      "role": "direct-qmu-label-control"
+    }
+  ],
+  "training_seeds": [1103, 2207, 3301],
+  "training_protocol": {
+    "loss": "all-action-qmu-plus-commit-delta-plus-resolved-rank-plus-state-value-v4",
+    "reduction": "exact-full-corpus-gradient-accumulation-v1",
+    "epochs": 200,
+    "minibatch_records": 32,
+    "learning_rate": 0.0003,
+    "weight_decay": 0.0,
+    "minimum_resolved_rows": 128,
+    "minimum_resolved_lineages": 128
+  },
+  "pairing": {
+    "same_parameter_schema": true,
+    "same_initial_state_for_seed": true,
+    "same_training_corpus": true,
+    "same_quality_labels_and_preflight": true,
+    "same_exact_corpus_denominators": true,
+    "same_minibatch_partition": true,
+    "same_training_data_order": true,
+    "same_optimizer_and_stopping_rule": true,
+    "same_runtime_implementation": true,
+    "same_device_type": true,
+    "reuse_authenticated_main_grid_treatment": true
+  },
+  "evaluation": {
+    "partition": "validation",
+    "aggregation": "equal-training-seed-then-equal-immutable-base-lineage",
+    "primary_metric": "paired-unconditional-if-q3-s0-utility-difference",
+    "seed_selection_forbidden": true
+  },
+  "claim_scope": {
+    "permitted": "post-selection diagnostic evidence for the incremental value of direct Q-mu and COMMIT-delta labels beyond resolved ranking and state-value supervision",
+    "prohibited": [
+      "quality supervision versus structural supervision",
+      "changing the nine-cell representation selection",
+      "changing the eighteen-cell RL-value selection",
+      "selecting a training seed or checkpoint from this diagnostic",
+      "confirmatory evidence on the sealed test partition"
+    ],
+    "required_reports": [
+      "all three paired training seeds",
+      "paired aggregate over immutable base lineages",
+      "valid-return rate and unconditional utility",
+      "direct action-Q calibration diagnostics",
+      "negative, null and positive paired effects"
+    ]
+  },
+  "record_digest": "73f99e6f1b157d638d9348ec67a9cf0814dcb3518b3cdd63e56a38c5e6ad4fb0"
+}

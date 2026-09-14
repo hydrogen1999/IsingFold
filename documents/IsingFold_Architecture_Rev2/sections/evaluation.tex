@@ -1,0 +1,102 @@
+\section{Experiments that decide whether the architecture works}\label{sec:evaluation}
+\subsection{Separate four sources of improvement}
+The system can improve because of a better proposal pool, a better selector, more sequential search, or a better strength policy. A single comparison against stock minorminer cannot attribute these effects. Use a shared generator and frozen strength selector for the primary learning ablation, then report the complete system against external embedders under a realistic common budget.
+
+{\small\begin{longtable}{@{}P{.24\textwidth}P{.69\textwidth}@{}}
+\toprule
+Comparison & What it identifies\\\midrule\endhead
+Initial embedding vs random masked search & Whether the candidate grammar and additional search expose useful quality at all; the initialization cost is identical.\\
+Random vs classical action scorer & Value of hand-designed preferences over the exact same support. Include classical multi-chain LNS and a non-greedy search control.\\
+Classical vs supervised-only policy & Value of learned ranking and representation, without claiming RL. Use the same deployment sampling or greedy rule when isolating model quality.\\
+Supervised initialization vs PPO continuation & Incremental effect of sequential on-policy learning. Use matched architecture, support and inference budget.\\
+PPO warm start vs PPO from scratch & Whether training depends on supervised initialization; report offline cost.\\
+IF-Dual vs IF-Core & Contribution of ownership/conflict relations, with comparable parameter and inference budgets where possible.\\
+IF-Core vs Core+cuts & Value of programmed cut representation. Add matched structural-feature and auxiliary-loss controls if a gain survives.\\
+One-chain vs multi-chain grammar & Action granularity and proposal headroom. Legal supports differ by design; keep total native work and terminal reads matched.\\
+O0 vs O1 & Contribution of temporary overlap. Keep non-overlap settings fixed and report reachable-action changes.\\
+All methods with fixed vs frozen learned strength selection & Separates strength prediction from embedding search. The oracle four-strength maximum is diagnostic only.\\
+\bottomrule\end{longtable}}
+
+External baselines include equal-budget minorminer restarts, classical quality-aware search, and applicable topology methods such as OCT/ATOM where implementations and hardware scope permit. CHARME and Nembrini-style PPO are relevant learned controls\cite{charme2024,nembrini2026}. Native released checkpoints, retrained native methods, and controlled reimplementations are different comparisons; report them separately. An OOD failure of a released checkpoint is not a universal verdict on that method.
+
+A search baseline that probes solver outcomes must use an observable deployment statistic, or be explicitly labeled an oracle. Charge all probes and use fresh final evaluation. A no-probe actor and an evaluator-assisted LNS can be compared as complete systems, but the resource and information difference must remain visible.
+
+\subsection{Fixed representation and RL-value grid}
+The main architecture decision uses exactly nine representation cells followed by exactly eighteen RL-value cells. The representation screen crosses IF-MLP, IF-Dual, and IF-Core with training seeds 1103, 2207, and 3301. All cells use the same authenticated counterfactual corpus, action support, terminal selector, subset-normalized tied-best actor loss, and count-aware utility-critic loss. IF-Core and at least one simpler family must pass the registered feasibility lower-bound gate. Among passing simpler families, selection uses unconditional IF-Q3-S0 utility and lower online time as a tie-break.
+
+The RL-value screen retains IF-Core and the selected simpler family. Each is trained as supervised-only, PPO from the supervised warm start, and PPO from scratch at all three registered seeds, producing eighteen cells. The simpler-family placeholder is resolved only by the authenticated representation receipt. The RL-value receipt authenticates all eighteen validation reports and freezes one configuration across all three seeds. Neither stage may select a single favorable seed.
+
+Both decisions use an equal-weight crossed nonparametric bootstrap. In every replicate, draw the three training seeds with replacement and independently draw immutable base lineages with replacement. Average over the crossed sample. This preserves variability in both the training procedure and data population without treating seed-by-lineage outcomes as independent observations. The registered validation protocol uses 20,000 replicates and a one-sided feasibility noninferiority gate with margin 0.02.
+
+After the RL-value decision, complete-system confirmation freshly retrains the selected configuration at seeds 1103, 2207, and 3301 with no resume. Supervised-only and PPO warm-start train a new supervised representation from the authenticated quality-v7 corpus at each seed; PPO from scratch uses a new model initialization. Every PPO run consumes the matching sealed deployment-initializer bank for its seed. Selected validation checkpoints identify the frozen configuration but are never loaded. Apollo and Goose may host different seeds, but all configurations for one seed share one runtime identity and validation preserves that seed-to-host assignment.
+
+Evaluate the entire sealed policy-instance population before initialization. Every failure remains in the denominator with zero utility. Receipt-derived summaries partition failures into the pre-policy initializer stage, policy-environment bootstrap, and post-bootstrap execution. Valid returns receive one independent 4096-read block at the strength chosen by the frozen selector. Each target-opening worker retains its test \texttt{TargetAccessReceipt} and root-authenticated ground-partition receipt. Learned attempt receipts use v3, evaluation reports use v4, and the final three-seed aggregate uses v2. The aggregate authenticates all three reports and their raw receipt, outcome, and terminal-evidence sidecars, then applies a two-sided 95\% crossed seed-by-lineage bootstrap with 20,000 replicates.
+
+Before any stock-minorminer test run, tune a finite registered candidate set only on the full validation population. The grid contains the unmodified stock default and time-saturating resource and quality-ranking variants. Every candidate is evaluated at all three registered seeds and under the same validation census, 60-second online envelope, selector, evaluator, and failure convention. Tuning run and selection receipts use v2, and one canonical selection receipt freezes the deployment candidate. Test commands authenticate that receipt and its out-of-band file digest before opening test targets. The resulting stock arm uses the identical pre-initialization test census, pair keys, seed schedules, selector, final evaluator, and total online wall-clock envelope as the learned arm; unavailable internal work coordinates are disclosed rather than claimed equal. External complete-system attempt receipts use v3, their reports use v4, and the paired learned-versus-stock aggregate uses v4.
+
+The learned-versus-stock report applies a fixed-sequence familywise procedure. It first tests valid-return noninferiority at the registered 0.02 margin. Utility superiority is confirmatory only if noninferiority passes and the paired unconditional IF-Q3-S0 lower confidence bound exceeds zero while all sample-size and precision guards pass. Otherwise superiority remains untestable or fails, even when its point estimate is positive.
+
+\subsection{Resumable sharded evaluation}
+Long evaluations use one protocol for three workflows: learned complete-system confirmation, tuned-stock complete-system confirmation, and external validation tuning. Evaluation plan v2 is created from the full public partition before any evaluator target is opened. It authenticates the prepared-v4 manifest, target-free ground root, model or baseline deployment binding, complete population, run coordinates, seed namespace, execution contract, and deterministic whole-lineage shard assignment. A shard owns every task and repetition for its assigned immutable base lineages. Identity-derived initializer and evaluator seeds exclude shard number and processing order, so retrying, reordering, or moving a shard between eligible machines does not change the scientific sample.
+
+Only a shard worker opens the selected target partition. Its v3 receipt binds the resulting target-access and ground-partition authorities, actual node provenance, compute class, raw attempt receipts, outcomes, and terminal evidence. A v2 merger requires every planned key exactly once, rejects missing or overlapping lineage ownership, reauthenticates all source files, restores canonical order, and recomputes the sufficient statistics needed by the corresponding unsharded report. Partial merges and individual shards are not result artifacts.
+
+Publication execution uses the registered \code{pinned-venv} class on Apollo or \code{apptainer} class on Goose. Apollo has no Slurm and therefore uses direct launchers. Goose workers must run through a Slurm allocation or array and invoke computation with \code{srun}. Bare-metal execution is diagnostic-only. The plan and receipts bind cluster, scheduler, partition where applicable, processor identity, thread count, deterministic setting, environment or image digest, and runtime-source identity.
+
+After both arms and all three seeds are frozen, a separate outcome-blind plan selects a balanced subset from signed test strata. The preregistered post-freeze diagnostic is \code{configs/final\_strength\_audit\_v1.json}, with semantic digest \hexdigest{fda50e04}{d2b193a2}{6015f6f2}{c65c645e}{79bb9aaa}{05b346b9}{112505c0}{6768c89e} and file SHA-256 \hexdigest{58497bdb}{40b2b83f}{b9020867}{8f064477}{97537710}{45c9195d}{f13d7697}{507e0c7c}. It fixes a minimum of 128 base lineages, at most 16 lineages per signed stratum, 4,096 reads per block, 20,000 bootstrap replicates, and 128 execution shards. The plan fixes the population, selector, quality authority, runtime, tuned-stock deployment binding, four strengths, audit seed, complete opportunity-key census, and exact stratum allocation before any test outcome is opened.
+
+All six learned and stock source runs are authenticated before an execution manifest is sealed. Only then may audit reads begin. For every selected valid return, evaluate all four strengths with two new independent blocks per strength. Block A selects the empirical oracle using the lowest-index tie rule; block B estimates oracle-minus-deployed regret, preventing reuse of winner-selection noise. Invalid returns remain in the coverage denominator and receive an explicit worst-case sensitivity range.
+
+The audit is partitioned across Apollo and Goose only by a deterministic shard assignment over complete paired opportunity groups in the sealed order. A shard publishes immutable row hashes plus the plan and execution-manifest identities. The merger requires all 128 registered shards exactly once, rejects overlap and missing keys, reauthenticates each row against the plan and source evidence, restores canonical order, recomputes every denominator and summary, and atomically publishes one receipt. A shard or partial merge is never a scientific result. The merged audit is diagnostic, cannot feed training or selection, and reports equal-seed then equal-lineage mean, median, P95 regret, oracle agreement, calibration, and paired learned-versus-stock regret. It is not primary evidence for learned-method superiority.
+
+The parameter-capacity diagnostic is separate from this $9+18$ decision. It activates only when IF-Dual is the selected simpler family and freshly compares IF-Core with a width-128, nine-local-block IF-Dual control at all three paired seeds. The trainable-parameter gap is at most 0.1\% of the IF-Core reference. It cannot revise either selection receipt and cannot establish pure architectural causality because depth and inference compute still differ. Parameter counts, latency, and peak accelerator memory are mandatory outputs.
+
+\subsection{Primary and secondary endpoints}
+For each independent base logical lineage $i$, average prespecified model/search repetitions and form paired differences
+\begin{equation}
+D_i=\overline{\widehat U}_{i,\rm RL}-\overline{\widehat U}_{i,\rm ref},\qquad
+\widehat\Delta_U=\sum_i w_iD_i,\quad \sum_iw_i=1.
+\end{equation}
+All ordinary failures remain in $\widehat U$ as zero. Report the valid-return rate separately. A same-initializer improvement study may have equal valid-return rates by design; it should not claim that the RL optimizer learned that guarantee.
+
+Secondary metrics are conditional quality on jointly valid returns, quality of the initial protected embedding, selected-strength regret on the independently audited subset, Q, longest chain, chain-size distribution, number and duration of overlap events, repair success, candidate diversity, native work, wall-clock latency, inference share, peak memory and total shots. Report the unconditional distribution of $U$; $Y$ alone is undefined when no embedding exists unless a convention is separately declared.
+
+A ground-state per-read probability is not automatically an end-to-end time-to-solution result. Under independent identically distributed reads and known $p>0$, $R_{99}=\lceil\log(0.01)/\log(1-p)\rceil$ is a read-count calculation; real system time also includes embedding, programming, readout and selection overhead. Zero hits do not prove $p=0$. Do not report infinite or precise finite time-to-solution from an unsupported point estimate.
+
+\subsection{Difficulty and feasible populations}
+Publish three difficulty axes: embedding difficulty, downstream Ising-solving difficulty, and decision-quality difficulty. A graph can be hard to embed but easy to solve after embedding; another can have easy feasibility but many embeddings with nearly identical quality. Neither is a good substitute for measuring the action signal relevant to RL.
+
+For a feasible-only primary benchmark, independently verify at least one witness on the exact faulted host and qubit cap. The witness remains hidden from the method. Unknown-feasibility cases form a separate stress population. Use both planted quotient families and independent logical/application families to prevent the policy from winning only on artifacts of the planted construction. Report results by generator family, host, size, coefficient scale, fault pattern and hardness bin.
+
+\subsection{Uncertainty, power and a two-percentage-point margin}
+Use the independent base lineage as the sampling unit. Gauge transforms, host variants, episodes, four strength outcomes and repeated model seeds are not additional independent logical instances. Paired cluster bootstrap by lineage, with a clearly specified treatment of model-seed variability, is appropriate for the primary utility interval. For a claim about the training procedure, include training-seed uncertainty and avoid treating all instance-by-seed entries as independent. Report per-seed results alongside the aggregate.
+
+The feasibility noninferiority condition is
+\begin{equation}
+\Delta_A=p_{\rm RL}-p_{\rm ref}>-\delta.
+\end{equation}
+Pass only if the preregistered one-sided lower confidence bound exceeds $-\delta$, with multiplicity treatment for any co-primary topology/OOD gates. A point estimate within two percentage points is not a passed gate.
+
+The supplied proposal of 360 locked OOD cases is a corpus target, not a power guarantee. A rough paired normal planning approximation at true difference near zero is
+\begin{equation}
+n\approx\frac{(z_{1-\alpha}+z_{1-\beta})^2q}{\delta^2},
+\end{equation}
+where $q$ is the probability the paired methods disagree on feasibility. With $\alpha=0.05$, power $1-\beta=0.8$, $q=0.10$ and $\delta=0.02$, this is about 1,546 pairs. This is illustrative, not a final required sample size. Estimate discordance on development data and choose a paired binary interval/power procedure suited to the expected event rate, stratification and clustering.
+
+For read precision, the worst-case standard error of an independent $K/N$ is $1/(2\sqrt N)$. At $N=256$ it is about $0.0313$; at $N=4096$ it is about $0.0078$. Thus a claimed one-percentage-point per-program gain cannot be reliably identified from a single low-read label without pooling or further measurement. Use modest reads broadly and independent replication for uncertain candidate pairs; account for adaptive sampling if intervals depend on stopping.
+
+\subsection{Simulator-to-QPU evidence}
+Train on a frozen simulator only under a simulator claim. Before spending on broad QPU evaluation, score an independently selected set of identical compiled programs under simulator and hardware, with method order interleaved across calibration blocks. Measure embedding-level rank agreement, direction agreement for meaningful paired differences, and any topology/size dependence. Ground-truth references stay in the benchmark evaluator. Calibration-aware features must be available at deployment.
+
+This fidelity study is an empirical transfer gate, not a proof of hardware equivalence. Fix its sample size, minimum usable agreement and statistical analysis before results are opened. If it fails, the paper can still establish an effective simulator-guided search method, but cannot state a QPU-quality improvement. If it passes, complete an independent end-to-end hardware comparison including programming and shot costs.
+
+\subsection{A disciplined claim ladder}
+\begin{enumerate}
+\item Correct output semantics and complete reproducibility under the registered implementation.
+\item Candidate actions expose measurable quality/repair headroom.
+\item Learned ranking improves decisions under that support.
+\item PPO improves beyond the same supervised controller and classical search.
+\item The full system improves failure-aware quality under matched online budgets on untouched families.
+\item Hardware measurements reproduce the claimed benefit under an explicit QPU protocol.
+\end{enumerate}
+Do not skip a failed stage by adding a larger model or changing the endpoint after test inspection. There is no architecture-only guarantee of a top-tier acceptance, oral presentation or award. The evidence deciding the contribution is the measured gain beyond strong, correctly matched controls.

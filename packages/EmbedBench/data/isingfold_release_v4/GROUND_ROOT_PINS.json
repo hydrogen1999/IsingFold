@@ -1,0 +1,25 @@
+{
+  "schema": "embedbench.isingfold-ground-root-pin-registry",
+  "schema_version": 1,
+  "release_id": "embedbench-isingfold-corpus-v4-826e2104-20260912-r1",
+  "publisher_id": "embedbench-release-authority",
+  "publisher_attestation_record_digest": "0c938f1dcd2a650ca117448e1518b10b778728b7ea0018aba478caae4d1d0bed",
+  "prepared_manifest_sha256": "96c80612957d7036e2ae01d5e6b5c1fb7ccac3dde0d989103510ada7bc976088",
+  "ground_certificate_root_record_digest": "775e010181b3435fcf8aff19544ccb171804122b537d968a27b3116ec22d9db8",
+  "ground_certificate_root_sha256": "11e62dd410561106862c66ed4b2170b5a5e925ff925aa39565351c07d8006a19",
+  "ground_certificate_bundle_inventory_sha256": "900350e81cf4b476970693fc74a39ad48a1222639095e2c9605f96bdc305005c",
+  "census": {
+    "train": 1024,
+    "validation": 512,
+    "test": 1546,
+    "accepted": 3082,
+    "total": 3082
+  },
+  "verifier_identity_digest": "d799925d1e00fa3c0cdbdbe656f5249c0ca344753dece07bf18f3c192ec507e6",
+  "chronology": {
+    "pinned_before_selector_labeling": true,
+    "pinned_before_quality_labeling": true,
+    "pinned_before_model_selection": true,
+    "pinned_before_test_opening": true
+  }
+}

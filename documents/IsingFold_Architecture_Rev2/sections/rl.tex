@@ -1,0 +1,437 @@
+\section{Reinforcement learning and optimization contract}
+\label{sec:rl-training}
+
+\subsection{What the first policy is trained to do}
+
+The recommended first learning experiment is \emph{embedding improvement}: every method receives
+the same independently valid starting embedding, the same active hardware graph, and the same
+remaining search budget. The environment retains that starting program as a protected incumbent.
+The actor chooses structural rewrites, temporary overlap, repair, and eventual commitment. This
+experiment isolates whether learned sequential decisions improve quality beyond the shared
+initialization and proposal machinery. The starting embedding is a feasible fallback, not an action
+label or a claim of optimal quality. Its generation time is reported separately and included in the common end-to-end budget. Define $A_{\rm init}$ as initializer success. Post-initialization PPO samples the conditional population $A_{\rm init}=1$; whole-system evaluation also retains $A_{\rm init}=0$ cases with zero utility.
+
+Empty-state construction is a second experiment with a separate initial-state distribution. It adds
+placement, ordering, and the possibility that no valid incumbent is ever found. A construction result
+must not be inferred from an improvement result. With a protected valid incumbent and a mandatory
+valid fallback, the improvement environment returns a valid embedding on every scientifically
+completed episode. Conditional on $A_{\rm init}=1$, its failure constraint is therefore inactive by construction; meaningful
+feasibility learning occurs in construction or explicitly registered repair populations without
+such a fallback. Integrity and evaluator failures remain experiment errors, not ordinary search
+failures.
+
+The network is an actor--critic policy because its choices change future states and action supports,
+and its parameters are updated from complete trajectory outcomes. A pretrained candidate ranker
+used greedily without those trajectory updates is a supervised controller. Both are necessary
+controls, but they answer different questions.
+
+\subsection{IF-Q3 terminal reward and the information boundary}
+\label{sec:rl-q3}
+
+Let the four registered strengths be \(\mathcal F=\{F_1,F_2,F_3,F_4\}\). A pretrained terminal
+program predictor \(q_\psi(\Pi_\phi,F)\) selects
+\begin{equation}
+ F_\psi(\phi)=\mathop{\arg\max}_{F\in\mathcal F}q_\psi(\Pi_\phi,F),
+ \label{eq:rl-strength-selector}
+\end{equation}
+with a fixed tie rule. The selector consumes only deployable program features. Its weights,
+preprocessing, input schema, and four-strength order are frozen before the RL run and are shared by
+all compared methods. It has no PPO gradient and does not inspect final evaluator reads. Its offline
+training uses separately generated per-strength count labels and training lineages. The selector is
+not the policy's continuation critic: it predicts the quality of a specified complete program,
+whereas a continuation critic averages over future search decisions.
+
+For a committed admissible embedding \(\phi\), an independent evaluator obtains \(N_{\rm est}\)
+registered reads at \(F_\psi(\phi)\), decodes them, and records the integer hit count
+\begin{equation}
+ K_{\rm est}=\sum_{r=1}^{N_{\rm est}}
+ \mathbf 1\!\left\{E_I(D_\phi(z_r))\le E_0(I)+\varepsilon_I\right\}.
+ \label{eq:rl-terminal-count}
+\end{equation}
+The trusted benchmark evaluator may know certified \(E_0\); the deployed actor and selector do not
+need it. In particular, deployment never chooses a strength by comparing ground-state hit counts.
+Only the selected-strength evaluation is required online by this protocol. Evaluating all four
+strengths is a separately charged diagnostic or offline labeling operation.
+
+For a trajectory with \(T\) actions, use transition indices \(t=0,\ldots,T-1\). Let \(A_T\)
+indicate an independently admissible returned program. Define
+\begin{equation}
+ R_T=A_T\frac{K_{\rm est}}{N_{\rm est}},\qquad C_T=1-A_T,
+ \label{eq:rl-terminal-outcome}
+\end{equation}
+with \(R_T=0\) on ordinary no-valid-return failure. Base rewards and costs are zero except that
+\(r_{T-1}=R_T\) and \(c_{T-1}=C_T\). Invalid outputs are never sampled or published. Missing
+reads, a broken certificate, or an evaluator exception invalidate the affected run rather than
+entering the denominator as a zero-hit read.
+
+If evaluation reads follow the registered distribution and are independent of the decisions that
+selected the program, then, conditional on the complete terminal program,
+\begin{equation}
+ \E[R_T\mid\phi,A_T=1]
+ =p_{\mathrm{solve}}^{\rm MV}(\phi,F_\psi(\phi)).
+ \label{eq:rl-reward-unbiased}
+\end{equation}
+Independent read blocks support ordinary binomial uncertainty calculations. If a provider uses
+correlated reads, retain its block structure and estimate uncertainty at that level; a binomial
+interval is not automatically justified. Fresh terminal streams are distinct from selector training,
+counterfactual labeling, and final confirmation streams. Reusing one fixed reward tape across many
+adaptive policy updates can allow overfitting to that tape even when no individual outcome appears
+in the observation.
+
+\subsection{Decision time, macro duration, and work budgets}
+
+The policy acts at macro-decision epochs. One route replacement can require more native work than
+another; this is compatible with a finite-horizon decision-epoch MDP when the state contains the
+remaining registered budgets. An explicit duration-based formulation is semi-Markov, but the target
+here remains undiscounted terminal utility: \(\gamma=1\). Introducing \(\gamma^{\Delta w}<1\)
+would prefer earlier reward and would change that target.
+
+Every proposed batch costs work before an action is sampled. If \(b_t^-\) is the budget before
+proposal generation, define
+\begin{align}
+ (\mathcal K_t,c_t^{\rm prop})&=G(s_t^-;b_t^-), &
+ b_t&=b_t^- -c_t^{\rm prop},\\
+ b_{t+1}^-&=b_t-c_t^{\rm apply}(a_t). &&
+ \label{eq:rl-budget-accounting}
+\end{align}
+All quantities are vectors when decisions, route expansions, compiler calls, and restarts have
+separate caps. The actor observes the post-proposal available budget \(b_t\). The generator charges
+unsuccessful route searches, rejected candidates, deduplication, successor construction, and any
+cut computations. The apply cost cannot retrospectively erase those charges. Tensorization and
+inference are also timed; native work units alone do not establish equal wall-clock cost.
+
+Generation must stop before its allotted work is exhausted. Every nonterminal decision consumes a
+positive decision allowance, and publication validation has a reserved allowance or a separately
+declared terminal budget. A budget-ending transition is a real terminal transition. A forced
+commit-only decision is made over eligible incumbents when one exists; otherwise construction
+terminates as an ordinary no-valid timeout. Collector boundaries used for batching must not be
+mistaken for such environment timeouts.
+
+\subsection{Policy distribution and exact likelihood replay}
+
+The first implementation uses one categorical distribution over fully bound candidate records,
+including commit candidates. For stored observation \(o_t\), batch \(\mathcal K_t\), and exact mask
+\(M_t\),
+\begin{equation}
+ \pi_\theta(a\mid o_t,\mathcal K_t,M_t)=
+ \frac{M_t(a)\exp\ell_\theta(o_t,a)}
+ {\sum_{b\in\mathcal K_t}M_t(b)\exp\ell_\theta(o_t,b)}.
+ \label{eq:rl-flat-policy}
+\end{equation}
+The implementation uses masked log-softmax. It handles terminal fallback before invoking the actor
+and never evaluates an all-false support. Exact invalid-action masking belongs to the environment;
+the network cannot turn a heuristic preference into a hard mask~\cite{masking2020}.
+
+Proposal generation is frozen during the complete experiment version. In particular, rollout
+sampling and PPO updates use the same saved candidate identities, payloads, order, and mask.
+Candidates are not regenerated under the current model. If a future extension learns the proposal
+distribution \(g_\omega\), its joint policy becomes
+\begin{equation}
+ \pi_{\theta,\omega}(\mathcal K,a\mid s)
+ =g_\omega(\mathcal K\mid s)\pi_\theta(a\mid s,\mathcal K).
+\end{equation}
+Updating \(\omega\) while omitting this first factor from the likelihood ratio is not the present
+algorithm. Learning a neighborhood generator should therefore be a later, separately specified
+module.
+
+\textbf{All dropout probabilities are zero during RL collection and update.} Normalization
+statistics and stochastic graph encodings are frozen or deterministic. Otherwise fresh dropout
+masks can change the probability of a stored action before any parameter update. The replay record
+contains the observation or reconstructible semantic tensors, exact action support, sampled ID,
+old log probability, old critic predictions, terminal flags, costs, rewards, and version digests.
+Before the first optimizer step, reevaluating each stored action must reproduce its old log
+probability and give a likelihood ratio of one within the declared numerical tolerance.
+
+\subsection{Two critics with explicit meanings}
+
+The required heads are
+\begin{equation}
+ V_U^\pi(s)=\E_\pi[R_T\mid s],\qquad
+ V_f^\pi(s)=\Pr_\pi(A_T=0\mid s).
+ \label{eq:rl-critics}
+\end{equation}
+The utility head is trained directly. The failure head uses a sigmoid output. For every ordinary
+outcome, the implied valid-return probability is exactly \(V_A=1-V_f\); a third independently
+fitted validity head is unnecessary. Neither head is an optimal value oracle. Both depend on the
+current policy, remaining budget, and initial-state population.
+
+Complete-episode Monte Carlo targets are \(R_T\) and \(C_T\) for each preceding state in that
+episode. A straightforward critic loss is
+\begin{equation}
+ \mathcal L_V=
+ c_U\,\operatorname{MSE}(V_U,R_T)
+ +c_f\,\operatorname{BCE}(V_f,C_T).
+ \label{eq:rl-value-loss}
+\end{equation}
+MSE targets the conditional mean of the raw utility. The observed \(K/N\) remains a noisy sample
+mean, not an exact probability label. Optional structural prediction losses have separate weights
+and a no-auxiliary control; their outputs cannot replace terminal reward. The frozen
+\(q_\psi(\Pi,F)\) selector is trained outside Equation~\eqref{eq:rl-value-loss} and does not become
+a future-state value head through parameter sharing.
+
+\subsection{Supervised initialization and the transition to on-policy data}
+
+A counterfactual decision record contains one complete state, its frozen legal action support, and
+outcomes obtained by applying each evaluated action followed by a specified continuation policy
+\(\mu\). Its quality target is therefore
+\[
+ Q^\mu(s,a)=\E[R_T\mid s,a,\text{continue with }\mu],
+\]
+which is not the optimal-control value \(Q^*(s,a)\). A strong feasibility continuation is useful
+even when its final-quality preferences are imperfect. The record must identify the continuation
+version, search budget, and independent evaluator stream so that the target has a reproducible
+meaning. Exact completion certificates supervise a separate structural task; they do not convert
+finite-read quality estimates into certificates.
+
+For a reliable tied best-action set \(B_s\) inside evaluated subset \(E_s\), the registered
+warm-start ranking loss is
+\[
+ \mathcal L_{\mathrm{rank}}
+ =-\frac{1}{|\mathcal S|}\sum_{s\in\mathcal S}
+ \log\frac{\sum_{a\in B_s}\exp\ell_a}
+ {\sum_{a\in E_s}\exp\ell_a}.
+\]
+This rewards probability mass on the entire accepted set rather than forcing arbitrary
+symmetry-breaking labels, and it does not declare unevaluated actions inferior. When estimated
+action values are too uncertain to establish a best set, preserve that uncertainty through a
+registered soft target or omit the ranking term for that state; do not invent a precise winner. A
+sampled subset of counterfactual actions is identified as a subset, since the best evaluated
+action need not be best in the complete batch.
+
+The same authenticated training row calibrates the state-only utility critic only after defining
+an action distribution. The registered target chooses the first exact-legal action uniformly and
+then follows \(\mu\). Since \(E_s\) is an outcome-blind uniform sample without replacement,
+\[
+ \widehat V_U^{\mathrm{unif}\rightarrow\mu}(s)
+ =\frac{1}{|E_s|}\sum_{a\in E_s}\widehat Q^\mu(s,a).
+\]
+The action means remain equally weighted. Continuation evidence controls only the confidence
+weight. For continuation count \(M_{sa}\) and common inclusion probability \(p_s\), define
+\[
+ n_{\mathrm{eff},s}=\left[
+ \frac{1}{|E_s|^2}\sum_{a\in E_s}\frac{1}{M_{sa}}
+ +\frac{1-p_s}{|E_s|}\right]^{-1},
+ \qquad
+ \mathcal L_{V,\mathrm{warm}}=
+ \frac{1}{2}\frac{\sum_s n_{\mathrm{eff},s}
+ (V_U(s)-\widehat V_U^{\mathrm{unif}\rightarrow\mu}(s))^2}
+ {\sum_s n_{\mathrm{eff},s}}.
+\]
+Thus \(\mathcal L_{\mathrm{warm}}=\mathcal L_{\mathrm{rank}}+
+\mathcal L_{V,\mathrm{warm}}\). Full action coverage with common count \(M\) gives
+\(n_{\mathrm{eff},s}=|E_s|M\); partial coverage prevents false unbounded confidence. The current
+implementation uses only resolution-admitted train rows. Targets are detached and created after
+the model forward, so no evaluator result enters policy features or action tensors. Fresh
+on-policy complete episodes subsequently recalibrate the critic to the learned actor.
+
+Warm-start actor and critic parameters initialize PPO, but complete off-policy trajectories are
+not inserted into its clipped surrogate as if sampled by the current actor. A temporary supervised
+regularizer may remain during early PPO only with its weight explicitly decaying to zero. Report a
+supervised-only controller, PPO initialized from it, and a from-scratch PPO control. These distinguish
+the value of initialization from the value of subsequent reinforcement learning.
+
+The training curriculum first uses short improvement episodes with observable quality variation,
+then longer joint-repair episodes, and finally an independently registered construction population.
+Curriculum updates use training outcomes only. The final development and confirmation distributions
+remain fixed, so improvement is not manufactured by evaluating an easier distribution after
+training. High reward sparsity is addressed by certified small instances, better proposal support,
+and informed initialization before increasing network size.
+
+\subsection{GAE and complete-episode weighting}
+
+Let \(d_t=1\) only when transition \(t\) ends the environment episode. At rollout parameters
+\(\theta_{\rm old}\), define
+\begin{align}
+ \delta_t^U&=r_t+(1-d_t)V_U(s_{t+1})-V_U(s_t),\\
+ \delta_t^f&=c_t+(1-d_t)V_f(s_{t+1})-V_f(s_t),\\
+ \widehat A_t^j&=\delta_t^j+
+ \lambda_{\rm GAE}(1-d_t)\widehat A_{t+1}^j,
+ \qquad j\in\{U,f\}.
+ \label{eq:rl-gae}
+\end{align}
+Terminal bootstrap values are zero. The initial setting is \(\lambda_{\rm GAE}=0.95\); this
+reduces variance but does not eliminate bias from approximate critics~\cite{gae2016}. A
+Monte Carlo advantage control uses \(\lambda_{\rm GAE}=1\). A collector fragment that ends while
+the search remains live requires a bootstrap and a continuation record. The recommended first
+implementation collects complete episodes before updating the actor, avoiding that complication.
+
+The training distribution is over problem instances and episode seeds, not an implicitly changing
+distribution over whichever states take longest to visit. For \(m\) collected episodes and fixed
+stratum weights \(w_i\), define the actor reduction
+\begin{equation}
+ \langle f\rangle_{\rm ep}=
+ \frac{1}{m}\sum_{i=1}^{m}w_i\sum_{t=0}^{T_i-1}f_{it}.
+ \label{eq:rl-episode-reduction}
+\end{equation}
+Uniformly sampled instances use \(w_i=1\). Unequal stratum sampling uses prespecified importance
+weights. Do not divide each episode's policy-gradient contribution by its own length: that would
+give a different weighting to short and long searches. For stable numerical scale, the entire
+reduction may be divided by one frozen positive reference length. Minibatch packing must preserve
+these episode weights rather than quietly giving each packed trajectory equal per-transition mean
+weight. Critic regressions may use a declared state-sampling distribution, but dual updates always
+use complete-episode outcomes.
+
+\subsection{PPO and the optional failure constraint}
+
+The optimization target is
+\begin{equation}
+ \max_\theta J_U(\theta)=\E_\theta[R_T]
+ \quad\text{subject to}\quad
+ J_f(\theta)=\E_\theta[C_T]\le d_f.
+ \label{eq:rl-cmdp}
+\end{equation}
+For construction, \(d_f\) binds the registered reference failure rate and the chosen
+noninferiority margin. For protected-incumbent improvement, \(J_f=0\) on post-initialization episodes; whole-system failure probability is $\Pr(A_{\rm init}=0)$ and is unaffected by the subsequent actor. Ordinary
+masked PPO is sufficient. Maintaining a nonzero failure penalty there would create the appearance
+of a constrained-learning contribution without a varying constraint signal.
+
+Using the saved support, form
+\begin{equation}
+ \rho_t(\theta)=\exp\!\left[
+ \log\pi_\theta(a_t\mid o_t,\mathcal K_t,M_t)-
+ \log\pi_{\theta_{\rm old}}(a_t\mid o_t,\mathcal K_t,M_t)\right].
+\end{equation}
+The clipped reward and cost surrogates are
+\begin{align}
+ L_U&=\left\langle\min\!\left(
+ \rho_t\widehat A_t^U,
+ \operatorname{clip}(\rho_t,1-\epsilon,1+\epsilon)\widehat A_t^U
+ \right)\right\rangle_{\rm ep},\\
+ L_f&=\left\langle\max\!\left(
+ \rho_t\widehat A_t^f,
+ \operatorname{clip}(\rho_t,1-\epsilon,1+\epsilon)\widehat A_t^f
+ \right)\right\rangle_{\rm ep}.
+ \label{eq:rl-ppo-surrogates}
+\end{align}
+PPO's reward-style minimum clipping is not copied unchanged for a cost: the maximum envelope
+retains an adverse empirical cost change. It is still only a surrogate over sampled advantages,
+not an upper confidence bound on the new policy's actual failure probability~\cite{ppo2017}.
+The actor minimizes
+\begin{equation}
+ \mathcal L_\pi=-L_U+\lambda_fL_f-\beta_H
+ \langle\overline{\mathcal H}(\pi_\theta)\rangle_{\rm ep}.
+ \label{eq:rl-actor-loss}
+\end{equation}
+Here \(\overline{\mathcal H}=\mathcal H/\log|\mathcal A_{\rm legal}|\) when more than one
+action is legal, and zero for a singleton support. Uniform categorical policies therefore receive
+the same normalized entropy one across variable support sizes. The coefficient decreases linearly
+from \(0.01\) to the strictly positive floor \(0.001\) by 80 percent of the registered update
+budget, then remains at that floor.
+For the constrained construction variant, after a completed rollout batch update
+\begin{equation}
+ \widehat J_f=\frac1m\sum_iw_iC_T^{(i)},\qquad
+ \lambda_f\leftarrow\max\{0,\lambda_f+\eta_f(\widehat J_f-d_f)\}.
+ \label{eq:rl-dual}
+\end{equation}
+The dual uses neither per-transition failure averages nor held-out evaluation failures. Reward and
+cost advantages initially remain in their original units. Independently standardizing them would
+change the effective multiplier; any later common scaling must be explicit and applied consistently.
+
+This practical Lagrangian PPO does not inherit CPO's constrained-update theory~\cite{cpo2017}.
+Hard output validity follows from the independent validator. Failure noninferiority follows only
+from evaluating the frozen deployed policy with the registered statistical gate. PPO clipping,
+entropy annealing, and a positive multiplier do not provide that guarantee.
+
+\subsection{Why the original shaping sweep is removed}
+
+Potential-based rewards can preserve an undiscounted finite-horizon objective when terminal
+potentials are zero~\cite{shaping1999}. However, the original document couples that construction to
+an algebraically shifted raw critic, which makes its proposed comparison redundant.
+
+\begin{proposition}[Cancellation in the originally specified GAE]
+Suppose \(r'_t=r_t+\Phi(s_{t+1})-\Phi(s_t)\), \(\Phi=0\) on every absorbing state, and
+\(V'_U(s)=V_U(s)-\Phi(s)\) is enforced exactly. With \(\gamma=1\), shaped and unshaped TD
+residuals and GAE advantages are identical on the same trajectory for every GAE parameter.
+\end{proposition}
+\begin{proof}
+Writing terminal values as zero, direct substitution gives
+\[
+ \delta'_t=r_t+\Phi_{t+1}-\Phi_t+
+ (V_U(s_{t+1})-\Phi_{t+1})-(V_U(s_t)-\Phi_t)
+ =\delta_t^U.
+\]
+The backward GAE recurrence is identical with the same terminal condition, proving the assertion.
+\end{proof}
+
+Therefore, when the raw critic targets, auxiliary losses, observations, and rollouts also remain
+the same, toggling this shaping formula cannot create a distinct PPO learning algorithm. The revised
+minimal grid uses terminal-only reward. Training an independently parameterized shaped critic could
+change approximation or optimization, but would require a new experiment that attributes its effect
+to that representation. Structural pretraining and repair curricula provide additional learning
+signals without making an incorrect claim about the cancellation above.
+
+\subsection{Executable training cycle and deployment rule}
+
+The initial configuration uses AdamW at \(3\times10^{-4}\), four PPO epochs per rollout,
+\(\epsilon=0.20\), gradient-norm cap \(0.5\), a full-buffer KL soft target of \(0.01\), and a
+hard accepted-update limit of \(0.02\). Each tentative epoch is a transaction over the model,
+optimizer, and framework RNG state. A hard-limit violation restores the previous epoch boundary
+and retries the same permutation at half the learning rate, with at most three backtracks. If no
+attempt is safe, the previous boundary remains authoritative and the next learning rate is lowered
+once more. An accepted epoch at or above the soft target stops remaining epochs. The empirical
+hard limit applies to the stored behavior buffer; it is not a population trust-region guarantee.
+Entropy starts at \(0.01\), reaches \(0.001\) at 80 percent of the update budget, and stays
+positive. These are engineering starting values, not established optima. The rollout size, maximum
+decisions, minibatch packing, dual learning rate where applicable, and all budget units are frozen
+after train-only smoke tests.
+
+The KL transaction and normalized-entropy schedule control only the optimization path. They do not
+change terminal reward, IF-Q3-S0 strength selection, the data split, target labels, deployment
+action selection, or the publication endpoint. Any change to those scientific objects requires a
+separately registered experiment.
+
+\begin{enumerate}
+ \item Freeze the candidate generator, terminal selector, objective context, train splits, and
+       rollout policy snapshot. Initialize each episode from the registered improvement or
+       construction distribution.
+ \item Charge proposal generation; tensorize the resulting state and exact support; sample one
+       action from the categorical policy. Store its log probability and critic predictions.
+ \item Apply the bound action atomically, charge its work, and update the current state and
+       independently admissible archive. Continue until commitment or a real search terminal.
+ \item For a valid return, obtain fresh selected-strength evaluation counts. For ordinary
+       no-valid failure, record zero utility and unit failure cost. Stop and investigate any
+       integrity or evaluator error without treating it as a learning label.
+ \item Complete the rollout batch, verify likelihood replay, and compute raw Monte Carlo critic
+       targets and GAE advantages. Normalize entropy by log legal-support size. Commit a tentative
+       epoch only below the hard full-buffer KL limit; otherwise rollback and geometrically
+       backtrack. Stop remaining epochs at the soft target or after exhausting safe retries.
+ \item Update the failure dual from complete episodes only when that constraint is active. Log
+       unshaped utility, valid-return rate, work, entropy, value errors, and the full budget ledger.
+ \item Evaluate checkpoints on development instances using the exact deployment rule; select by
+       unshaped utility subject to applicable feasibility gates. Freeze the selected configuration
+       before independent confirmation.
+\end{enumerate}
+
+The primary deployed actor is the \emph{sampled categorical policy} with a registered temperature
+of one and registered search seeds. Evaluation averages over that declared search randomness.
+Greedy argmax deployment is an additional ablation, because its transition distribution and
+feasibility can differ from the policy trained by PPO. It receives its own reported result and
+cannot inherit a sampled-policy constraint certificate. Baselines may use their native deterministic
+decision rules, but receive the same frozen terminal strength selector and matched search budgets.
+For any deployed model, reinforcement-learning reward is needed during training and evaluation;
+the production search itself requires only the actor, exact environment, and frozen selector.
+
+\subsection{Diagnostics required before increasing model capacity}
+
+Learning should be interpreted only after three distinct sources of failure are separated. First,
+measure the proposal oracle on tiny cases: can an exact or generously searched selector find useful
+improvement using the same action batch and budget? A flat oracle ceiling indicates that the policy
+cannot discover a missing action by training longer. Second, compare frozen supervised selection and
+random selection on identical supports. This exposes whether state/action features contain useful
+ranking information. Third, compare PPO with its own supervised initialization under fresh terminal
+read blocks. This is the direct evidence for a benefit from sequential learning.
+
+The learner records pre-update likelihood replay error, masked-action violations, full-buffer KL,
+soft and hard thresholds, rejected attempts, rolled-back optimizer steps, effective learning rate,
+raw and support-normalized entropy, clip fraction, gradient norm, raw value error, and utility by
+remaining-budget bin. It also records the number of independent terminal programs evaluated and
+their integer hit counts. Thousands of repeated shots from one program are not thousands of
+independent search examples. Nearly universal zero-hit outcomes identify an endpoint or sampling
+problem; they do not by themselves establish that the network architecture is too small.
+
+Conformance cases cover a one-action support, an all-false proposed support repaired by terminal
+fallback, a timeout with a protected incumbent, a timeout without one, both signs of utility and
+cost advantages, zero-hit and all-hit count records, and variable-length episode packing. Exact
+resume restores the rollout snapshot and candidate payloads before optimization. These checks
+establish the implemented training contract; held-out improvement still requires the separate
+experimental evidence described elsewhere in this document.

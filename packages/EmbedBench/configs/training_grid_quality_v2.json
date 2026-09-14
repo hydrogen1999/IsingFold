@@ -1,0 +1,60 @@
+{
+  "schema": "embedbench.training-grid",
+  "schema_version": 1,
+  "grid_id": "isingfold-quality-value-v2-screen",
+  "claim_scope": "Development-only quality-value architecture and auxiliary-objective screen over identical full candidate support; the fixed test partition remains locked.",
+  "selection": {
+    "unit": "logical problem group",
+    "primary_metric": "mean_finite_budget_regret",
+    "primary_metric_description": "Validation quality regret under exact validity and B/Q_MM qubit-budget constraints.",
+    "auxiliary_policy": "Residual-connectivity and robustness losses may regularize representation learning but never select the winning architecture.",
+    "test_policy": "locked during every screen cell",
+    "seeds": [0, 1, 2, 3],
+    "paper_checkpoint_policy": "Freeze and evaluate all four seed checkpoints of the winning configuration; report the aggregate across seeds.",
+    "deployment_checkpoint_policy": "The lowest-validation-regret seed is the deployment checkpoint only, not the sole paper estimate."
+  },
+  "stages": {
+    "quality_value_v2_screen": {
+      "trainer": "scripts/train_quality_v2.py",
+      "inputs": "runs/release_v1_1/quality_*.jsonl",
+      "splits": "data/release_v1/splits_quality_problem_v2.json",
+      "output_dir": "runs/training_grid_quality_v2/screen",
+      "checkpoint_dir": "runs/training_grid_quality_v2/checkpoints/screen",
+      "epochs": 25,
+      "axis_order": ["objective_variant", "arch", "seed"],
+      "axes": {
+        "arch": ["mpnn", "gin", "gatv2", "gps", "hetero"],
+        "objective_variant": ["p_only", "p_connectivity", "p_robustness", "full"],
+        "seed": [0, 1, 2, 3]
+      },
+      "extra_args": [
+        "--hidden", "64",
+        "--layers", "3",
+        "--heads", "4",
+        "--lr", "0.001",
+        "--tol", "0.05",
+        "--rank-margin", "0.05",
+        "--stage1-rank-margin", "0.10",
+        "--lcb-z", "1.0",
+        "--stage1-weight", "0.25",
+        "--lambda-connectivity", "0.1",
+        "--lambda-robustness", "0.1",
+        "--deploy-max-free", "8",
+        "--evaluation-support", "full",
+        "--deploy-view"
+      ],
+      "execution": {
+        "assignment": "cell_index_modulo",
+        "modulus": 2,
+        "remainder_to_site": {"0": "apollo", "1": "goose"},
+        "required_device_type": "cuda",
+        "slurm_required_sites": ["goose"],
+        "slurm_forbidden_sites": ["apollo"],
+        "require_each_configuration_all_sites": true,
+        "exact_balance_axes": ["arch", "objective_variant"],
+        "seeds_per_configuration_per_site": 2,
+        "design": "With four seeds as the innermost axis, cell-index parity assigns seeds 0 and 2 to Apollo and seeds 1 and 3 to Goose for every architecture-objective configuration. Every architecture and objective variant is balanced 50/50 across sites, and every configuration has exactly two seeds on each site."
+      }
+    }
+  }
+}

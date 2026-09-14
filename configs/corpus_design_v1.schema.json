@@ -1,0 +1,477 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:isingfold:schema:corpus-design:v2",
+  "title": "IsingFold evidence-backed corpus-design manifest v2",
+  "description": "Structural schema for the authenticated scientific corpus-design manifest. Difficulty and origin labels are derived by the importer from publisher-authenticated, content-addressed artifacts rather than trusted as registry annotations.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "axis_values",
+    "corpus_design_version",
+    "difficulty_calibration",
+    "independent_unit",
+    "lineage_registry",
+    "minimum_partition_base_lineages",
+    "partition_quotas",
+    "power_targets",
+    "precision_targets",
+    "record_digest",
+    "schema",
+    "schema_version",
+    "stratum_quotas"
+  ],
+  "properties": {
+    "axis_values": { "$ref": "#/$defs/axisValues" },
+    "corpus_design_version": { "const": "if-core-v2" },
+    "difficulty_calibration": { "$ref": "#/$defs/difficultyCalibration" },
+    "independent_unit": { "const": "immutable-base-lineage" },
+    "lineage_registry": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/lineageCondition" }
+    },
+    "minimum_partition_base_lineages": {
+      "description": "Signed production floors in independent immutable base lineages. The importer additionally requires test to cover the largest confirmatory target minimum.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["test", "train", "val"],
+      "properties": {
+        "test": { "type": "integer", "minimum": 1546 },
+        "train": { "type": "integer", "minimum": 1024 },
+        "val": { "type": "integer", "minimum": 512 }
+      }
+    },
+    "partition_quotas": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["test", "train", "val"],
+      "properties": {
+        "test": { "$ref": "#/$defs/positiveInteger" },
+        "train": { "$ref": "#/$defs/positiveInteger" },
+        "val": { "$ref": "#/$defs/positiveInteger" }
+      }
+    },
+    "power_targets": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/powerTarget" },
+      "contains": {
+        "type": "object",
+        "required": [
+          "alpha",
+          "alternative",
+          "endpoint",
+          "learning_partition",
+          "method",
+          "minimum_base_lineages",
+          "noninferiority_margin",
+          "target_id"
+        ],
+        "properties": {
+          "alpha": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 0.05
+          },
+          "alternative": { "const": "one-sided-noninferiority" },
+          "endpoint": { "const": "valid-return-noninferiority" },
+          "learning_partition": { "const": "val" },
+          "method": { "const": "paired-binary-normal-approximation" },
+          "minimum_base_lineages": { "type": "integer", "minimum": 128 },
+          "noninferiority_margin": { "const": 0.02 },
+          "target_id": { "const": "validation-valid-return-noninferiority" }
+        }
+      },
+      "minContains": 1,
+      "maxContains": 1
+    },
+    "precision_targets": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/precisionTarget" },
+      "contains": {
+        "type": "object",
+        "required": [
+          "confidence_level",
+          "endpoint",
+          "half_width",
+          "learning_partition",
+          "method",
+          "minimum_base_lineages",
+          "outcome_bounds",
+          "target_id",
+          "variance_bound"
+        ],
+        "properties": {
+          "confidence_level": {
+            "type": "number",
+            "minimum": 0.95,
+            "exclusiveMaximum": 1
+          },
+          "endpoint": {
+            "const": "learned-minus-stock-unconditional-if-q3-s0"
+          },
+          "half_width": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 0.2
+          },
+          "learning_partition": { "const": "val" },
+          "method": {
+            "const": "bounded-paired-difference-worst-case-normal"
+          },
+          "minimum_base_lineages": { "type": "integer", "minimum": 128 },
+          "outcome_bounds": { "const": [-1, 1] },
+          "target_id": { "const": "validation-paired-utility-precision" },
+          "variance_bound": { "const": 1 }
+        }
+      },
+      "minContains": 1,
+      "maxContains": 1
+    },
+    "record_digest": { "$ref": "#/$defs/sha256" },
+    "schema": { "const": "isingfold.corpus-design" },
+    "schema_version": { "const": 2 },
+    "stratum_quotas": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/stratumQuota" }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "nonemptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "positiveInteger": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "probability": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "exclusiveMaximum": 1
+    },
+    "alpha": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "exclusiveMaximum": 0.5
+    },
+    "stringSet": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/nonemptyString" }
+    },
+    "faultStatusSet": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "enum": ["faulted", "none"] }
+    },
+    "distributionRegimeSet": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "enum": ["iid", "ood"] }
+    },
+    "calibrationStatusSet": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "enum": ["not_applicable", "recorded"] }
+    },
+    "problemOriginSet": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "enum": ["application-derived", "synthetic"] }
+    },
+    "axisValues": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "application_family",
+        "problem_origin",
+        "host_family",
+        "fault_status",
+        "distribution_regime",
+        "calibration_status",
+        "embedding_difficulty",
+        "sampling_difficulty",
+        "decision_difficulty"
+      ],
+      "properties": {
+        "application_family": { "$ref": "#/$defs/stringSet" },
+        "problem_origin": { "$ref": "#/$defs/problemOriginSet" },
+        "host_family": { "$ref": "#/$defs/stringSet" },
+        "fault_status": { "$ref": "#/$defs/faultStatusSet" },
+        "distribution_regime": { "$ref": "#/$defs/distributionRegimeSet" },
+        "calibration_status": { "$ref": "#/$defs/calibrationStatusSet" },
+        "embedding_difficulty": { "$ref": "#/$defs/stringSet" },
+        "sampling_difficulty": { "$ref": "#/$defs/stringSet" },
+        "decision_difficulty": { "$ref": "#/$defs/stringSet" }
+      }
+    },
+    "difficultyCalibration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authority",
+        "budget",
+        "evidence",
+        "origin",
+        "outcome_blind",
+        "panel",
+        "protocol",
+        "publisher_id"
+      ],
+      "properties": {
+        "authority": { "$ref": "#/$defs/contentAddressedArtifact" },
+        "budget": { "$ref": "#/$defs/contentAddressedArtifact" },
+        "evidence": { "$ref": "#/$defs/contentAddressedArtifact" },
+        "origin": { "$ref": "#/$defs/contentAddressedArtifact" },
+        "outcome_blind": { "const": true },
+        "panel": { "$ref": "#/$defs/contentAddressedArtifact" },
+        "protocol": { "$ref": "#/$defs/contentAddressedArtifact" },
+        "publisher_id": { "$ref": "#/$defs/nonemptyString" }
+      }
+    },
+    "contentAddressedArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\).+$"
+        },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "lineageCondition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "application_family",
+        "base_lineage_key",
+        "calibration_sha256",
+        "calibration_status",
+        "decision_difficulty",
+        "distribution_regime",
+        "embedding_difficulty",
+        "fault_status",
+        "host_family",
+        "learning_partition",
+        "problem_origin",
+        "sampling_difficulty"
+      ],
+      "properties": {
+        "application_family": { "$ref": "#/$defs/nonemptyString" },
+        "base_lineage_key": { "$ref": "#/$defs/nonemptyString" },
+        "calibration_sha256": {
+          "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/sha256" }]
+        },
+        "calibration_status": { "enum": ["not_applicable", "recorded"] },
+        "decision_difficulty": { "enum": ["easy", "hard"] },
+        "distribution_regime": { "enum": ["iid", "ood"] },
+        "embedding_difficulty": { "enum": ["easy", "hard"] },
+        "fault_status": { "enum": ["faulted", "none"] },
+        "host_family": { "$ref": "#/$defs/nonemptyString" },
+        "learning_partition": { "enum": ["test", "train", "val"] },
+        "problem_origin": { "enum": ["application-derived", "synthetic"] },
+        "sampling_difficulty": { "enum": ["easy", "hard"] }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "calibration_status": { "const": "not_applicable" } },
+            "required": ["calibration_status"]
+          },
+          "then": { "properties": { "calibration_sha256": { "type": "null" } } },
+          "else": { "properties": { "calibration_sha256": { "$ref": "#/$defs/sha256" } } }
+        }
+      ]
+    },
+    "designFilter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "application_family",
+        "problem_origin",
+        "host_family",
+        "fault_status",
+        "distribution_regime",
+        "calibration_status",
+        "embedding_difficulty",
+        "sampling_difficulty",
+        "decision_difficulty"
+      ],
+      "properties": {
+        "application_family": { "$ref": "#/$defs/stringSet" },
+        "problem_origin": { "$ref": "#/$defs/problemOriginSet" },
+        "host_family": { "$ref": "#/$defs/stringSet" },
+        "fault_status": { "$ref": "#/$defs/faultStatusSet" },
+        "distribution_regime": { "$ref": "#/$defs/distributionRegimeSet" },
+        "calibration_status": { "$ref": "#/$defs/calibrationStatusSet" },
+        "embedding_difficulty": { "$ref": "#/$defs/stringSet" },
+        "sampling_difficulty": { "$ref": "#/$defs/stringSet" },
+        "decision_difficulty": { "$ref": "#/$defs/stringSet" }
+      }
+    },
+    "stratumQuota": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["filter", "learning_partition", "minimum_base_lineages", "quota_id"],
+      "properties": {
+        "filter": { "$ref": "#/$defs/designFilter" },
+        "learning_partition": { "enum": ["test", "train", "val"] },
+        "minimum_base_lineages": { "$ref": "#/$defs/positiveInteger" },
+        "quota_id": { "$ref": "#/$defs/nonemptyString" }
+      }
+    },
+    "powerTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "alpha",
+        "alternative",
+        "assumed_discordance",
+        "assumed_true_difference",
+        "endpoint",
+        "filter",
+        "learning_partition",
+        "method",
+        "minimum_base_lineages",
+        "noninferiority_margin",
+        "power_separation",
+        "target_id",
+        "target_power"
+      ],
+      "properties": {
+        "alpha": { "$ref": "#/$defs/alpha" },
+        "alternative": {
+          "enum": ["one-sided-noninferiority", "two-sided-difference"]
+        },
+        "assumed_discordance": { "$ref": "#/$defs/probability" },
+        "assumed_true_difference": {
+          "type": "number",
+          "exclusiveMinimum": -1,
+          "exclusiveMaximum": 1
+        },
+        "endpoint": { "$ref": "#/$defs/nonemptyString" },
+        "filter": { "$ref": "#/$defs/designFilter" },
+        "learning_partition": { "enum": ["test", "train", "val"] },
+        "method": { "const": "paired-binary-normal-approximation" },
+        "minimum_base_lineages": { "$ref": "#/$defs/positiveInteger" },
+        "noninferiority_margin": {
+          "type": "number",
+          "minimum": 0,
+          "exclusiveMaximum": 1
+        },
+        "power_separation": { "$ref": "#/$defs/probability" },
+        "target_id": { "$ref": "#/$defs/nonemptyString" },
+        "target_power": {
+          "type": "number",
+          "exclusiveMinimum": 0.5,
+          "exclusiveMaximum": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "alternative": { "const": "one-sided-noninferiority" }
+            },
+            "required": ["alternative"]
+          },
+          "then": {
+            "properties": {
+              "noninferiority_margin": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "exclusiveMaximum": 1
+              }
+            }
+          },
+          "else": {
+            "properties": { "noninferiority_margin": { "const": 0 } }
+          }
+        }
+      ]
+    },
+    "precisionTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "confidence_level",
+        "endpoint",
+        "filter",
+        "half_width",
+        "learning_partition",
+        "method",
+        "minimum_base_lineages",
+        "outcome_bounds",
+        "target_id",
+        "variance_bound"
+      ],
+      "properties": {
+        "confidence_level": {
+          "type": "number",
+          "exclusiveMinimum": 0.5,
+          "exclusiveMaximum": 1
+        },
+        "endpoint": { "$ref": "#/$defs/nonemptyString" },
+        "filter": { "$ref": "#/$defs/designFilter" },
+        "half_width": { "$ref": "#/$defs/probability" },
+        "learning_partition": { "enum": ["test", "train", "val"] },
+        "method": {
+          "enum": [
+            "bounded-mean-worst-case-normal",
+            "bounded-paired-difference-worst-case-normal"
+          ]
+        },
+        "minimum_base_lineages": { "$ref": "#/$defs/positiveInteger" },
+        "outcome_bounds": {
+          "type": "array",
+          "prefixItems": [{ "type": "number" }, { "type": "number" }],
+          "items": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "target_id": { "$ref": "#/$defs/nonemptyString" },
+        "variance_bound": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "method": { "const": "bounded-mean-worst-case-normal" }
+            },
+            "required": ["method"]
+          },
+          "then": {
+            "properties": {
+              "outcome_bounds": { "const": [0, 1] },
+              "variance_bound": { "const": 0.25 }
+            }
+          },
+          "else": {
+            "properties": {
+              "outcome_bounds": { "const": [-1, 1] },
+              "variance_bound": { "const": 1 }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

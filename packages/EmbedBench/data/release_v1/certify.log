@@ -1,0 +1,4 @@
+structural_chimera5.jsonl  records=204 mm_invalid_output=113 brute_checked=1401 brute_mismatch=0 feas_bad=0 infeasible_actions=132 mm_attempted=132 mm_contradictions=0 mm_found_over_cap=0 mm_error=19
+structural_pegasus3.jsonl  records=300 mm_invalid_output=190 brute_checked=2373 brute_mismatch=0 feas_bad=0 infeasible_actions=201 mm_attempted=201 mm_contradictions=0 mm_found_over_cap=0 mm_error=11
+structural_zephyr2.jsonl   records=300 mm_invalid_output=173 brute_checked=2272 brute_mismatch=0 feas_bad=0 infeasible_actions=187 mm_attempted=187 mm_contradictions=0 mm_found_over_cap=0 mm_error=14
+TOTAL records=804 mm_invalid_output=476 brute_checked=6046 brute_mismatch=0 feas_bad=0 infeasible_actions=520 mm_attempted=520 mm_contradictions=0 mm_found_over_cap=0 mm_error=44 seconds=4852

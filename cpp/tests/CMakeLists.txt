@@ -1,0 +1,27 @@
+add_executable(test_graph test_graph.cpp)
+target_link_libraries(test_graph PRIVATE lac_minorminer_core)
+add_test(NAME graph COMMAND test_graph)
+
+add_executable(test_embedding_state test_embedding_state.cpp)
+target_link_libraries(test_embedding_state PRIVATE lac_minorminer_core)
+add_test(NAME embedding_state COMMAND test_embedding_state)
+
+add_executable(test_weighted_router test_weighted_router.cpp)
+target_link_libraries(test_weighted_router PRIVATE lac_minorminer_core)
+add_test(NAME weighted_router COMMAND test_weighted_router)
+
+add_executable(test_candidate_generator test_candidate_generator.cpp)
+target_link_libraries(test_candidate_generator PRIVATE lac_minorminer_core)
+add_test(NAME candidate_generator COMMAND test_candidate_generator)
+
+add_executable(test_search_session test_search_session.cpp)
+target_link_libraries(test_search_session PRIVATE lac_minorminer_core)
+add_test(NAME search_session COMMAND test_search_session)
+
+add_executable(test_session_concurrency test_session_concurrency.cpp)
+target_link_libraries(test_session_concurrency PRIVATE lac_minorminer_core Threads::Threads)
+add_test(NAME session_concurrency COMMAND test_session_concurrency)
+
+add_executable(test_work_counters test_work_counters.cpp)
+target_link_libraries(test_work_counters PRIVATE lac_minorminer_core)
+add_test(NAME work_counters COMMAND test_work_counters)

@@ -1,0 +1,56 @@
+# Proposed design values; not a runnable implementation or measured optimum.
+version: isingfold_architecture_rev2_pilot
+endpoint: IF-Q3-S0
+mode: protected_initializer_improvement
+model:
+  family: IF-Core
+  width: 128
+  local_blocks: 3
+  typed_fusion_blocks: 2
+  global_feature_scalars: 32
+  schema_scalar_slots: 120
+  rl_dropout: 0.0
+actions:
+  state_changing_cap: 64
+  archive_commits_cap: 8
+  padded_total_cap: 73
+  group_sizes: [2, 3, 4, 8]
+  generator_frozen: true
+archive:
+  protected_slots: 1
+  fifo_slots: 7
+overlap:
+  max_occupancy: 2
+  excess_fraction_of_qubit_cap: 0.10
+strength:
+  count: 4
+  pilot_rms_ratios: [0.5, 1.0, 2.0, 4.0]
+  selection: frozen_program_feature_predictor
+  selector_shared_across_methods: true
+  uses_ground_energy_online: false
+ppo:
+  gamma: 1.0
+  gae_lambda: 0.95
+  clip: 0.20
+  learning_rate: 0.0003
+  epochs: 4
+  complete_episodes_per_batch: 64
+  minibatch_transitions: 256
+  gradient_norm_cap: 0.5
+  kl_early_stop: 0.02
+  initial_entropy_coefficient: 0.01
+  terminal_only_reward: true
+  deployment: categorical_temperature_one
+  failure_dual_in_conditional_improvement: false
+pilot_budget:
+  macro_decisions: 32
+  route_expansions: 200000
+  selected_strength_reward_reads: 256
+  audit_reads_per_strength: 4096
+  charge_all_proposals: true
+  reserve_terminal_work: true
+evidence:
+  pilot_training_seeds: 3
+  confirmatory_training_seeds: 5
+  feasibility_margin: 0.02
+  final_instance_count: requires_paired_power_analysis

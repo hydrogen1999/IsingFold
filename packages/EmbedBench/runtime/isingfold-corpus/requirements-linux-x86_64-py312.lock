@@ -1,0 +1,38 @@
+# IsingFold corpus runtime for CPython 3.12 on Linux x86_64.
+#
+# This file is shared by the clean Apollo virtualenv and the Goose Apptainer
+# image.  Every transitive runtime dependency is pinned, and every accepted
+# wheel is identified by its PyPI SHA-256.  Do not add editable or VCS installs.
+# EmbedBench itself is installed from the separately committed source tree at
+# version 0.1.0 after this lock has been installed.
+--only-binary=:all:
+--require-hashes
+
+dimod==0.12.22 \
+    --hash=sha256:ca9e9bcd7ac681f699435694cf2a43592a70bf205088e1a9d05fc5d4088c8f29
+dwave-graphs==1.0.0 \
+    --hash=sha256:0554a72627d5daecbf7b56eb15bd9f4ad94a571b09b4ae18c85612360ad66ecd
+dwave-networkx==0.8.19 \
+    --hash=sha256:fc53e54133fb4d85d9d52fb3066b66fca13db2c95e18a824fc1544f90f287c3d
+dwave-samplers==1.8.0 \
+    --hash=sha256:0808d8e840b6fa552a1f62a30fbd0d5a04d34044c1b1d4c3152a4991f66e26e8
+fasteners==0.20 \
+    --hash=sha256:9422c40d1e350e4259f509fb2e608d6bc43c0136f79a00db1b49046029d0b3b7
+homebase==1.0.1 \
+    --hash=sha256:d64c97f60a8ddd94ce8702bac65ed5d1996aca01a17d1e53e6ad5149e2f8b5b5
+minorminer==0.2.22 \
+    --hash=sha256:b0171e15fb6ea2f38512e4d7706ce97bdc7a15efa67c4b930c4aea2f548dae68
+networkx==3.6.1 \
+    --hash=sha256:d47fbf302e7d9cbbb9e2555a0d267983d2aa476bac30e90dfbe5669bd57f3762
+numpy==2.4.4 \
+    --hash=sha256:81f4a14bee47aec54f883e0cad2d73986640c1590eb9bfaaba7ad17394481e6e
+packaging==26.3 \
+    --hash=sha256:d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c
+pip==26.2.1 \
+    --hash=sha256:71138adf1f4ca900cdb7d289c21b7494329f2332b6d85f0e1c42108c0384ed3e
+scipy==1.18.0 \
+    --hash=sha256:1f55797419e16e7f30cf88ffb3113ce0467f00cfe3f70d5c281730b21769bfc2
+setuptools==78.1.0 \
+    --hash=sha256:3e386e96793c8702ae83d17b853fb93d3e09ef82ec62722e61da5cd22376dcd8
+wheel==0.47.0 \
+    --hash=sha256:212281cab4dff978f6cedd499cd893e1f620791ca6ff7107cf270781e587eced

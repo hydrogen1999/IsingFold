@@ -1,0 +1,41 @@
+\section{Artifact provenance and build instructions}\label{app:provenance}
+\subsection{Reproducibility boundary}
+Architecture source, runtime source, data authority, and experimental evidence have separate identities. The editable modular source is \code{main.tex} plus \code{sections/}; \code{ISINGFOLD\_RL\_ARCHITECTURE\_EN.tex} is its self-contained distribution form. Runtime checkpoints bind the source registry implemented by \code{checkpoint.py}. Prepared-v4 binds the independent CandidateBank export, corpus design, provenance bytes, public policy data, and partitioned target commitments. Target-bearing artifacts additionally bind an out-of-band publisher attestation v2, target-access receipt, and root-authenticated selected-partition certificate authority. Target-free plans bind only the public ground root. Evaluation reports bind raw receipts rather than relying on aggregate numbers alone.
+
+The scientific compatibility chain is prepared schema v4, publisher attestation v2, and ground-certificate protocol v2 with a target-free root plus selected-partition receipts; selector-label manifest v4 and selector bundle v4; quality record v7 with shard/merge envelope v5 and quality preflight v2; release gate v6; representation selection v4 and RL-value freeze v4; checkpoint v3 and training-run receipt v4. Initializer plan, snapshot, bank manifest, and access artifacts use v1. Learned complete-system receipts use v3 with evaluation report v4 and three-seed aggregate v2. External tuning run and selection receipts use v2; external complete-system receipts use v3 with report v4; and the paired aggregate uses v4. Resumable evaluation uses plan v2, shard receipt v3, and merge receipt v2. The final-strength diagnostic uses config v1, sampler identity v1, plan v2, row v1, execution manifest v2, shard v1, merge v1, and audit receipt v2. The main experiment registry is \code{configs/rl\_grid\_v1.json}; the complete-system contract is \code{configs/complete\_system\_lac\_v1.json}; the validation-only stock tuning registry is \code{configs/external\_minorminer\_tuning\_v1.json}; the final-strength diagnostic is \code{configs/final\_strength\_audit\_v1.json}; and the isolated capacity diagnostic is \code{configs/rl\_capacity\_control\_v1.json}. The operational sequence and exact command lines are maintained in \code{documents/TRAINING\_OPERATIONS.md}.
+
+\subsection{Compatibility rules}
+\begin{enumerate}
+\item Preserve original V2 contexts and labels. Create IF-Q3-S0 contexts for the new selector and logical tolerance; do not overwrite historical endpoint identifiers.
+\item Require complete claim and group-action tensors for overlap trajectories. A disjoint static record is not a substitute.
+\item Keep the frozen terminal selector separate from PPO critics and exclude ground-truth strength selection from deployable code paths.
+\item Charge proposal work, reserve the terminal path, set RL dropout to zero, and store exact action supports.
+\item Keep hidden witness and optimum-certificate records outside policy input; split by immutable base parent.
+\item Plan and seal per-seed initializer banks before target-bearing training; preserve every rejected draw and fail closed on an exhausted conditional episode.
+\item Shard evaluation by whole immutable base lineages, derive seeds from scientific identities rather than shard order, and accept only a complete nonoverlapping merge.
+\item Treat any schema, source digest, publisher identity, ground root or partition, selector, initializer bank, support, budget, or seed-schedule change as a new artifact lineage.
+\item Run Apollo workloads directly with the pinned virtual environment. Run Goose workloads only through Slurm allocations with the pinned Apptainer image.
+\end{enumerate}
+
+\subsection{How to compile and edit the delivered source}
+The delivered single-file \code{ISINGFOLD\_RL\_ARCHITECTURE\_EN.tex} includes the style, figures, all sections and references inline. It requires no external diagram exports or bibliography database. Compile with:
+\begin{Verbatim}
+pdflatex -interaction=nonstopmode -halt-on-error ISINGFOLD_RL_ARCHITECTURE_EN.tex
+pdflatex -interaction=nonstopmode -halt-on-error ISINGFOLD_RL_ARCHITECTURE_EN.tex
+\end{Verbatim}
+Run a third pass if page references change. Alternatively use \code{latexmk -pdf}. The source bundle also includes modular \code{main.tex} and the \code{sections/} directory, a Makefile, a source-digest manifest and a README.
+
+\section{Worked checks for the mathematical contracts}\label{app:worked}
+\subsection{A small planted logical optimum}
+Take a four-cycle with $J_{12}=J_{23}=J_{34}=-1$ and $J_{41}=+1$, with zero fields. Any spin assignment leaves an odd number of preferred edge relations unsatisfied, so at least one edge contributes $+1$. The minimum energy is $-4+2=-2$, attained by all-plus. A gauge $s^\star=(+1,-1,+1,-1)$ changes the signs to $(+1,+1,+1,-1)$ and preserves $E_0=-2$. The planted solution is not unique. A witness embedding of this cycle proves that it can be placed on a host; it still gives no ordering among several valid embeddings' solve probabilities.
+
+\subsection{Equal qubit count can have different cut certificates}
+Consider two candidate locations for a three-qubit logical chain, one inducing a path and one a triangle, with the same absolute external-load vector $(2,0,2)$. Such loads can arise from a logical coupling of magnitude four allocated over two endpoint contacts. Both candidates use three qubits and total load $A=4$. The path's single-edge endpoint cut has $d/c=2$; the triangle's endpoint cut has $d/c=1$, and its zero-load middle-vertex cut has ratio zero. Thus their exact cut sufficient thresholds are 2 and 1 respectively.
+
+At $F=1.5$, the triangle has positive margin on every cut, whereas the path fails this conservative sufficient condition. The lack of a path certificate does not prove a broken ground state or lower decoded quality. If its two external contacts have aligned drive, the absolute-load bound can be loose. If the program coupler range is one and each problem contact has magnitude two, the shrink-only rule gives scale $a=1/2$ for both candidates. Scaling changes the sampling landscape even though it preserves ideal energy ordering. This example justifies including geometry and allocation features, not assigning a quality reward from the cut threshold alone.
+
+\subsection{Why a noisy four-strength maximum is optimistic}
+Suppose every strength has true success probability $0.5$ and each receives one independent diagnostic read. The maximum of the four observed proportions is one unless all four reads fail, hence its expectation is $1-(1/2)^4=0.9375$, although the population maximum is $0.5$. Selecting one strength without those outcomes and estimating it on a fresh read has expectation $0.5$. Increasing read counts reduces but does not generally eliminate the maximum-selection bias.
+
+\subsection{A trajectory is an RL sample, not eight supervised examples}
+For a two-step search, action $a_0$ may temporarily increase conflict and enable a final high-quality rewrite $a_1$. A one-step reward based only on conflict reduction can prefer another action and change the objective. Terminal utility with $\gamma=1$ credits the chosen sequence. Counterfactual labels under a frozen continuation $\mu$ quantify only what $\mu$ does after $a_0$; they are not the best possible continuation. PPO can improve that continuation through on-policy updates if the candidate support contains the necessary next actions. It cannot create an action absent from that support.

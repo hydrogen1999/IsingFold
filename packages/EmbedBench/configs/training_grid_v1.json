@@ -1,0 +1,44 @@
+{
+  "schema": "embedbench.training-grid",
+  "schema_version": 1,
+  "grid_id": "isingfold-available-seams-family-screen-v1",
+  "claim_scope": "Family screening for the two currently implemented learned seams; this is not the full five-seam 87-cell inventory.",
+  "selection": {
+    "unit": "logical problem group",
+    "primary_metric": "validation model regret for quality; validation top-1 for structural",
+    "scope": "preliminary family screen; grouped development cross-validation is required before final architecture selection",
+    "test_policy": "locked during all grid cells",
+    "seeds": [0, 1, 2]
+  },
+  "stages": {
+    "structural_family_screen": {
+      "trainer": "scripts/train_structural.py",
+      "inputs": "data/release_v1_1/structural_*.jsonl",
+      "splits": "data/release_v1_1/splits_structural_v2.json",
+      "output_dir": "runs/training_grid_v1/structural",
+      "checkpoint_dir": "runs/training_grid_v1/checkpoints/structural",
+      "epochs": 15,
+      "axis_order": ["arch", "seed"],
+      "axes": {
+        "arch": ["mpnn", "gin", "gatv2", "gps"],
+        "seed": [0, 1, 2]
+      },
+      "extra_args": []
+    },
+    "quality_chain_family_screen": {
+      "trainer": "scripts/train_chain.py",
+      "inputs": "data/release_v1_1/quality_*.jsonl",
+      "splits": "data/release_v1_1/splits_quality_problem_v2.json",
+      "output_dir": "runs/training_grid_v1/quality_chain",
+      "checkpoint_dir": "runs/training_grid_v1/checkpoints/quality_chain",
+      "epochs": 25,
+      "axis_order": ["arch", "loss", "seed"],
+      "axes": {
+        "arch": ["mpnn", "gin", "gatv2", "gps", "hetero"],
+        "loss": ["pairwise", "listwise"],
+        "seed": [0, 1, 2]
+      },
+      "extra_args": ["--deploy-view"]
+    }
+  }
+}

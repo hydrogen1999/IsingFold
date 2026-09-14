@@ -1,0 +1,60 @@
+[build-system]
+requires = [
+  "scikit-build-core>=1,<2",
+  "pybind11>=3.1,<4",
+]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "isingfold"
+version = "0.1.0"
+description = "A neural-guided minor embedder optimized for connectivity and Ising solution quality"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+  { name = "IsingFold contributors" },
+]
+dependencies = [
+  "dimod>=0.12,<0.13",
+  "dwave-samplers>=1.2,<2",
+  "networkx>=3.3,<4",
+  "numpy>=2.0,<3",
+]
+
+[project.scripts]
+isingfold-rl = "isingfold.rl.cli:main"
+
+[project.optional-dependencies]
+dev = [
+  "cmake>=3.24,<4.5",
+  "pytest>=9,<10",
+  "ruff>=0.15,<0.16",
+]
+baseline = [
+  "minorminer==0.2.22",
+]
+figures = [
+  "dwave-networkx>=0.8",
+  "matplotlib>=3",
+  "minorminer==0.2.22",
+  "networkx>=3.3",
+  "numpy>=2.0",
+]
+rl = [
+  "torch>=2.4",
+]
+
+[tool.scikit-build]
+minimum-version = "build-system.requires"
+cmake.version = ">=3.24,<4.5"
+build-dir = "build/{wheel_tag}"
+wheel.packages = ["src/isingfold", "src/lac_minorminer", "src/isingfold_lac_b"]
+wheel.reproducible = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests", "probes"]

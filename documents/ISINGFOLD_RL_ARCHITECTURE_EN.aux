@@ -1,0 +1,216 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyperFirstAtBeginDocument{\AtBeginDocument}
+\HyperFirstAtBeginDocument{\ifx\hyper@anchor\@undefined
+\global\let\oldnewlabel\newlabel
+\gdef\newlabel#1#2{\newlabelxx{#1}#2}
+\gdef\newlabelxx#1#2#3#4#5#6{\oldnewlabel{#1}{{#2}{#3}}}
+\AtEndDocument{\ifx\hyper@anchor\@undefined
+\let\newlabel\oldnewlabel
+\fi}
+\fi}
+\global\let\hyper@last\relax 
+\gdef\HyperFirstAtBeginDocument#1{#1}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\gdef \LT@i {\LT@entry 
+    {1}{109.91003pt}\LT@entry 
+    {1}{341.34735pt}}
+\@writefile{toc}{\contentsline {section}{Architecture decisions}{i}{Doc-Start}\protected@file@percent }
+\citation{charme2024}
+\citation{nembrini2026}
+\citation{dwave2026}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Problem, programming map and deployable objective}{1}{section.2}\protected@file@percent }
+\newlabel{sec:objective}{{1}{1}{Problem, programming map and deployable objective}{section.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Objects and notation}{1}{subsection.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.2}A concrete baseline programming policy}{1}{subsection.6}\protected@file@percent }
+\newlabel{eq:program-identity}{{5}{1}{A concrete baseline programming policy}{equation.9}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.3}Autoscaling and precision}{1}{subsection.10}\protected@file@percent }
+\newlabel{eq:scale}{{6}{1}{Autoscaling and precision}{equation.11}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.4}Three quantities that must not be conflated}{2}{subsection.13}\protected@file@percent }
+\newlabel{eq:pj}{{8}{2}{Three quantities that must not be conflated}{equation.14}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.5}New endpoint contract: IF-Q3-S0}{2}{subsection.18}\protected@file@percent }
+\newlabel{eq:strength-selector}{{10}{3}{New endpoint contract: IF-Q3-S0}{equation.20}{}}
+\newlabel{eq:unbiased}{{11}{3}{New endpoint contract: IF-Q3-S0}{equation.21}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.6}Failure-aware terminal utility and constraints}{3}{subsection.22}\protected@file@percent }
+\newlabel{eq:utility}{{12}{3}{Failure-aware terminal utility and constraints}{equation.23}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.7}Scope at scale and the role of T0}{4}{subsection.25}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Environment, macro-actions and complete search accounting}{4}{section.26}\protected@file@percent }
+\newlabel{sec:system}{{2}{4}{Environment, macro-actions and complete search accounting}{section.26}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Two operating profiles}{4}{subsection.27}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Registered operating boundary. The search loop uses no true solve probabilities. The evaluator supplies rewards during training and independent scores during testing. The frozen strength selector is shared by all embedders.\relax }}{4}{figure.caption.28}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{fig:system}{{1}{4}{Registered operating boundary. The search loop uses no true solve probabilities. The evaluator supplies rewards during training and independent scores during testing. The frozen strength selector is shared by all embedders.\relax }{figure.caption.28}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Environment state and semantic observation}{5}{subsection.29}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Controlled overlap invariants}{5}{subsection.31}\protected@file@percent }
+\gdef \LT@ii {\LT@entry 
+    {1}{100.4617pt}\LT@entry 
+    {1}{350.78848pt}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}A finite, fully bound action grammar}{6}{subsection.33}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Candidate construction and diversity}{6}{subsection.35}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.6}Work must be charged before preference is learned}{7}{subsection.36}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.7}Sealed deployment-initializer bank}{7}{subsection.41}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.8}Archive design and publication boundary}{8}{subsection.42}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.9}Action-support headroom before RL}{8}{subsection.44}\protected@file@percent }
+\citation{choi2008}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Theory bridge: what geometry can justify}{9}{section.46}\protected@file@percent }
+\newlabel{theory:bridge}{{3}{9}{Theory bridge: what geometry can justify}{section.46}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Structural graph, programmed graph, and effective load}{9}{subsection.47}\protected@file@percent }
+\newlabel{theory:objects}{{3.1}{9}{Structural graph, programmed graph, and effective load}{subsection.47}{}}
+\newlabel{theory:physical}{{21}{9}{Structural graph, programmed graph, and effective load}{equation.48}{}}
+\newlabel{theory:cutquantities}{{22}{10}{Structural graph, programmed graph, and effective load}{equation.49}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}A sufficient chain-integrity condition, with proof}{10}{subsection.50}\protected@file@percent }
+\newlabel{theory:certificate}{{3.2}{10}{A sufficient chain-integrity condition, with proof}{subsection.50}{}}
+\newlabel{theory:cutproposition}{{3.1}{10}{Cut-load sufficient condition}{proposition.51}{}}
+\newlabel{theory:repairgap}{{23}{10}{Cut-load sufficient condition}{equation.52}{}}
+\gdef \LT@iii {\LT@entry 
+    {1}{109.91003pt}\LT@entry 
+    {1}{346.06792pt}}
+\newlabel{theory:mincutcertificate}{{24}{11}{A sufficient chain-integrity condition, with proof}{equation.53}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Certificates and neural cut tokens have different roles}{11}{subsection.54}\protected@file@percent }
+\newlabel{theory:tiers}{{3.3}{11}{Certificates and neural cut tokens have different roles}{subsection.54}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Autoscaling, quantization, and the limit of the guarantee}{11}{subsection.56}\protected@file@percent }
+\newlabel{theory:limits}{{3.4}{11}{Autoscaling, quantization, and the limit of the guarantee}{subsection.56}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Consequences for the architecture and its ablations}{12}{subsection.57}\protected@file@percent }
+\newlabel{theory:architecture}{{3.5}{12}{Consequences for the architecture and its ablations}{subsection.57}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Neural architecture: an implementable IF-Core}{12}{section.58}\protected@file@percent }
+\newlabel{sec:model}{{4}{12}{Neural architecture: an implementable IF-Core}{section.58}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Architecture decision and learning boundary}{12}{subsection.59}\protected@file@percent }
+\citation{mpnn2017}
+\citation{hgt2020}
+\citation{pna2020}
+\citation{gps2022}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Concrete initial neural model. Exact masks are supplied by the environment. The separate frozen terminal strength predictor is outside this PPO network. Additional cut or global-attention modules are controlled extensions.\relax }}{13}{figure.caption.60}\protected@file@percent }
+\newlabel{fig:core}{{2}{13}{Concrete initial neural model. Exact masks are supplied by the environment. The separate frozen terminal strength predictor is outside this PPO network. Additional cut or global-attention modules are controlled extensions.\relax }{figure.caption.60}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Observation record, tensorization, and normalization}{13}{subsection.61}\protected@file@percent }
+\gdef \LT@iv {\LT@entry 
+    {1}{91.01337pt}\LT@entry 
+    {1}{59.23445pt}\LT@entry 
+    {1}{317.73013pt}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Exact core feature schema}{14}{subsection.62}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Ownership and action tensors preserve relational identity}{15}{subsection.64}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Forward computation and prediction heads}{16}{subsection.65}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Archive representation and separate strength predictor}{17}{subsection.66}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.7}Optional cut tokens and physical interpretation}{18}{subsection.67}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.8}Training mechanics, cost, and model ladder}{19}{subsection.68}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Reinforcement learning and optimization contract}{20}{section.69}\protected@file@percent }
+\newlabel{sec:rl-training}{{5}{20}{Reinforcement learning and optimization contract}{section.69}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}What the first policy is trained to do}{20}{subsection.70}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}IF-Q3 terminal reward and the information boundary}{20}{subsection.71}\protected@file@percent }
+\newlabel{sec:rl-q3}{{5.2}{20}{IF-Q3 terminal reward and the information boundary}{subsection.71}{}}
+\newlabel{eq:rl-strength-selector}{{25}{20}{IF-Q3 terminal reward and the information boundary}{equation.72}{}}
+\newlabel{eq:rl-terminal-count}{{26}{20}{IF-Q3 terminal reward and the information boundary}{equation.73}{}}
+\citation{masking2020}
+\newlabel{eq:rl-terminal-outcome}{{27}{21}{IF-Q3 terminal reward and the information boundary}{equation.74}{}}
+\newlabel{eq:rl-reward-unbiased}{{28}{21}{IF-Q3 terminal reward and the information boundary}{equation.75}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Decision time, macro duration, and work budgets}{21}{subsection.76}\protected@file@percent }
+\newlabel{eq:rl-budget-accounting}{{30}{21}{Decision time, macro duration, and work budgets}{equation.78}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Policy distribution and exact likelihood replay}{21}{subsection.79}\protected@file@percent }
+\newlabel{eq:rl-flat-policy}{{31}{21}{Policy distribution and exact likelihood replay}{equation.80}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}Two critics with explicit meanings}{22}{subsection.82}\protected@file@percent }
+\newlabel{eq:rl-critics}{{33}{22}{Two critics with explicit meanings}{equation.83}{}}
+\newlabel{eq:rl-value-loss}{{34}{22}{Two critics with explicit meanings}{equation.84}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.6}Supervised initialization and the transition to on-policy data}{22}{subsection.85}\protected@file@percent }
+\citation{gae2016}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.7}GAE and complete-episode weighting}{23}{subsection.86}\protected@file@percent }
+\newlabel{eq:rl-gae}{{37}{23}{GAE and complete-episode weighting}{equation.89}{}}
+\citation{ppo2017}
+\citation{cpo2017}
+\citation{shaping1999}
+\newlabel{eq:rl-episode-reduction}{{38}{24}{GAE and complete-episode weighting}{equation.90}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.8}PPO and the optional failure constraint}{24}{subsection.91}\protected@file@percent }
+\newlabel{eq:rl-cmdp}{{39}{24}{PPO and the optional failure constraint}{equation.92}{}}
+\newlabel{eq:rl-ppo-surrogates}{{42}{24}{PPO and the optional failure constraint}{equation.95}{}}
+\newlabel{eq:rl-actor-loss}{{43}{24}{PPO and the optional failure constraint}{equation.96}{}}
+\newlabel{eq:rl-dual}{{44}{24}{PPO and the optional failure constraint}{equation.97}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.9}Why the original shaping sweep is removed}{25}{subsection.98}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.10}Executable training cycle and deployment rule}{25}{subsection.100}\protected@file@percent }
+\gdef \LT@v {\LT@entry 
+    {1}{109.91003pt}\LT@entry 
+    {1}{346.06792pt}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.11}Diagnostics required before increasing model capacity}{26}{subsection.108}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Data generation: feasible witnesses, certified energies, and policy experience}{26}{section.109}\protected@file@percent }
+\newlabel{data:overview}{{6}{26}{Data generation: feasible witnesses, certified energies, and policy experience}{section.109}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Five distinct record types and their guarantees}{26}{subsection.110}\protected@file@percent }
+\newlabel{data:labels}{{6.1}{26}{Five distinct record types and their guarantees}{subsection.110}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Authenticated production boundary}{27}{subsection.112}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Ink-drop generation with an explicit witness}{28}{subsection.113}\protected@file@percent }
+\newlabel{data:inkdrop}{{6.3}{28}{Ink-drop generation with an explicit witness}{subsection.113}{}}
+\citation{hen2015}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Compose embedding planting with logical-energy planting}{29}{subsection.121}\protected@file@percent }
+\newlabel{data:frustrated}{{6.4}{29}{Compose embedding planting with logical-energy planting}{subsection.121}{}}
+\newlabel{data:plantedenergy}{{45}{29}{Compose embedding planting with logical-energy planting}{equation.122}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Separate embedding difficulty from sampling difficulty}{30}{subsection.123}\protected@file@percent }
+\newlabel{data:hardness}{{6.5}{30}{Separate embedding difficulty from sampling difficulty}{subsection.123}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.6}Exact structural labels and their continuation domain}{30}{subsection.124}\protected@file@percent }
+\newlabel{data:structural}{{6.6}{30}{Exact structural labels and their continuation domain}{subsection.124}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.7}Quality counterfactuals must name their continuation policy}{31}{subsection.125}\protected@file@percent }
+\newlabel{data:counterfactual}{{6.7}{31}{Quality counterfactuals must name their continuation policy}{subsection.125}{}}
+\newlabel{data:qmu}{{46}{31}{Quality counterfactuals must name their continuation policy}{equation.126}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.8}Leakage-resistant lineages and data contracts}{31}{subsection.127}\protected@file@percent }
+\newlabel{data:splits}{{6.8}{31}{Leakage-resistant lineages and data contracts}{subsection.127}{}}
+\gdef \LT@vi {\LT@entry 
+    {1}{109.91003pt}\LT@entry 
+    {1}{346.06792pt}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.9}Corpus requirements and release gates}{32}{subsection.128}\protected@file@percent }
+\newlabel{data:plan}{{6.9}{32}{Corpus requirements and release gates}{subsection.128}{}}
+\gdef \LT@vii {\LT@entry 
+    {1}{119.35837pt}\LT@entry 
+    {1}{331.89902pt}}
+\citation{charme2024}
+\citation{nembrini2026}
+\@writefile{toc}{\contentsline {section}{\numberline {7}Experiments that decide whether the architecture works}{33}{section.130}\protected@file@percent }
+\newlabel{sec:evaluation}{{7}{33}{Experiments that decide whether the architecture works}{section.130}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Separate four sources of improvement}{33}{subsection.131}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Fixed representation and RL-value grid}{34}{subsection.133}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.3}Resumable sharded evaluation}{35}{subsection.134}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.4}Primary and secondary endpoints}{36}{subsection.135}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.5}Difficulty and feasible populations}{36}{subsection.137}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.6}Uncertainty, power and a two-percentage-point margin}{36}{subsection.138}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.7}Simulator-to-QPU evidence}{37}{subsection.141}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.8}A disciplined claim ladder}{37}{subsection.142}\protected@file@percent }
+\gdef \LT@viii {\LT@entry 
+    {1}{147.69617pt}\LT@entry 
+    {1}{303.56123pt}}
+\@writefile{toc}{\contentsline {section}{\numberline {8}Implementation and experiment registry}{38}{section.149}\protected@file@percent }
+\newlabel{sec:implementation}{{8}{38}{Implementation and experiment registry}{section.149}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Modules and information ownership}{38}{subsection.150}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Verification obligations}{39}{subsection.152}\protected@file@percent }
+\gdef \LT@ix {\LT@entry 
+    {1}{147.69617pt}\LT@entry 
+    {1}{106.4617pt}\LT@entry 
+    {1}{209.09232pt}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3}Registered Profile-I configuration}{40}{subsection.153}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.4}Checkpoint and release contents}{41}{subsection.155}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.5}Suggested paper organization once evidence exists}{41}{subsection.156}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {A}Artifact provenance and build instructions}{42}{appendix.157}\protected@file@percent }
+\newlabel{app:provenance}{{A}{42}{Artifact provenance and build instructions}{appendix.157}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.1}Reproducibility boundary}{42}{subsection.158}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.2}Compatibility rules}{42}{subsection.159}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.3}How to compile and edit the delivered source}{43}{subsection.169}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {B}Worked checks for the mathematical contracts}{43}{appendix.170}\protected@file@percent }
+\newlabel{app:worked}{{B}{43}{Worked checks for the mathematical contracts}{appendix.170}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {B.1}A small planted logical optimum}{43}{subsection.171}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {B.2}Equal qubit count can have different cut certificates}{43}{subsection.172}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {B.3}Why a noisy four-strength maximum is optimistic}{43}{subsection.173}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {B.4}A trajectory is an RL sample, not eight supervised examples}{43}{subsection.174}\protected@file@percent }
+\bibcite{cai2014}{1}
+\bibcite{choi2008}{2}
+\bibcite{hen2015}{3}
+\bibcite{charme2024}{4}
+\bibcite{nembrini2026}{5}
+\bibcite{mpnn2017}{6}
+\bibcite{pna2020}{7}
+\bibcite{hgt2020}{8}
+\bibcite{gps2022}{9}
+\bibcite{ppo2017}{10}
+\bibcite{gae2016}{11}
+\bibcite{masking2020}{12}
+\bibcite{shaping1999}{13}
+\bibcite{cpo2017}{14}
+\bibcite{dwave2026}{15}
+\@writefile{toc}{\contentsline {section}{References}{45}{subsection.174}\protected@file@percent }
+\newlabel{LastPage}{{}{45}{}{page.50}{}}
+\xdef\lastpage@lastpage{45}
+\xdef\lastpage@lastpageHy{50}
+\gdef \@abspage@last{50}

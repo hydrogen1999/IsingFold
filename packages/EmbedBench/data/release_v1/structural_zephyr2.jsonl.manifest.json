@@ -1,0 +1,45 @@
+{
+ "config": {
+  "topology": "zephyr",
+  "size": 2,
+  "n_vars": 12,
+  "chain_size": 3,
+  "modes": [
+   "compact",
+   "elongated",
+   "cut_congested",
+   "near_capacity"
+  ],
+  "k_in_play": 3,
+  "radius": 1,
+  "l_cap": 4,
+  "max_window_free": 30,
+  "max_nodes": 200000,
+  "samples_per_instance": 6,
+  "prefix_keep_prob": 0.5,
+  "max_actions": 12,
+  "q_cap_slack": null
+ },
+ "n_instances_per_mode": 60,
+ "seed": 100,
+ "jobs": 4,
+ "stats": {
+  "instances": 240,
+  "generation_failures": 0,
+  "samples_attempted": 1440,
+  "samples_kept": 301,
+  "dropped_no_margin": 1137,
+  "dropped_window_too_large": 0,
+  "dropped_aborted": 1,
+  "dropped_no_actions": 1,
+  "greedy_disagreements": 176,
+  "margin_kinds": {
+   "qubits": 292,
+   "max_chain": 7,
+   "feasibility": 2
+  },
+  "exact_nodes_total": 21249759
+ },
+ "sha256": "35b537d790b3f4aaa0184c038987c60bf943770f796609af8f829ceb71a9fdbb",
+ "file": "runs/release_v1/structural_zephyr2.jsonl"
+}

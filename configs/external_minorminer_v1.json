@@ -1,0 +1,17 @@
+{
+  "schema": "isingfold.external-baseline-config",
+  "schema_version": 1,
+  "backend": "stock-minorminer",
+  "expected_backend_version": "0.2.22",
+  "embedding_wallclock_seconds": 60.0,
+  "max_restarts": 10,
+  "audit_reads": 4096,
+  "selection_rule": "resource-lexicographic",
+  "online_evaluator_feedback": false,
+  "minorminer_parameters": {
+    "tries": 1,
+    "threads": 1,
+    "max_no_improvement": 10,
+    "chainlength_patience": 10
+  }
+}

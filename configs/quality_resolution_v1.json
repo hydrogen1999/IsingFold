@@ -1,0 +1,19 @@
+{
+  "schema": "isingfold.quality-resolution-config",
+  "schema_version": 1,
+  "study_id": "if-quality-resolution-v1",
+  "partition": "train",
+  "production_lineages": "all",
+  "study_lineages": 128,
+  "tasks_per_lineage_cap": 1,
+  "states_per_lineage_cap": 4,
+  "evaluated_actions": 8,
+  "candidate_continuations": [12, 16, 24, 32, 48, 64, 96, 128],
+  "reward_reads": 256,
+  "quality_seed": 907,
+  "sampling_seed": 1907,
+  "familywise_alpha": 0.05,
+  "minimum_resolved_rows": 128,
+  "minimum_resolved_lineages": 128,
+  "lineages_per_shard": 2
+}

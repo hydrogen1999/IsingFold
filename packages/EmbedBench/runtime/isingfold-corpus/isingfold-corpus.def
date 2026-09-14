@@ -1,0 +1,70 @@
+Bootstrap: docker
+From: python@sha256:afc139a0a640942491ec481ad8dda10f2c5b753f5c969393b12480155fe15a63
+
+%labels
+    org.isingfold.component corpus-generator-runtime
+    org.isingfold.python.version 3.12.3
+    org.isingfold.runtime.schema isingfold-corpus-runtime-lock-v2
+
+%files
+    runtime/isingfold-corpus/requirements-linux-x86_64-py312.lock /opt/isingfold/runtime/requirements.lock
+    runtime/isingfold-corpus/runtime-lock.json /opt/isingfold/runtime/runtime-lock.json
+    pyproject.toml /opt/isingfold/source/pyproject.toml
+    src/embedbench /opt/isingfold/source/src/embedbench
+
+%post
+    set -eu
+    export PIP_DISABLE_PIP_VERSION_CHECK=1
+    export PIP_NO_CACHE_DIR=1
+    export PYTHONNOUSERSITE=1
+
+    /usr/local/bin/python3.12 - <<'PY'
+import platform
+if platform.python_version() != "3.12.3":
+    raise SystemExit(f"base image supplied Python {platform.python_version()}, expected 3.12.3")
+PY
+    /usr/local/bin/python3.12 -m venv /opt/isingfold/venv
+    /opt/isingfold/venv/bin/python -m pip install \
+        --require-hashes \
+        -r /opt/isingfold/runtime/requirements.lock
+    /opt/isingfold/venv/bin/python -m pip install \
+        --no-deps \
+        --no-build-isolation \
+        /opt/isingfold/source
+    /opt/isingfold/venv/bin/python -m pip check
+    /opt/isingfold/venv/bin/python - <<'PY'
+import importlib.metadata
+import json
+import platform
+from pathlib import Path
+
+lock = json.loads(Path("/opt/isingfold/runtime/runtime-lock.json").read_text(encoding="utf-8"))
+if platform.python_version() != lock["python"]["version"]:
+    raise SystemExit("Python version differs from runtime-lock.json")
+expected = {}
+expected.update(lock["provenance"]["dependency_versions"])
+expected.update(lock["runtime_support_versions"])
+expected.update(lock["build_tool_versions"])
+observed = {name: importlib.metadata.version(name) for name in expected}
+if observed != expected:
+    raise SystemExit(f"installed versions differ from runtime lock: {observed!r}")
+PY
+    find /opt/isingfold -type d -name __pycache__ -prune -exec rm -rf '{}' ';'
+
+%environment
+    export PATH=/opt/isingfold/venv/bin:$PATH
+    export PYTHONNOUSERSITE=1
+    export PYTHONHASHSEED=0
+    export MKL_NUM_THREADS=1
+    export NUMEXPR_NUM_THREADS=1
+    export OMP_NUM_THREADS=1
+    export OPENBLAS_NUM_THREADS=1
+
+%test
+    set -eu
+    test "$(/opt/isingfold/venv/bin/python -c 'import platform; print(platform.python_version())')" = "3.12.3"
+    test "$(/opt/isingfold/venv/bin/python -c 'import importlib.metadata; print(importlib.metadata.version("embedbench"))')" = "0.1.0"
+    /opt/isingfold/venv/bin/python -m pip check
+
+%runscript
+    exec /opt/isingfold/venv/bin/python "$@"

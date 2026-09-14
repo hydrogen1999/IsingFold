@@ -1,0 +1,167 @@
+\section{Data generation: feasible witnesses, certified energies, and policy experience}
+\label{data:overview}
+
+EmbedBench constructs benchmarks independently of the learned policy, obtains structural labels from exact procedures where possible, and obtains quality labels from a separate evaluator. The record model distinguishes the certificates being planted and generates experience for the actual action grammar. Ink-drop alone supplies neither an optimal embedding nor a complete RL dataset. Frustrated-loop planting supplies a known logical ground energy but does not certify that the instance is difficult to embed or difficult to sample.
+
+\subsection{Five distinct record types and their guarantees}
+\label{data:labels}
+
+{\small
+\begin{longtable}{@{}p{0.22\textwidth}p{0.72\textwidth}@{}}
+\toprule
+Object & Meaning and limitation \\
+\midrule
+\endhead
+Embedding witness $\phi^\star$ & A validated embedding of the logical support graph into the realized host within the specified cap. It proves existence. It need not minimize qubits, improve cuts, or maximize quality. \\
+Logical optimum certificate & A ground energy $E_0$ supported by exact enumeration, an optimization proof, or an intact planted-clause construction. A known feasible solution alone gives an upper bound on minimum energy. \\
+Structural counterfactual & An exact completion result for an action in a specified finite continuation domain with frozen exterior assignments and budgets. It need not be the unrestricted global optimum. \\
+Quality observation & Finite-read counts under a fixed physical compiler, sampler, decoder, and strength. These estimate a probability; they are not structural certificates. \\
+RL trajectory & Exact states, candidate payloads, masks, selected actions, transitions, budgets, and a terminal outcome. Independent static ranking rows cannot reconstruct missing transition history. \\
+\bottomrule
+\end{longtable}}
+
+\subsection{Authenticated production boundary}
+EmbedBench is an independent package and publication boundary. IsingFold imports its provenance-complete CandidateBank-v2 export; the training runtime does not fork or silently regenerate that corpus. The independently pinned corpus-design manifest uses schema v2, while its checked-in compatibility filename remains \code{configs/corpus\_design\_v1.schema.json}. The scientific importer publishes prepared schema v4 as exactly eight immutable files: public policy instances, Profile-I initializer witnesses, split assignments, per-task provenance, three physically separate evaluator-target files for train, validation, and test, and the public corpus manifest. The manifest contains only the target-partition hashes, counts, and set digests, never target rows or energies. The provenance record binds each descendant to its immutable base parent, transform, nominal and active host, realized fault identity, calibration identity, distribution stratum, and learning partition. Prepared-v1 through prepared-v3 and locally generated corpora remain useful for diagnostics, but publication commands fail closed unless callers receive prepared-v4.
+
+The signed design enumerates every immutable-base-lineage by realized condition and prospectively registers application family, problem origin, host, fault, distribution, calibration, and three difficulty axes. Problem origin is the explicit enum \texttt{application-derived} or \texttt{synthetic}; both must be realized, while application family retains concrete names such as portfolio, graph-cut, jobshop, or frustrated-loop. Difficulty labels are admissible only when bound to SHA-256 identities for an outcome-blind authority, panel, protocol, budget, and evidence artifact. One base lineage may be crossed with multiple topology or fault conditions, but partition, quota, power, and precision counts use the unique base lineage as the independent unit. The importer requires exact partition quotas, signed independent-lineage floors of at least 1,024 train, 512 validation, and 1,546 sealed-test bases, complete stratum coverage, at least two realized host families, at least one faulted condition, nontrivial difficulty coverage, and a dedicated OOD quota confined to sealed test. The test floor must also cover the largest registered confirmatory target. A noninferiority target records its margin, assumed true difference, and their positive null-boundary separation separately; the registered sample-size formula uses that separation.
+
+The primary failure-aware utility comparison registers the paired lineage-level difference $D=U_{\mathrm{learned}}-U_{\mathrm{stock}}\in[-1,1]$. Popoviciu's bound gives $\operatorname{Var}(D)\leq1$, so a two-sided 95\% interval with half-width 0.05 requires 1,537 independent lineages. Superiority is supported only when that paired confidence interval excludes zero; the precision registration does not guarantee a positive result. The confirmatory valid-return noninferiority and paired-utility precision filters must each equal the full set of axis values realized in sealed test; hard and OOD cells remain preregistered quota-controlled subgroups rather than replacements for the global estimands. The importer independently recomputes one- or two-sided power and precision minima, rejects any deficit, and embeds the complete registered targets and realized census in the authenticated prepared-v4 receipt.
+
+Validation-only baseline tuning has its own prospective adequacy guards so that prepared-v4 can construct a typed \texttt{CompletePopulationIdentity} over the complete realized validation denominator. The single power target \texttt{validation-valid-return-noninferiority} uses the paired-binary normal approximation, one-sided $\alpha=0.05$, target power $0.8$, assumed discordance $0.1$, assumed true difference $0.05$, and margin $0.02$, hence separation $0.07$. Its registered calculation $\lceil0.1(z_{0.95}+z_{0.8})^2/0.07^2\rceil=127$ is rounded up to a minimum of 128 independent validation lineages. The paired target \texttt{validation-paired-utility-precision} uses the same difference in $[-1,1]$ and worst-case variance bound one; $\lceil z_{0.975}^2/0.2^2\rceil=97$ lineages give a two-sided 95\% half-width of 0.2, while the registry again requires 128. Both target filters must equal every axis value realized in validation, including every crossed condition. These targets certify the prospective denominator and planning assumptions; they do not turn reuse of validation outcomes for selection into a post-selection confidence or power claim.
+
+Hashes inside one corpus establish integrity but not authority over a ground-energy target. Every target-opening process therefore requires an out-of-band publisher ID and publisher-attestation v2 record digest. The attestation binds the prepared manifest, partitioned target authority, source release, and one separately hashed evidence manifest per partition. Each evidence manifest covers its target partition exactly once and links every row to a certificate artifact and verifier identity.
+
+The \texttt{verify-ground-certificates} command executes the independently pinned checker under ground-certificate protocol v2. The publication identity includes the checker executable and source, environment, build-attestation record and file hash, execution mode, and runtime image when applicable. Only a static ELF checker or a pinned Apptainer runtime is publication-eligible. The verifier writes train, validation, and test partition receipts first and publishes \code{root.json} last. This root contains commitments and census metadata only, so loading it cannot expose a target. A planner authenticates the target-free root. A target-bearing labeler, trainer, tuner, or evaluator opens exactly one authorized partition and retains both the resulting \texttt{TargetAccessReceipt} and root-authenticated ground-partition receipt.
+
+The quality-authority binding v2 has one global root projection plus exactly one training or evaluation partition projection. The compatibility chain is selector-label manifest v4, selector bundle v4, quality record v7, quality shard and merge envelopes v5, quality preflight v2, release gate v6, representation selection v4, RL-value freeze v4, checkpoint v3, and training-run receipt v4. The counterfactual target remains \code{if-q3-s0-qmu-5}. Re-signing an older artifact cannot upgrade its semantics.
+
+The original data-generation strategy remains useful after this separation. A model may learn route construction or feasible completion from Minorminer-produced examples, and Minorminer may generate candidate embeddings for independent quality evaluation. The mistake would be treating its preferred embedding as the optimal-quality answer. Replacing Minorminer with ink-drop does not fix that mistake if the planted witness is then treated as a quality-optimal target.
+
+\subsection{Ink-drop generation with an explicit witness}
+\label{data:inkdrop}
+
+Start from the realized active graph after faults have been applied. Grow disjoint connected branch sets, then form their quotient contact graph. This constructs a family of logical graphs known to be embeddable on that host. It works independently of the algorithm later evaluated: Minorminer, an OCT-based method, a deterministic heuristic, and the RL policy all receive the same resulting logical input and host. The construction's distribution may nevertheless favor host-native geometry, so this corpus must be accompanied by independently specified logical families.
+
+\begin{enumerate}
+ \item Sample a host family, size, and fault pattern from the registered generator distribution. Fix the active vertex and edge lists, budget $B$, lineage identifier, and random namespace.
+ \item Choose the number of logical branch sets and distinct active roots. Initialize $C_i=\{r_i\}$. Roots and growth settings are private generator data.
+ \item Repeatedly select a branch set and add an unclaimed active neighbor of that set. Use a registered mixture of compact growth, elongated growth, bottleneck growth, and contact-seeking growth. Connectivity and disjointness are maintained after every addition. Reject an impossible target size or stop at the registered budget; do not silently change the requested cell.
+ \item Form the quotient support $E_Q=\{(i,j):\exists(q,r)\in E_H,\ q\in C_i,\ r\in C_j\}$. Choose a registered subset $E_L\subseteq E_Q$ when controlling density or a mechanism. Deleting quotient demands preserves the witness; inventing an unsupported demand does not.
+ \item Independently validate every branch set, every logical edge contact, active support, and $Q(\phi^\star)\le B$. Save the witness and validation receipt in evaluator-only records.
+ \item Assign coefficients on the selected logical support using a separate coefficient generator. If cancellations remove nonzero couplings, recompute and record the actual support graph. Revalidate it against the witness.
+ \item Randomize public identifiers and serialize only deployable inputs for the policy. Keep the witness map, generation choices, and any planted logical solution out of actor features and candidate selection.
+\end{enumerate}
+
+Faults must precede growth, or a later fault process must explicitly preserve and revalidate a witness. A fault that destroys the original embedding does not prove the new instance is infeasible. For cross-host evaluation, independently certify a feasible witness on each active host used in the primary feasibility population. Unknown-feasibility cases belong to a separately named stress population.
+
+The witness is also useful for creating partial repair states: erase selected chains, reroute a small group into controlled overlap, or remove a critical contact while preserving a known complete target elsewhere. These transformations must pass the exact relaxed-state validator and carry a reproducible transition history. A witness reachable only by an action absent from the current candidate generator does not establish action-support reachability; tiny exact conformance cases check that property separately.
+
+\subsection{Compose embedding planting with logical-energy planting}
+\label{data:frustrated}
+
+The two planting mechanisms can be composed in sequence. First obtain a feasible logical support from ink-drop. Then plant a logical Ising solution on that support using frustrated loops, following the established construction principle~\cite{hen2015}. The coefficient process is independent of the witness's supposed quality.
+
+For a simple cycle $\mathcal C_\ell$ with length $L_\ell\ge3$ and weight $w_\ell>0$, use the energy convention $E(s)=\sum_{ij}J_{ij}s_is_j$. In the all-plus gauge, put coefficient $-w_\ell$ on every cycle edge except one edge with coefficient $+w_\ell$. Each cycle contribution has lower bound
+\[
+ E_\ell(s)\ge-w_\ell(L_\ell-2).
+\]
+The all-plus assignment attains that bound: it satisfies all ferromagnetic edges and leaves the one antiferromagnetic edge unsatisfied. The cycle is frustrated because no assignment can satisfy all its edges. Choose a private planted spin vector $s^\star$ and gauge each clause by multiplying its edge coefficient by $s_i^\star s_j^\star$. Then $s^\star$ attains every clause lower bound simultaneously. For a sum of complete clauses,
+\begin{equation}
+ E_0=-\sum_\ell w_\ell(L_\ell-2),
+ \qquad E(s^\star)=E_0.
+ \label{data:plantedenergy}
+\end{equation}
+
+The proof remains valid when cycles overlap: every clause is bounded below independently, and one common assignment attains the sum of those bounds. Coupler cancellation after summation also preserves the identity. Nonnegative planted field clauses $-b_i s_i^\star s_i$ can be included, subtracting $\sum_i b_i$ from $E_0$, provided the complete clause list is retained.
+
+Coefficient processing must preserve that proof. Clipping individual summed couplers can destroy the clause decomposition and invalidate Equation~\eqref{data:plantedenergy}. To impose coefficient limits, reject a whole new clause if its addition violates the limit, or apply one common positive rescaling to all logical coefficients and $E_0$. Record the accepted clause list, weights, gauge, pre/post coefficient digests, and a direct check of $E(s^\star)$. Finding that one assignment has energy $E_0$ is a consistency check; the intact clause lower bound is what proves optimality.
+
+Loops do not automatically cover bridges or tree-like regions, and exact cancellations can eliminate edges. Report the actual nonzero support and isolated-variable count. Do not claim that a loop-generated instance preserves every demand of the original quotient graph. Its planted solution can be highly degenerate, and random gauges do not make an otherwise easy distribution hard. Hold out application-derived and independently generated, unplanted instances to test whether the learned policy relies on a planting artifact.
+
+\subsection{Separate embedding difficulty from sampling difficulty}
+\label{data:hardness}
+
+A difficult embedding problem and a difficult logical energy landscape are independent properties. Use a factorial design rather than one ambiguous hardness score. Embedding axes include host occupancy, cap tightness relative to a witness, degree pressure, narrow separators, competing routes, clustered faults, and the size of interacting repair groups. Sampling axes include coefficient dynamic range, frustrated-clause density and lengths, degeneracy, and observed success rates under frozen development samplers.
+
+Calibrate these axes with a prespecified classical panel on train/development data. Store the calibration budget and successful as well as failed cases. A case selected because one particular baseline fails is a targeted stress case, not an unbiased sample of a generic hard distribution. Proposed-policy outcomes never decide which sealed cases survive. Structural selection rules can define an evaluation distribution, but they cannot guarantee high computational hardness.
+
+Retain easy/easy, hard-embedding/easy-sampling, easy-embedding/hard-sampling, and hard/hard cells. The first checks correctness, the second tests routing and feasibility, the third tests quality selection once embeddings are plentiful, and the fourth tests the complete system. A zero-hit label at $N$ reads is not proof of zero success probability; its approximate one-sided 95\% upper bound is $3/N$. If all candidates lie below resolution, increase training-side reads under a frozen schedule or open a separately registered residual-energy task. Do not silently change IF-Q3's reward inside one run.
+
+\subsection{Exact structural labels and their continuation domain}
+\label{data:structural}
+
+For a state $s$ and legal action $a$, define a finite set $\mathcal C_\Omega(s,a)$ of allowed completions. Its registry specifies frozen exterior chains, movable variables, allowed hardware window, overlap rules, caps, and search horizon. The exact feasibility label is
+\[
+ y_A(s,a)=\ind\{\exists\phi\in\mathcal C_\Omega(s,a):
+                    \phi\text{ is complete, valid, and in budget}\}.
+\]
+If desired, compute minimum total qubits and then minimum maximum chain length within this same feasible set. These quantities are exact local structural descriptors. They are not quality labels and are not unrestricted global embedding optima unless the registered domain actually contains every allowed global completion.
+
+Branch-and-bound may certify infeasibility only after exhausting its domain or producing a valid proof. A timeout is unknown. A successful independent heuristic supplies a positive witness; heuristic failure cannot recertify a negative label. Tiny exhaustive enumeration should check both positive and negative cases, including boundary couplers connecting the movable window to frozen exterior chains. Preserve tied feasible actions. Early feasibility warm-starting should not teach that the resource-smallest feasible action is necessarily best for downstream quality.
+
+The seven documented motif families remain a good seed: dead ends, articulation bottlenecks, cut capacity, multiple-neighbor pressure, high degree, short-chain temptation, and ordering. Extend them with joint rerouting, controlled temporary overlap, conflict movement, and post-valid refinement. Each variant changes identifiers, local host context, coefficient placement, and distractors while retaining a checkable mechanism. Variants of one template are descendants of one lineage for split purposes when they share a hidden construction skeleton.
+
+\subsection{Quality counterfactuals must name their continuation policy}
+\label{data:counterfactual}
+
+A static candidate embedding can be evaluated directly. A partial-state action needs a continuation. Freeze an executable policy $\mu$ and its remaining budget, and define
+\begin{equation}
+ Q_U^\mu(s,a)=\mathbb E\!\left[
+      A_T\,p_{\mathrm{solve}}\!\left(
+      \phi_T,F_\psi(\Pi(\phi_T))\right)
+      \,\middle|\,s,a,\mu\right].
+ \label{data:qmu}
+\end{equation}
+Here $F_\psi$ is the frozen IF-Q3 selector using deployable program features, and the expectation includes continuation randomness. This is the value under $\mu$, not an optimal action value. Changing $\mu$, its budget, its archive rule, or its selector changes the label target and requires a new label version.
+
+For each sampled state, materialize and retain the full registered candidate support without quality labels. The exhaustive quality audit evaluates every legal action; a cost-limited pilot instead samples an explicitly recorded subset, with known inclusion probabilities, before seeing outcomes. Its ranking target is limited to that subset. For every evaluated action, run $M$ continuations, preserving ordinary failures as $A_T=0$. Independently evaluate each valid terminal program with integer count pairs $(K_j,N_j)$ for all four registered strengths when training the response heads. Estimate its IF-Q3 quality using the count at the frozen selector's chosen strength. A simple action label is
+\[
+ \widehat Q_U^\mu(s,a)=\frac1M\sum_{m=1}^{M}
+      A_T^{(m)}\frac{K^{(m)}_{\widehat j_m}}{N^{(m)}_{\widehat j_m}}.
+\]
+The selector cannot inspect $E_0$, $s^\star$, or per-program success labels when choosing $\widehat j_m$. The evaluator uses $E_0$ only to form training or final-assessment counts. Fit selector parameters on the training partition, freeze them, and regenerate any labels whose target previously depended on another selector version.
+
+There are two uncertainty levels: variation across continuation trajectories and variation across physical reads. Extra reads do not remove continuation uncertainty. Pairwise ranking should retain ties or inconclusive differences instead of manufacturing a strict order from tiny noisy gaps. Common random numbers across actions are allowed when explicitly registered, but resulting dependence must be retained in paired analysis. Labels attached to different actions, strengths, and restarts are not independent logical instances.
+
+The legacy maximum $\max_j K_j/N_j$ can support a clearly named development ranking diagnostic. It has selection bias and does not provide four count labels. A Beta-binomial head, if retained, models conditional count dispersion; its concentration is not automatically a calibrated epistemic confidence interval. Start with a proper binomial count loss and validate any richer uncertainty model against held-out repeated read blocks. Large problems with best-known $E_{\mathrm{ref}}$ receive a separate reference-attainment endpoint; $P(E\le E_{\mathrm{ref}})$ must not be labeled certified ground-state success.
+
+\subsection{Leakage-resistant lineages and data contracts}
+\label{data:splits}
+
+Split base problem lineages before generating trajectories, coefficient perturbations, gauges, embedding candidates, fault variants, or topology transfers. A canonical $(h,J,E_0)$ digest is useful for exact-duplicate checks but is insufficient as the sole split key: a better reference energy changes $E_0$, while a gauge or relabeling changes bytes without creating an independent problem. Keep immutable parent-lineage IDs and descendant relations, plus separate coefficient, graph, host, and evaluator digests.
+
+All descendants of one base problem remain in one partition, including the same logical instance embedded on another topology. Use both instance-disjoint IID splits and explicit OOD splits withholding a family, size range, host/fault regime, or mechanism composition. Ordinary random splits do not establish topology transfer. Independently generated logical families reduce quotient-graph shortcuts; fresh generation seeds alone do not remove a shared hidden template.
+
+Every record should contain the following auditable payload:
+\begin{itemize}
+ \item public instance and active-host data; immutable lineage and generator version; complete coefficient representation; cap and objective-context digest;
+ \item evaluator-only embedding witness and receipt; ground-energy status, certificate or reference provenance; planted-clause data when applicable;
+ \item full state claims, archive, counters, candidate payloads and stable IDs, exact masks, selected action, deterministic successor receipt, and continuation-policy version;
+ \item terminal validity status, compiled programs at four strengths, sampler settings, selector version and chosen strength, integer counts, read and tie-break RNG purposes, and cost totals;
+ \item partition membership and deduplication keys; certificate scope; unknown or timeout flags; all rejection and integrity-failure reasons.
+\end{itemize}
+Actor tensorization uses an explicit allowlist. It excludes witnesses, planted spins, exact/reference ground energies, proof metadata that reveals a target solution, future outcomes, and cached success counts unless the deployment protocol explicitly provides such observations. IF-Q3 provides no ground-energy oracle to the selector or actor. Generator rejection logs remain available for dataset audit but cannot become accidental outcome-bearing features.
+
+\subsection{Corpus requirements and release gates}
+\label{data:plan}
+
+Corpus size is measured in immutable base lineages, not transformed rows, states, actions, continuations, or sampler reads. The production release must span easy and hard embedding, sampling, and decision regimes, multiple registered host families, realized fault and calibration conditions, application-derived families, and a prospectively declared IID/OOD axis. Exact quotas, inferential direction, power inputs, and precision targets belong to the signed release manifest rather than architecture prose.
+
+{\small
+\begin{longtable}{@{}p{0.22\textwidth}p{0.72\textwidth}@{}}
+\toprule
+Partition or artifact & Required purpose \\
+\midrule
+\endhead
+Exact conformance & Tiny exhaustively checked state/action cases, including overlap-required repairs, positive and negative validity mutations, and independently recomputed programming. \\
+Training & Lineage-disjoint selector fitting, selector calibration, counterfactual ranking, and PPO rollouts. Every quality row retains the full exact support and continuation receipts. \\
+Validation & Representation and RL-value selection, support-headroom measurement, feasibility noninferiority, and selector calibration audit. No row enters fitting after use for selection. \\
+Sealed test & Complete-system IID, hard, fault, and OOD populations opened only after the model, selector, budgets, evaluator, and analysis are frozen. \\
+\bottomrule
+\end{longtable}}
+
+Quality-label generation first freezes the independent-lineage population, task and state caps, action sample, continuation count, and seed namespace. The scientific preflight requires at least 128 resolved rows from at least 128 independent lineages. Simultaneous Hoeffding intervals define plausible-best sets. Rows whose complete evaluated action set remains plausible-best are retained for audit and omitted from supervised ranking; no heuristic converts them to winners. Record logical lineages, states, actions, continuations, valid terminals, and physical reads separately because multiplying rows does not multiply independent evidence.
+
+Advance only after four concrete gates. First, exact positive and negative structural certificates agree with independent tiny enumeration, and programming reproduces the intended logical energy on chain-consistent states. Second, candidate support contains useful actions under a frozen broad reference generator: report feasibility-support recall and the quality gap between the best observed supported candidate and the broader observed pool, with uncertainty. This is an empirical pool ceiling, not a global optimum claim. Third, count-complete quality records show enough resolvable variation for a frozen simple selector to beat or meaningfully discriminate a random selector on development groups. Fourth, repair and construction rollouts produce enough valid returns to train terminal quality without almost all utility labels being zero.
+
+Confirmation size follows a paired power calculation using development estimates of discordance; no fixed row count alone guarantees the two-percentage-point feasibility margin, especially within topology strata. Freeze manifests, analysis, strength selector, candidate generator, budgets, and model choice before opening sealed outcomes. Publish ordinary search failures and excluded integrity failures with their denominators, and keep the dataset release independent of the trained checkpoint.

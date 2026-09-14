@@ -1,0 +1,45 @@
+{
+ "config": {
+  "topology": "chimera",
+  "size": 5,
+  "n_vars": 12,
+  "chain_size": 3,
+  "modes": [
+   "compact",
+   "elongated",
+   "cut_congested",
+   "near_capacity"
+  ],
+  "k_in_play": 3,
+  "radius": 1,
+  "l_cap": 4,
+  "max_window_free": 30,
+  "max_nodes": 200000,
+  "samples_per_instance": 6,
+  "prefix_keep_prob": 0.5,
+  "max_actions": 12,
+  "q_cap_slack": null
+ },
+ "n_instances_per_mode": 60,
+ "seed": 100,
+ "jobs": 4,
+ "stats": {
+  "instances": 240,
+  "generation_failures": 0,
+  "samples_attempted": 1440,
+  "samples_kept": 204,
+  "dropped_no_margin": 1236,
+  "dropped_window_too_large": 0,
+  "dropped_aborted": 0,
+  "dropped_no_actions": 0,
+  "greedy_disagreements": 30,
+  "margin_kinds": {
+   "qubits": 197,
+   "max_chain": 5,
+   "feasibility": 2
+  },
+  "exact_nodes_total": 1825787
+ },
+ "sha256": "540a1dbd3262d797dd35109fd3e0e74c8c9eebbc17472f1f9c8b4fd8f1cfc3cf",
+ "file": "runs/release_v1/structural_chimera5.jsonl"
+}

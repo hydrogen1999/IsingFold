@@ -1,0 +1,102 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=22mm,headheight=15pt]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools,bm}
+\usepackage{graphicx,xcolor,tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,calc,backgrounds}
+\usepackage{booktabs,longtable,tabularx,array,multirow}
+\usepackage{enumitem,microtype,titlesec,fancyhdr,lastpage,needspace,etoolbox}
+\usepackage[most]{tcolorbox}
+\usepackage{fvextra}
+\usepackage{caption,float}
+\usepackage[colorlinks=true,linkcolor=Navy,citecolor=Teal,urlcolor=Blue]{hyperref}
+\definecolor{Navy}{HTML}{16324D}
+\definecolor{Blue}{HTML}{2C638A}
+\definecolor{Teal}{HTML}{18786F}
+\definecolor{Gold}{HTML}{A16E20}
+\definecolor{Pale}{HTML}{F0F5F7}
+\definecolor{Muted}{HTML}{566675}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt plus 1pt}
+\setlength{\emergencystretch}{3em}
+\renewcommand{\arraystretch}{1.18}
+\setlist{leftmargin=*,itemsep=2pt,topsep=4pt}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\titleformat{\section}{\Large\bfseries\color{Navy}}{\thesection}{0.65em}{}
+\titleformat{\subsection}{\large\bfseries\color{Teal}}{\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{Blue}}{\thesubsubsection}{0.6em}{}
+\pretocmd{\section}{\Needspace{7\baselineskip}}{}{}
+\titlespacing*{\section}{0pt}{20pt}{9pt}
+\titlespacing*{\subsection}{0pt}{13pt}{6pt}
+\newcommand{\code}[1]{\texttt{\small #1}}
+\newcommand{\hexdigest}[8]{\code{#1}\allowbreak\code{#2}\allowbreak\code{#3}\allowbreak\code{#4}\allowbreak\code{#5}\allowbreak\code{#6}\allowbreak\code{#7}\allowbreak\code{#8}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\ind}{\mathbb{1}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\given}{\,\middle|\,}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\abs}[1]{\left|#1\right|}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\clip}{clip}
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{lemma}[proposition]{Lemma}
+\newtheorem{corollary}[proposition]{Corollary}
+\theoremstyle{definition}\newtheorem{definition}[proposition]{Definition}
+\newtcolorbox{decisionbox}[1][]{breakable,colback=Pale,colframe=Blue,boxrule=.6pt,arc=1mm,left=3mm,right=3mm,top=2mm,bottom=2mm,#1}
+\newtcolorbox{warningbox}[1][]{breakable,colback=white,colframe=Gold,boxrule=.6pt,arc=1mm,left=3mm,right=3mm,top=2mm,bottom=2mm,#1}
+\newtcolorbox{contractbox}[1][]{breakable,colback=white,colframe=Teal,boxrule=.6pt,arc=1mm,#1}
+\RecustomVerbatimEnvironment{Verbatim}{Verbatim}{fontsize=\footnotesize,breaklines=true,breakanywhere=true}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small\color{Navy}\textbf{IsingFold} \;|\; Architecture Rev. 2}
+\fancyhead[R]{\small\color{Muted}Technical specification}
+\fancyfoot[L]{\footnotesize\color{Muted}12 September 2026 \; / \; Architecture and experiment contracts}
+\fancyfoot[R]{\footnotesize\thepage}
+\captionsetup{font=small,labelfont={bf,color=Navy}}
+\hypersetup{hypertexnames=false,pdftitle={IsingFold: Revised RL Architecture and Data Generation},pdfauthor={Prepared for Nguyen Cong Thinh},pdfsubject={Architecture and experiment specification}}
+\setcounter{tocdepth}{2}
+\begin{document}
+\begin{titlepage}
+\color{Navy}
+\vspace*{12mm}
+{\small\sffamily RESEARCH DESIGN AND IMPLEMENTATION SPECIFICATION}\par
+\vspace{15mm}
+{\Huge\bfseries IsingFold}\par
+\vspace{6mm}
+{\LARGE\bfseries Revised RL Architecture\\and Data Generation}\par
+\vspace{7mm}
+{\large From validated graph rewrites to measurable downstream quality}\par
+\vspace{12mm}
+\rule{\textwidth}{1pt}\par
+\vspace{6mm}
+\begin{decisionbox}
+\textbf{Core design.} IsingFold uses a compact, typed graph policy for multi-chain improvement and repair. Exact validity remains outside the model, the deployable strength selector remains separate from ground-truth evaluation, and candidate-support headroom gates policy optimization. Prepared-v4 separates public policy data from partitioned evaluator targets. Sealed initializer banks make conditional PPO replayable, while complete-system evaluation remains unconditional. Ink-drop certifies feasible embeddings and planted Ising clauses certify logical optima; neither certifies optimal embedding quality.
+\end{decisionbox}
+\vfill
+\begin{tabular}{@{}ll}
+Prepared for & Nguyen Cong Thinh / IsingFold project\\
+Revision & 2.2, system and model specification\\
+Contract date & 12 September 2026\\
+Companion & \code{documents/TRAINING\_OPERATIONS.md}\\
+Deliverable & Detailed specification, editable LaTeX, compiled PDF
+\end{tabular}
+\vspace{12mm}
+\end{titlepage}
+\pagenumbering{roman}
+\input{sections/assessment}
+\clearpage{\small\setlength{\parskip}{0pt}\tableofcontents}
+\clearpage\pagenumbering{arabic}
+\input{sections/objective}
+\input{sections/system}
+\input{sections/theory}
+\input{sections/model}
+\input{sections/rl}
+\input{sections/data}
+\input{sections/evaluation}
+\input{sections/implementation}
+\clearpage\appendix\input{sections/provenance}
+\clearpage\input{sections/references}
+\end{document}

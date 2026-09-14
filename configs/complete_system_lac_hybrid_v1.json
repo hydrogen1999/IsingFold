@@ -1,0 +1,18 @@
+{
+  "schema": "isingfold.learned-complete-system-config",
+  "schema_version": 1,
+  "online_wallclock_seconds": 60.0,
+  "max_initializer_attempts": 10,
+  "audit_reads": 4096,
+  "selection_rule": "resource-lexicographic",
+  "online_evaluator_feedback": false,
+  "initializer_backend": "lac-minorminer",
+  "initializer_method_id": "lac-minorminer-hybrid-chimera-clique-v1-initializer-v4",
+  "expected_initializer_version": "0.1.0",
+  "policy_restart_mode": "disabled-no-native-replay-v1",
+  "initializer_parameters": {
+    "tries": 1,
+    "max_transitions": 31,
+    "max_candidates": 8
+  }
+}

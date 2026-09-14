@@ -1,0 +1,52 @@
+{
+  "schema": "isingfold.monorepo-package-import",
+  "schema_version": 1,
+  "imported_at": "2026-09-14",
+  "destination": "packages/EmbedBench",
+  "source": {
+    "path_at_import": "/Users/nguyencongt/Documents/IsingFold/EmbedBench",
+    "parent_repository": "/Users/nguyencongt/Documents/IsingFold",
+    "parent_branch": "feature/lac-implementation",
+    "parent_revision": "6345b41dda6c867f479570c7a8bc187c3b7be281",
+    "worktree_was_dirty": true
+  },
+  "copy_policy": {
+    "include": "all package source, tests, configs, scripts, documentation, runtime recipes, hand tests, checked-in release metadata, and the active IsingFold corpus-v4 source-release receipts",
+    "exclude": [
+      ".mypy_cache/",
+      ".pytest_cache/",
+      "__pycache__/",
+      "runs/",
+      "build/",
+      "dist/",
+      "*.egg-info/",
+      ".DS_Store"
+    ]
+  },
+  "verification": {
+    "initial_files": 198,
+    "initial_bytes": 5751188,
+    "algorithm": "SHA-256 of the sorted per-file SHA-256 manifest using paths relative to the package root",
+    "initial_source_manifest_sha256": "ff81a15534cd91dc7c9e2e319eeff1ee9011e73bdf93a9eb4e77b1b8da55545f",
+    "initial_destination_manifest_sha256_before_adaptation": "ff81a15534cd91dc7c9e2e319eeff1ee9011e73bdf93a9eb4e77b1b8da55545f",
+    "rsync_checksum_dry_run_after_copy": "no differences"
+  },
+  "monorepo_adaptations": [
+    "tests/test_isingfold_bridge_e2e.py resolves the IsingFold root in both monorepo and historical sibling layouts",
+    "tests/test_isingfold_publication.py resolves the IsingFold root in both monorepo and historical sibling layouts",
+    "active corpus-v4 source-release receipts moved from runs/ to data/provenance/; legacy corpus-v2 runs remain excluded",
+    "the legacy training-snapshot verifier moved from scripts/ to tools/legacy_provenance/",
+    "the Track-A experiment-results collector was not retained",
+    "historical example commands no longer refer to sibling LAC workspaces"
+  ],
+  "post_adaptation_verification": {
+    "files_excluding_this_record": 206,
+    "bytes_excluding_this_record": 8461822,
+    "algorithm": "SHA-256 of the sorted per-file SHA-256 manifest using paths relative to the package root",
+    "manifest_sha256": "3ac33304d34893a6ec74d5bcb9602e9c346e8108f0b68196233858f8e7db2945",
+    "excluded_from_digest": "IMPORT_PROVENANCE.json to avoid a self-referential hash",
+    "corpus_v4_receipt_checksum_manifest": "data/provenance/isingfold_corpus_v4/SHA256SUMS",
+    "corpus_v4_receipt_checksum_manifest_sha256": "02b16121396d1f8123c0516894f0d4c33bcfddf1dcae2a3dfa147e46c850c5a8"
+  },
+  "boundary": "EmbedBench remains an independent publisher. IsingFold training and evaluation consume authenticated exports and do not import generator code."
+}

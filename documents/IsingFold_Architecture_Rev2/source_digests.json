@@ -1,0 +1,66 @@
+{
+  "review_date": "2026-09-12",
+  "source_snapshot": "2026-09-11",
+  "sources": [
+    {
+      "supplied_copy": "01-isingfold_rl_architecture.drawio",
+      "sha256": "114efcf27d4195f6eed246f69f90bf283ea51ba5db7c792a05caef4c1d90bb82",
+      "bytes": 29436
+    },
+    {
+      "supplied_copy": "02-isingfold_system_architecture.drawio",
+      "sha256": "0b272a6b6bd3605fc7d02154f55d0a5129159edf36d2b0da0019064804ca7b59",
+      "bytes": 17596
+    },
+    {
+      "supplied_copy": "03-isingfold_training_evidence.pdf",
+      "sha256": "e1b1e631b71700ae1f353ffc51427623e929573c5402d1fcdede489b17f6c61a",
+      "bytes": 107928
+    },
+    {
+      "supplied_copy": "04-isingfold_graph_actor_critic.pdf",
+      "sha256": "c65d27f439147c162fa69f4e4f107cd1ddc0f616a39fc2ad873138ccf26e74f0",
+      "bytes": 105218
+    },
+    {
+      "supplied_copy": "05-isingfold_validity_boundary.pdf",
+      "sha256": "8ffaa5179be655d5bbb47274ab85d4593a02aabf7832cf94b0219205464b4a7b",
+      "bytes": 122025
+    },
+    {
+      "supplied_copy": "06-PROJECT_HANDBOOK_EN.tex",
+      "sha256": "22305a89485a31b3fede4d0a2a5b672f643e824431b550fcc59cb89dba20d75e",
+      "bytes": 103725
+    },
+    {
+      "supplied_copy": "07-ISINGFOLD_RL_ARCHITECTURE_EN.tex",
+      "sha256": "d171580b96a0f654a4e78651fe880de2d9e4d8d8101835e4acdbd980f3d75f0c",
+      "bytes": 82866
+    },
+    {
+      "supplied_copy": "08-SOURCE_MANIFEST.md",
+      "sha256": "1d69db5a63363a7c237e6c130c458bfc4480ba4703ae175db8b9e8a831681b94",
+      "bytes": 4695
+    },
+    {
+      "supplied_copy": "09-README-1-.md",
+      "sha256": "e9e8b40c5380fcf2f670a3a16bd5baf0ab7f843d42f0b44e8994047ea3a21520",
+      "bytes": 3331
+    },
+    {
+      "supplied_copy": "10-handbook_style.tex",
+      "sha256": "cee89115c97e2936ee879f0cfc615426d80ca66fed3105f2026ecbb5684c0637",
+      "bytes": 2285
+    },
+    {
+      "supplied_copy": "11-isingfold_rl_refs.bib",
+      "sha256": "1cee3f376c9aedbe9b2a74e126735ff46d673a3826bc231d414aee57bb53f938",
+      "bytes": 3945
+    },
+    {
+      "supplied_copy": "12-isingfold_rl_style.sty",
+      "sha256": "2aab6931f43e1d649abb51afe4b549c87d8c13e097fca61bc336ec7308ca4b56",
+      "bytes": 3542
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "schema": "isingfold.action-quality-calibration-audit-config",
+  "schema_version": 1,
+  "protocol_id": "if-warm-action-q-crossfit-calibration-v1",
+  "partition": "train",
+  "folds": 5,
+  "minimum_lineages_per_fold": 32,
+  "fold_assignment": {
+    "domain": "isingfold-action-q-audit-fold-v1",
+    "salt": "isingfold-quality-v8-train-crossfit-20260913",
+    "hash": "sha256-canonical-json-first-eight-bytes-big-endian-mod-k"
+  },
+  "inference_batch_size": 32,
+  "ece": {
+    "edges": [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+    "boundary": "left-closed-right-open-last-bin-closed"
+  },
+  "action_weighting": "equal-lineage-equal-state-count-over-propensity-within-state",
+  "bootstrap": {
+    "replicates": 20000,
+    "seed": 26091331,
+    "cluster_unit": "immutable-base-lineage",
+    "confidence_level": 0.95
+  },
+  "scope": {
+    "diagnostic_only": true,
+    "model_selection_authorized": false,
+    "retraining_authorized": false,
+    "deployment_change_authorized": false,
+    "validation_or_test_access_authorized": false
+  },
+  "record_digest": "ed1cac8ff6318799beae6861177e04c599806c05a5c50eb64204d2b756f60802"
+}

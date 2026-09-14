@@ -1,0 +1,88 @@
+{
+  "schema": "isingfold.quality-policy-prior-ablation",
+  "schema_version": 1,
+  "protocol_id": "if-quality-policy-prior-ablation-hybrid-v1",
+  "stage": "post-rl-value-selection-diagnostic",
+  "main_grid_sha256": "d3a7cd99c0c96c1c2f7fdd974d0856aee94ccbbe7a01f30b15d4724632712d09",
+  "selection_effect": "diagnostic-only-no-main-grid-or-final-system-reselection",
+  "frozen_source_configuration": {
+    "model_family": "from-rl-value-selection-receipt",
+    "training_method": "from-rl-value-selection-receipt",
+    "quality_labels": "same-authenticated-corpus-as-main-grid",
+    "initializer_bank": "same-seed-matched-bank-as-main-grid",
+    "training_budget": "same-as-selected-main-grid-cell",
+    "evaluation": "same-validation-protocol-as-main-grid"
+  },
+  "modes": [
+    {
+      "schema": "isingfold.action-quality-policy-coupling-v1",
+      "mode": "auxiliary-only-v1",
+      "transform": "zero",
+      "output_interval": [0.0, 0.0],
+      "policy_gradient_to_quality_head": false,
+      "publication_eligible": true
+    },
+    {
+      "schema": "isingfold.action-quality-policy-coupling-v1",
+      "mode": "bounded-centered-v1",
+      "transform": "two-sigmoid-minus-one",
+      "output_interval": [-1.0, 1.0],
+      "policy_gradient_to_quality_head": true,
+      "publication_eligible": true
+    },
+    {
+      "schema": "isingfold.action-quality-policy-coupling-v1",
+      "mode": "clipped-logit-v1",
+      "transform": "one-half-times-clamp-minus-two-plus-two",
+      "output_interval": [-1.0, 1.0],
+      "policy_gradient_to_quality_head": true,
+      "publication_eligible": true
+    },
+    {
+      "schema": "isingfold.action-quality-policy-coupling-v1",
+      "mode": "bounded-centered-detached-v1",
+      "transform": "detach-two-sigmoid-minus-one",
+      "output_interval": [-1.0, 1.0],
+      "policy_gradient_to_quality_head": false,
+      "publication_eligible": true
+    }
+  ],
+  "training_seeds": [1103, 2207, 3301],
+  "cells": [
+    {"cell_id": "qprior-000-auxiliary-s1103", "mode": "auxiliary-only-v1", "seed": 1103},
+    {"cell_id": "qprior-001-auxiliary-s2207", "mode": "auxiliary-only-v1", "seed": 2207},
+    {"cell_id": "qprior-002-auxiliary-s3301", "mode": "auxiliary-only-v1", "seed": 3301},
+    {"cell_id": "qprior-003-bounded-s1103", "mode": "bounded-centered-v1", "seed": 1103},
+    {"cell_id": "qprior-004-bounded-s2207", "mode": "bounded-centered-v1", "seed": 2207},
+    {"cell_id": "qprior-005-bounded-s3301", "mode": "bounded-centered-v1", "seed": 3301},
+    {"cell_id": "qprior-006-clipped-s1103", "mode": "clipped-logit-v1", "seed": 1103},
+    {"cell_id": "qprior-007-clipped-s2207", "mode": "clipped-logit-v1", "seed": 2207},
+    {"cell_id": "qprior-008-clipped-s3301", "mode": "clipped-logit-v1", "seed": 3301},
+    {"cell_id": "qprior-009-detached-s1103", "mode": "bounded-centered-detached-v1", "seed": 1103},
+    {"cell_id": "qprior-010-detached-s2207", "mode": "bounded-centered-detached-v1", "seed": 2207},
+    {"cell_id": "qprior-011-detached-s3301", "mode": "bounded-centered-detached-v1", "seed": 3301}
+  ],
+  "reporting": {
+    "aggregate": "equal-training-seed-then-equal-immutable-base-lineage",
+    "primary_metric": "unconditional-if-q3-s0-utility",
+    "valid_return_metric": "complete-system-valid-return-rate",
+    "seed_selection_forbidden": true,
+    "complete_cell_census_required": true,
+    "collapse_window": "first-ten-percent-of-ppo-updates",
+    "collapse_flag": "mean-normalized-legal-entropy-below-0.10-or-median-max-action-probability-above-0.995-for-three-consecutive-updates",
+    "required_diagnostics": [
+      "action-value-Brier-score-before-PPO",
+      "action-value-expected-calibration-error-before-PPO",
+      "normalized-legal-policy-entropy-by-update",
+      "maximum-action-probability-by-update",
+      "actor-residual-and-quality-prior-logit-scales",
+      "utility-and-valid-return-differences-with-lineage-level-intervals"
+    ]
+  },
+  "diagnostic_raw_logit_mode": {
+    "mode": "raw-logit-diagnostic-v1",
+    "publication_eligible": false,
+    "included_in_cells": false
+  },
+  "record_digest": "85a4df4451f8c432796a83bbe65f676b673828cdfb208638b0b39764338771e3"
+}

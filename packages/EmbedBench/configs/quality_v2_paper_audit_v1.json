@@ -1,0 +1,341 @@
+{
+  "schema": "embedbench.quality-v2-paper-audit-contract",
+  "schema_version": 1,
+  "protocol_id": "quality-v2-paper-audit-v1",
+  "partition": "test",
+  "selection": {
+    "artifact_schema": "embedbench.training-grid-selection",
+    "artifact_schema_version": 2,
+    "grid_id": "isingfold-quality-value-v2-screen",
+    "grid_path": "configs/training_grid_quality_v2.json",
+    "stage": "quality_value_v2_screen",
+    "registered_cell_count": 80,
+    "registered_seeds": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "validation_only": true
+  },
+  "training_registration": {
+    "grid_sha256": "10be13fe54669e3577c9c6a32f972d1cd94640f091bb262b03f302bd59bdc270",
+    "source_sha256": "294caa56d0bb04f716163b143a995ee176c8e72dd209c5f5f77caef92d72a264",
+    "selection": {
+      "unit": "logical problem group",
+      "primary_metric": "mean_finite_budget_regret",
+      "primary_metric_description": "Validation quality regret under exact validity and B/Q_MM qubit-budget constraints.",
+      "auxiliary_policy": "Residual-connectivity and robustness losses may regularize representation learning but never select the winning architecture.",
+      "test_policy": "locked during every screen cell",
+      "seeds": [0, 1, 2, 3],
+      "paper_checkpoint_policy": "Freeze and evaluate all four seed checkpoints of the winning configuration; report the aggregate across seeds.",
+      "deployment_checkpoint_policy": "The lowest-validation-regret seed is the deployment checkpoint only, not the sole paper estimate."
+    },
+    "stage": {
+      "trainer": "scripts/train_quality_v2.py",
+      "inputs": "runs/release_v1_1/quality_*.jsonl",
+      "splits": "data/release_v1/splits_quality_problem_v2.json",
+      "output_dir": "runs/training_grid_quality_v2/screen",
+      "checkpoint_dir": "runs/training_grid_quality_v2/checkpoints/screen",
+      "epochs": 25,
+      "axis_order": ["objective_variant", "arch", "seed"],
+      "axes": {
+        "arch": ["mpnn", "gin", "gatv2", "gps", "hetero"],
+        "objective_variant": ["p_only", "p_connectivity", "p_robustness", "full"],
+        "seed": [0, 1, 2, 3]
+      },
+      "extra_args": [
+        "--hidden", "64", "--layers", "3", "--heads", "4", "--lr", "0.001",
+        "--tol", "0.05", "--rank-margin", "0.05", "--stage1-rank-margin", "0.10",
+        "--lcb-z", "1.0", "--stage1-weight", "0.25", "--lambda-connectivity", "0.1",
+        "--lambda-robustness", "0.1", "--deploy-max-free", "8",
+        "--evaluation-support", "full", "--deploy-view"
+      ],
+      "execution": {
+        "assignment": "cell_index_modulo",
+        "modulus": 2,
+        "remainder_to_site": {"0": "apollo", "1": "goose"},
+        "required_device_type": "cuda",
+        "slurm_required_sites": ["goose"],
+        "slurm_forbidden_sites": ["apollo"],
+        "require_each_configuration_all_sites": true,
+        "exact_balance_axes": ["arch", "objective_variant"],
+        "seeds_per_configuration_per_site": 2,
+        "design": "With four seeds as the innermost axis, cell-index parity assigns seeds 0 and 2 to Apollo and seeds 1 and 3 to Goose for every architecture-objective configuration. Every architecture and objective variant is balanced 50/50 across sites, and every configuration has exactly two seeds on each site."
+      }
+    },
+    "data_provenance": {
+      "split_manifest": {
+        "file": "splits_quality_problem_v2.json",
+        "sha256": "cf3b7b44a9d3e95e1dc82b11870a9056492d4d3d7029f181e7737d07906a78f0",
+        "schema": "embedbench.split-manifest",
+        "schema_version": 2
+      },
+      "corpus_inputs": [
+        {"file": "quality_chimera5_app.jsonl", "sha256": "8b11660c068b626e4eae55c6d8d3ed31fdd335a48ebd682bd06727cc99b5410e"},
+        {"file": "quality_chimera5_inkdrop.jsonl", "sha256": "15cc622b3d8d4cb4fd66a378a83d2d15a886f076344817515d2c250bedaa2cce"},
+        {"file": "quality_chimera5_random.jsonl", "sha256": "1a4403535fa4d3ecf15c4c9d89d60456b1bba2d0bf85f2012af9b9090d196368"},
+        {"file": "quality_pegasus3_app.jsonl", "sha256": "f1d911990fed7773f624dcf1badf2c806c7a3d42a0fb1c33aeb246ff56a9e9ed"},
+        {"file": "quality_pegasus3_inkdrop.jsonl", "sha256": "d2ffc17be0ab3770d24436d1e28335ed91711971303c35200183783bc4b9dfb3"},
+        {"file": "quality_pegasus3_random.jsonl", "sha256": "07871cdae0d8fb2858bc5c21af14dbee1c7e59807f724c54df52131d9dd1cd32"},
+        {"file": "quality_zephyr2_app.jsonl", "sha256": "3bd996cef358e4b924bdc3d051e5815af34ec168b55af8abdd4db5fb4280e48d"},
+        {"file": "quality_zephyr2_inkdrop.jsonl", "sha256": "b1b62bcf1a8637eb9bbb2ed2aefddbffb387fb451dc6145e37fdc1331e91cd7a"},
+        {"file": "quality_zephyr2_random.jsonl", "sha256": "3b82118599bfb10fe3300db11504d0dd15577574c12d08724b6d667c37278aca"}
+      ]
+    },
+    "validation_replay": {
+      "partition": "val",
+      "cell_coverage": "exactly_all_80_registered_checkpoints",
+      "metric": "mean_finite_budget_regret",
+      "evidence": "per_record_problem_digest_exact_masks_total_qubits_qmm_budgets_and_choices",
+      "stored_metric_action": "reject_unless_exact_replay_match"
+    }
+  },
+  "audit_labels": {
+    "schema": "embedbench.independent-quality-audit",
+    "schema_version": 2,
+    "generator": "EmbedBench/scripts/rescore_quality.py",
+    "reads_per_strength": 4000,
+    "num_sweeps": 200,
+    "base_seed": 0,
+    "seed_schedule": "(base_seed + 7919*candidate_index + 31*strength_index) % 2**31",
+    "registered_strength_count": 4,
+    "strength_schedule": "default_strength_grid(problem, 4)",
+    "aggregation": "max_p_solve_over_strength_schedule",
+    "score_evidence": "integer_success_counts_per_candidate_strength",
+    "probability_derivation": "success_count_divided_by_reads_per_strength_binary64"
+  },
+  "audit_execution": {
+    "shard_count": 64,
+    "assignment": "sha256(canonical_audit_identity) mod shard_count",
+    "canonical_audit_identity": "json_compact_utf8_array[file,instance_id,focus]",
+    "record_output": "atomic_recomputed_one_record_per_audit_identity_no_partial_reuse",
+    "merge_coverage": "exactly_once_complete_fixed_test_partition",
+    "merge_order": "canonical_audit_identity_lexicographic",
+    "release_commitment": "exact_jsonl_and_shard_manifest_bytes",
+    "release_trust_anchor": "sha256_registered_out_of_band_before_phase_2"
+  },
+  "evaluation_phases": {
+    "phase_1": "atomic_full_label_free_policy_freeze_without_audit_paths",
+    "phase_2": "registered_sha256_byte_exact_label_free_replay_then_external_audit_release_validation_and_scoring",
+    "freeze_registration": "single_preregistration_manifest_external_sha256_required_before_audit_label_generation",
+    "audit_release_registration": "sha256_retained_out_of_band_before_phase_2",
+    "aggregator_replay": "all80_then_all4_phase1_then_externally_committed_all64_audit_validation_and_metric_recomputation"
+  },
+  "preregistration": {
+    "schema": "embedbench.quality-v2-paper-preregistration",
+    "schema_version": 1,
+    "commitment_scope": "audit_contract_audit_source_selection_four_checkpoints_four_policy_freezes",
+    "audit_source_hash_algorithm": "sha256_length_prefixed_single_snapshot_transitive_local_python_import_closure_v5",
+    "required_checkpoint_count": 4,
+    "required_policy_freeze_count": 4,
+    "trust_model": "sha256_supplied_out_of_band_before_audit_label_generation",
+    "colocated_checksum_sidecar_authoritative": false,
+    "verification_order": "manifest_sha256_then_manifest_schema_and_bindings_then_all_policy_freeze_bytes_then_audit_inputs"
+  },
+  "evaluation": {
+    "provisional": true,
+    "evaluation_design": "exploratory_legacy_iid",
+    "legacy_test_exposure": "membership_problem_sizes_and_e0_inspected_without_audit_p_solve",
+    "record_support": "complete_fixed_test_partition",
+    "candidate_support": "full",
+    "support_uses_labels": false,
+    "ground_reference_policy": "certified_exact_only",
+    "uncertified_ground_reference_action": "reject",
+    "top_tolerance": 0.02,
+    "random_seed": 0,
+    "random_baseline_policy": "sha256_record_key_modulo_eligible_v1",
+    "lcb_z": 1.0,
+    "device": "cpu",
+    "runtime_environment_schema": "embedbench.runtime-environment/v1-complete",
+    "runtime_consistency": "exact_across_model_seed_evaluations",
+    "selection_statistic": "mean",
+    "reported_selection_statistics": [
+      "mean",
+      "lcb"
+    ],
+    "budget_contract": "B/Q_MM",
+    "budget_reference": "stock_minorminer_original_total_qubits",
+    "primary_record_policy": "valid_stock_minorminer_original_reference_only",
+    "exact_mask": "minor_embedding_feasible_and_full_embedding_total_qubits",
+    "registered_budget_ratios": [
+      1.0,
+      1.1,
+      1.25,
+      1.5,
+      null
+    ],
+    "primary_metric": "mean_finite_budget_regret",
+    "accepted_ground_references": {
+      "embedded_ground_state_certificate_v1": {
+        "format_version": 1,
+        "envelope_fields": [
+          "certificate",
+          "proof",
+          "certificate_sha256",
+          "proof_artifact_sha256"
+        ],
+        "certificate_schema": "embedbench.ground-state-certificate",
+        "certificate_schema_version": 1,
+        "accepted_statuses": [
+          "planted_proof",
+          "exact_enumeration"
+        ],
+        "certified_optimal_action": "reject_until_executable_proof_checker",
+        "artifact_storage": "embedded_closed_json_envelope"
+      },
+      "exhaustive_enumeration": {
+        "format_version": "legacy_v1_1_v1_2",
+        "certificate": "not_required",
+        "max_variables": 22,
+        "batch_states": 131072,
+        "enumeration": "all_spin_assignments_vectorized_float64_v1"
+      },
+      "ferromagnetic_s_t_min_cut": {
+        "format_version": "legacy_v1_1_v1_2",
+        "certificate": "required",
+        "algorithm": "networkx_preflow_push_integer_capacities_v1"
+      }
+    }
+  },
+  "secondary_endpoints": {
+    "selection_role": "report_only_after_label_free_policy_freeze",
+    "availability_policy": "fail_closed_on_malformed_authenticated_input_else_status_and_coverage",
+    "selectors": [
+      "mean",
+      "lcb",
+      "resource",
+      "original",
+      "random"
+    ],
+    "exact_feasibility_budget_survival": {
+      "source": "independent_complete_embedding_validation",
+      "metrics": [
+        "candidate_feasibility_rate",
+        "record_survival_rate",
+        "selection_survival_rate"
+      ]
+    },
+    "terminal_resources": {
+      "source": "independent_complete_embedding_validation",
+      "reference": "stock_minorminer_original",
+      "metrics": [
+        "mean_total_qubits_delta_vs_stock_original",
+        "mean_max_chain_delta_vs_stock_original"
+      ]
+    },
+    "residual_connectivity": {
+      "source": "authenticated_realized_host_minus_complete_embedding",
+      "reference": "stock_minorminer_original",
+      "metrics": [
+        "mean_remaining_free_qubits",
+        "mean_largest_remaining_component",
+        "mean_largest_component_fraction",
+        "mean_remaining_component_count",
+        "mean_remaining_free_qubits_delta_vs_stock_original",
+        "mean_largest_remaining_component_delta_vs_stock_original",
+        "mean_largest_component_fraction_delta_vs_stock_original",
+        "mean_remaining_component_count_delta_vs_stock_original"
+      ],
+      "missing_input_action": "unavailable_with_explicit_coverage"
+    },
+    "strength_robustness": {
+      "source": "authenticated_four_registered_strength_p_solve_outcomes",
+      "registered_strength_count": 4,
+      "support": "complete_fixed_test_and_registered_bqmm_budgets",
+      "metrics": [
+        "mean_worst_case_p_solve",
+        "mean_p_solve_spread",
+        "mean_worst_case_p_solve_delta_vs_stock_original",
+        "mean_p_solve_spread_delta_vs_stock_original"
+      ],
+      "missing_input_action": "unavailable_with_explicit_coverage"
+    }
+  },
+  "secondary_endpoint_inference": {
+    "selection_role": "report_only_never_selection_or_primary_pass_fail",
+    "selector": "mean",
+    "reference": "stock_minorminer_original",
+    "cluster_unit": "quality_problem_digest",
+    "model_seed_reduction": "arithmetic_mean_within_record",
+    "record_reduction": "arithmetic_mean_within_problem_digest",
+    "missing_pair_action": "unavailable_or_partial_with_explicit_coverage",
+    "bootstrap": {
+      "method": "percentile_problem_cluster_bootstrap",
+      "resamples": 10000,
+      "confidence_level": 0.95,
+      "seed": 260912,
+      "quantile_method": "linear",
+      "namespace_seed": "sha256_first_8_bytes_big_endian_added_to_seed",
+      "minimum_problem_clusters": 20,
+      "interval_role": "pointwise_descriptive_not_hypothesis_test",
+      "inference_scope": "conditional_on_four_registered_model_checkpoints"
+    },
+    "endpoints": {
+      "residual_connectivity": {
+        "supports": [
+          "1.00x",
+          "1.10x",
+          "1.25x",
+          "1.50x",
+          "uncapped"
+        ],
+        "metrics": [
+          "remaining_free_qubits_delta_vs_stock_original",
+          "largest_remaining_component_delta_vs_stock_original",
+          "largest_component_fraction_delta_vs_stock_original",
+          "remaining_component_count_delta_vs_stock_original"
+        ]
+      },
+      "strength_robustness": {
+        "supports": [
+          "full_support",
+          "1.00x",
+          "1.10x",
+          "1.25x",
+          "1.50x",
+          "uncapped"
+        ],
+        "metrics": [
+          "worst_case_p_solve_delta_vs_stock_original",
+          "p_solve_spread_delta_vs_stock_original"
+        ]
+      }
+    }
+  },
+  "model_seed_aggregation": {
+    "registered_seed_count": 4,
+    "seed_source": "validation_selection.registered_seeds",
+    "coverage": "exactly_every_registered_seed_checkpoint_once",
+    "aggregation": "arithmetic_mean",
+    "dispersion": "sample_standard_deviation_ddof_1"
+  },
+  "secondary_inference": {
+    "status": "secondary_distribution_free_bounded_mean_inference",
+    "estimand": "problem_equal_weighted_p_solve_delta_learned_mean_minus_stock_original",
+    "cluster_unit": "quality_problem_digest",
+    "model_seed_reduction": "arithmetic_mean_within_record",
+    "record_reduction": "arithmetic_mean_within_problem_digest",
+    "inference_scope": "conditional_on_four_registered_model_checkpoints",
+    "sampling_assumption": "independent_problem_clusters",
+    "mean_inference": {
+      "method": "two_sided_hoeffding_confidence_interval",
+      "bounded_support": [
+        -1.0,
+        1.0
+      ],
+      "confidence_level": 0.95,
+      "minimum_problem_clusters": 20
+    },
+    "paired_test": {
+      "method": "one_sided_hoeffding_bounded_mean_test",
+      "null": "population_mean_p_solve_delta_less_than_or_equal_to_zero",
+      "alternative": "learned_mean_p_solve_greater_than_stock_original"
+    },
+    "per_budget_multiplicity": {
+      "family": "four_finite_registered_budgets",
+      "method": "holm_bonferroni",
+      "familywise_alpha": 0.05
+    }
+  }
+}

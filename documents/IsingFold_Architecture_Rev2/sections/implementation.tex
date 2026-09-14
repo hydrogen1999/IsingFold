@@ -1,0 +1,90 @@
+\section{Implementation and experiment registry}\label{sec:implementation}
+\subsection{Modules and information ownership}
+The standalone package assigns each trust and computation boundary to an explicit module. The table defines ownership and prohibited dependencies.
+
+{\small\begin{longtable}{@{}P{.30\textwidth}P{.63\textwidth}@{}}
+\toprule
+Module & Responsibility and prohibited dependency\\\midrule\endhead
+\code{contracts.py} & Immutable instance, host, objective, action, archive, work and observation schemas. No dependence on learned scores.\\
+\code{programming.py} & Exact coefficient allocation, scaling and quantization. Exposes reproducible program features and hashes.\\
+\code{validate.py} & Independent graph, programming and cap checks; reconstructs from serialized output. Must not accept a cached learned or native Boolean.\\
+\code{proposal.py} & Fully bound, outcome-blind candidate batches with quotas and charges. Never reads witness, optimum or evaluator outcomes.\\
+\code{env.py} & Atomic transitions, overlap envelope, protected archive, budget exhaustion, terminal return and typed failures.\\
+\code{tensorize.py} & Exact semantic incidences and fixed feature schema. No oracle IDs, hidden labels, raw sample streams or canonical identifiers used as artificial semantics.\\
+\code{model.py} & IF-Core actor and utility/failure critics. Output is one masked categorical distribution and state values.\\
+\code{strength.py / strength\_tensorize.py} & Independently trained, frozen terminal-program predictor and four-strength selector. No PPO updates.\\
+\code{rollout.py / ppo.py} & Complete-episode storage, exact support replay, GAE, clipping, optional train-side failure dual and checkpointing.\\
+\code{data/import\_embedbench.py /}\newline\code{data/prepared.py} & Independent CandidateBank-v2 import, prepared-v4 eight-file publication, immutable lineage splits, physical target partitioning, host/fault/calibration provenance, prospective floors, confirmatory-design contracts, and fail-closed loading.\\
+\code{data/quality\_attestation.py} & Publisher attestation v2, out-of-band publisher pin, partitioned evidence validation, target-to-certificate coverage, and target-access receipts.\\
+\code{data/ground\_certificate.py} & Ground-certificate protocol v2, isolated verifier build/runtime authentication, target-bearing partition receipts, target-free root publication, and global plus selected-partition authority projections.\\
+\code{data/selector\_labels.py / data/quality.py} & Selector labels and bundle v4, exact-replay quality records v7, shard and merge envelopes v5, and quality preflight v2. Evaluator targets never enter policy tensors.\\
+\code{initializer\_bank.py} & Target-free per-seed plan, deterministic conditional initializer draws, immutable snapshots, complete shard census, sealed manifest, and authenticated training access.\\
+\code{experiment\_selection.py} & Exact nine-cell and eighteen-cell report authentication, crossed seed-by-lineage bootstrap, representation selection v4, and RL-value freeze v4.\\
+\code{complete\_system.py /}\newline\code{complete\_system\_}\newline\code{aggregate.py} & Profile-I pre-initialization denominator, learned attempt receipt v3, raw evidence sidecars, evaluation report v4, three-seed authentication, and aggregate v2.\\
+\code{lac\_minorminer C++ / Python} & Versioned initializer v3 with prospective nine-coordinate work limits. The runtime identity binds the loaded extension bytes and the imported package source manifest. Budget exhaustion names the coordinate and returns the exact non-exceeding ledger.\\
+\code{capacity\_control.py} & Post-selection, near-parameter-matched IF-Core versus IF-Dual-depth9 diagnostic. It cannot change the main grid.\\
+\code{evaluate.py / external.py /}\newline\code{external\_pairing.py} & Fresh assessment reads, paired internal controls, external complete receipt v3/report v4, and paired aggregate v4 under the same sealed census and online envelope. None modifies a checkpoint or selector.\\
+\code{external\_tuning.py} & Finite validation-only stock-minorminer tuning, run and selection receipts v2, complete candidate-by-seed authentication, and one frozen deployment binding before test access.\\
+\code{evaluation\_shards.py /}\newline\code{evaluation\_workflow\_cli.py} & Target-free plan v2, deterministic whole-lineage work ownership, partition-authorized shard receipt v3, retry-invariant seeds, and complete-census merge receipt v2 for learned, tuned-stock, and validation-tuning workflows.\\
+\code{final\_strength\_audit.py} & Preregistered post-freeze diagnostic with sealed plan v2 and six-run execution manifest v2, four strengths and independent A/B blocks, 128 deterministic paired-opportunity shards, complete-census authenticated merge, invalid-return sensitivity, and paired regret summaries. It cannot support the primary superiority claim.\\
+\bottomrule\end{longtable}}
+
+The production forward path concatenates the logical, hardware, conflict, and ownership graphs as
+a disjoint union, offsets every relation endpoint by its object-type offset, and executes the
+projectors and message-passing trunk in shared kernels. It slices the trunk back into individual
+observations before factor, route, archive, action, and categorical reductions. This preserves each
+observation's exact support and denominator while avoiding one complete graph-trunk launch per
+transition. Environment collection remains sequential because the next state and support depend on
+the selected action. A scalar compatibility path is retained only for protocol test doubles.
+
+\subsection{Verification obligations}
+\textbf{Slice 1: contracts and witnesses.} Load one tiny logical graph and active host, produce a known feasible branch-set witness, independently check all validity clauses and compile it. Mutate each condition intentionally to ensure the independent validator rejects it. Check coefficient identity on every logical assignment for tiny cases. No neural code is needed.
+
+\textbf{Slice 2: overlap and group transition.} Replay a motif in which a coordinated move is necessary under the registered budget. Demonstrate full claimant tracking, a legal temporary overlap increase, connected atomic successors, correct claim debt and final disjoint return. Audit that an over-conservative exclusive-residual feature cannot veto a legal overlap action. Verify timeout with and without an incumbent.
+
+\textbf{Slice 3: objective and selector.} Generate count-complete four-strength labels on training lineages, train the independent selector, freeze it and evaluate fresh selected-strength blocks. Confirm that the actor/tensorizer cannot access $E_0$, witness membership, selected-strength hit counts or evaluator random keys. Exercise zero-hit and all-hit blocks and distinguish a missing read from a failed read.
+
+\textbf{Slice 4: baseline controllers.} Deploy random masked, classical, IF-MLP and supervised IF-Core controllers under the same action support and work schedule. Measure support diversity and oracle-within-support headroom. If headroom is below the meaningful effect size, stop before PPO.
+
+\textbf{Slice 5: PPO learning.} Verify likelihood ratio one before updates, legal sampling, terminal bootstrap behavior, identical raw/shaped GAE under the algebraic transformation, finite gradients and deterministic checkpoint resume. Train multiple seeds and compare to the frozen supervised controller. A decreasing training loss is insufficient.
+
+\textbf{Slice 6: construction and optional modules.} Only after the preceding slices work, open empty construction, the failure constraint, cut tokens, a global relay or gauge experiments. Each changes one identified limitation and carries a matched control.
+
+\subsection{Registered Profile-I configuration}
+The following values define the main v1 experiment registry. A change creates a new registry and new artifact identities; it never mutates an existing scientific run.
+
+{\small\begin{longtable}{@{}P{.30\textwidth}P{.20\textwidth}P{.43\textwidth}@{}}
+\toprule
+Setting & Initial value & Reason/measurement\\\midrule\endhead
+Operating mode & Profile I & Common valid initializer, protected fallback; construction later.\\
+Graph width/depth & $128$; local 3, fusion 2 & Compact baseline before extra attention layers.\\
+Action cap & $64+8+1$ & Bound state-changing proposals plus archive commits and optional STOP.\\
+Archive & 1 protected + 7 FIFO & Preserve feasible fallback without outcome-based eviction.\\
+Group size & $2,3,4,8$ & Test interacting repair; filter by instance size.\\
+Overlap & O1 & Pairwise overlap and $10\%$ claim-debt envelope.\\
+Decision horizon & 32 macro choices & Includes proposal and initializer budget separately.\\
+Route-expansion cap & 200,000 per episode & Engineering bound; profile rejected proposals and native costs.\\
+Terminal reads & $N_{\rm est}=256$ & Training reward; independent higher-read audit is required.\\
+Audit reads & 4,096 per strength & Frozen validation and confirmation allocation.\\
+Strength ratios & $(0.5,1,2,4)$ & Frozen selector registry; not legacy V2 relabeling.\\
+Rollout batch & 64 complete episodes & Example, measured in episodes rather than ambiguous transition count.\\
+PPO epochs / minibatch & 4 / 256 transitions & Preserve complete-episode reduction weights when packing.\\
+Discount / GAE & $1.0$ / $0.95$ & Undiscounted terminal utility; MC advantage control at $1.0$.\\
+Clip / initial LR & $0.20$ / $3\times10^{-4}$ & AdamW; use train-side stability diagnostics.\\
+Gradient cap / KL soft / hard & $0.5$ / $0.01$ / $0.02$ & Epoch rollback and half-rate backtracking, not a population guarantee.\\
+Dropout & 0 in RL & Exact stochastic-policy likelihood replay.\\
+Entropy & normalized; 0.01 to 0.001 & Positive floor; freeze deployment sampling temperature.\\
+Training seeds & 1103, 2207, 3301 & Independent complete runs, all included.\\
+\bottomrule\end{longtable}}
+
+A run of 2,000 complete episodes at 256 selected-strength reads costs 512,000 terminal reads before four-strength labeling, audit and reruns. A 64-episode collection costs 16,384 terminal reads. These are budgeting arithmetic, not an adequate training-size guarantee. Track simulator sweeps per read and physical program size; read counts alone do not represent simulation compute.
+
+\subsection{Checkpoint and release contents}
+Scientific checkpoint schema v3 stores actor/critic parameters, optimizer state, RNG replay metadata, immutable configuration digest, feature normalizers, action schema, proposal version, strength-selector and quality-authority identities, initializer-bank access identity, training lineages, counters, and a digest of the runtime-source registry. Training-run receipt v4 binds the checkpoint payload digest and the exact bank schedule consumed by PPO. Resume must reproduce the next proposal support and old log probability before any new update and rejects a changed source, context, corpus, authority, initializer snapshot, support, family, schedule, or lineage set. A scientific release includes per-instance outcomes, failures, costs, target-access receipts, ground-partition authority, and label provenance, not only aggregate means.
+
+A result receipt links the logical coefficients, active host, embedding, all relevant compiled programs, selected strength, decoder, certified reference status, count block, model version, initializer version, budget receipt and termination reason. The observer may verify the receipt without trusting the learned model. Hashes prove identity relative to bytes; they do not certify a solver's mathematical result by themselves.
+
+\subsection{Suggested paper organization once evidence exists}
+A strong presentation would begin with the mismatch between structural resource objectives and downstream solving quality, then establish a correctly scoped geometry-to-program mechanism. The method section would introduce the exact environment, multi-chain action support and compact relational policy, followed by the deployable objective and learning procedure. Experiments would first isolate proposal versus learned-selection gains and only then show complete-system comparisons and hardware transfer.
+
+Keep the evidence contribution separate from the design contribution. A novel cut feature without causal/ablation support, an RL policy without a supervised-only comparison, or a larger graph model without action headroom does not establish the intended thesis. If the strongest result remains low-budget improvement from a common initializer, state that precise result rather than presenting a general replacement for minorminer.

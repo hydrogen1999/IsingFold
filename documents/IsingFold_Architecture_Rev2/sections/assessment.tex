@@ -1,0 +1,39 @@
+\section*{Architecture decisions}
+\addcontentsline{toc}{section}{Architecture decisions}
+\textbf{IsingFold uses a constrained RL formulation with exact non-neural validity.} Its defining elements are the independent validator, explicit ownership during overlap, fully bound graph-rewrite actions, and a terminal objective tied to decoded solution quality. The design separates the deployable strength selector from evaluator truth, verifies candidate-support headroom before policy optimization, and begins with a compact model whose relational mechanisms can be isolated experimentally.
+
+\subsection*{What should be retained}
+\begin{itemize}
+\item A classical environment owns graph facts, candidate materialization, resource accounting and legality. The model chooses actions; it cannot grant validity.
+\item Connected branch sets may overlap inside a bounded search workspace. Every returned embedding must be complete, disjoint, connected, active-hardware compatible and correctly programmed.
+\item Full logical coefficients, physical structure, ownership and multi-chain action payloads matter. Binary occupied/free features do not describe the problem adequately.
+\item Qubit count is a cap and reported resource, not a universal quality objective. A shorter or longer embedding is not inherently better for downstream solving.
+\item Minorminer is useful as an initializer, proposal source and baseline. Its resource-oriented choices are not quality-optimal supervision.
+\item Simulator, exact Gibbs and QPU outcomes remain distinct. A simulator improvement does not establish a QPU improvement.
+\end{itemize}
+
+\subsection*{Binding design rules}
+{\small
+\begin{longtable}{@{}P{.22\textwidth}P{.71\textwidth}@{}}
+\toprule
+Risk controlled & Binding rule and practical implication\\\midrule\endhead
+Ground truth in deployed strength choice & Selecting by ground-state hit counts needs $E_0$. Use a frozen predictor with terminal program features only. Keep the four-strength population maximum as an oracle quantity under a separate protocol identity.\\
+Potential-based shaping & With $r'=r+\Phi'-\Phi$ and $V'=V-\Phi$, every TD residual and GAE advantage is unchanged. Exclude this algebraically redundant axis from the training grid.\\
+Dropout during PPO & Set dropout to zero in rollout and update. Freeze normalization statistics and retain the exact action support so the unchanged policy has ratio one.\\
+Uncharged proposal work & Charge construction of the entire candidate batch, rejected routes, successor checks and cut features before selecting an action. Report inference and evaluator costs separately as well.\\
+Uncontrolled network capacity & Use IF-Core with dual graph message passing, ownership/conflict fusion, complete action payload encoding, one actor and two critics. Add cut tokens, global relays and gauge constraints one mechanism at a time.\\
+State observability & Distinguish complete environment state, semantic observation and compressed neural latent. A finite GNN is not claimed to be injective. Random tapes are replay metadata, not outcome features.\\
+Value and selector role confusion & Separate a policy continuation value from the solve probability of a fixed terminal physical program. The strength selector is a distinct frozen model.\\
+Hidden witness leakage & Ink-drop certifies one feasible embedding. Score competing embeddings independently; do not train the actor to reconstruct the hidden witness as the uniquely correct solution.\\
+Sampled-cut overclaim & Define cut load and capacity explicitly. Full-cut checking or a conservative global-min-cut bound can certify a sufficient condition. A sampled cut set is a feature set.\\
+Unbounded experiment sweeps & Use the fixed nine-cell representation screen and eighteen-cell RL-value screen after prerequisite gates. Keep confirmation and capacity controls outside selection.\\
+\bottomrule
+\end{longtable}}
+
+\subsection*{Claim boundary}
+The causal question is whether sequential learned decisions improve failure-aware downstream quality beyond the \emph{same} proposal generator, initialization, terminal selector, and compute budget. Candidate-pool headroom, supervised ranking, PPO continuation, and the external complete system are therefore measured separately. Simulator, exact Gibbs, and QPU outcomes remain distinct evidence domains. No architecture definition can substitute for held-out results under the registered evaluator.
+
+\subsection*{Profile-I system}
+Use a common feasible initializer and preserve its result in an outcome-blind archive. The RL policy chooses bounded multi-chain rewrites, can visit controlled overlap states, repairs them, and commits an independently valid embedding. Train against a fresh estimate of terminal solve probability at a frozen, deployably selected strength. This profile is \textbf{learned embedding improvement}, distinct from empty-state construction. Construction has a separate initial distribution, action use, and failure constraint.
+
+The distinguishing research question is whether sequential learned decisions improve downstream quality beyond the \emph{same} proposal generator, initialization, terminal selector and compute budget. RL minor embedding already exists in CHARME and in the PPO approach of Nembrini et al.\ \cite{charme2024,nembrini2026}. The mere presence of PPO, a GNN or a Transformer is not a novelty claim.
