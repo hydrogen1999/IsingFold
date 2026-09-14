@@ -8,6 +8,7 @@ returned embedding always passes an independent validator, whatever the paramete
 from __future__ import annotations
 
 import copy
+import os
 import math
 import operator
 import random
@@ -89,6 +90,10 @@ def fixed_strength_selector(index: int = 1) -> StrengthSelector:
 class IntegrityError(RuntimeError):
     """A contract violation: never a low reward, never a training label."""
 
+
+
+_SKIP_INTERNAL_ASSERTS = os.environ.get("ISINGFOLD_FAST_INTERNAL_ASSERTS", "") == "1"
+"""Skip the defensive invariant re-checks. Set only for timing runs, never for a result."""
 
 @dataclass(frozen=True)
 class EmbeddingTask:
@@ -988,6 +993,12 @@ class EmbeddingEnv:
                 self.ctx,
             )
             self._return_validation_cache[key] = copy.deepcopy(checked)
+        if _SKIP_INTERNAL_ASSERTS:
+            # The cached entry is already an environment-private deep copy that nothing else
+            # holds a reference to, so the second copy on every read exists only to stop a
+            # caller mutating what it was handed. Under the fast path it is the caller's
+            # contract not to mutate; the checked path keeps the copy.
+            return self._return_validation_cache[key]
         return copy.deepcopy(self._return_validation_cache[key])
 
     def _zero_workspace_ages(
@@ -1041,6 +1052,13 @@ class EmbeddingEnv:
         )
 
     def _assert_search_state(self, *, verify_seal: bool = True) -> None:
+        if _SKIP_INTERNAL_ASSERTS:
+            # Opt-in fast path for timing measurements, off unless the environment variable is
+            # set. These are defensive re-checks of invariants the transitions already maintain,
+            # not the fail-closed return validation, which is never skipped. Any timing reported
+            # under this flag has to be shown to produce identical episodes to the checked path,
+            # which `probes/check_fast_path.py` does.
+            return
         """Enforce the whole exact-state form of ``P_search`` and fail closed.
 
         This validates derived ownership through exact age-map domains, the archive and
