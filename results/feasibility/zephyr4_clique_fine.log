@@ -1,0 +1,10 @@
+{"host": "zephyr4", "qubits": 576, "tries": 10, "draws": 4, "instances": 6}
+  family         n    valid  seconds    qubits 
+  clique        57     1.00      2.7       349 
+  clique        58     0.83      7.6       366 <- threshold regime
+  clique        59     0.58      9.3       370 <- threshold regime
+  clique        60     0.21     10.1       394 <- threshold regime
+  clique        61     0.04     11.6       447 
+  clique        62     0.04     10.3       472 
+  clique        63     0.00     10.0         - 
+FEASIBILITY DONE

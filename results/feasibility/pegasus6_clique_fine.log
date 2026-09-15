@@ -1,0 +1,10 @@
+{"host": "pegasus6", "qubits": 680, "tries": 10, "draws": 4, "instances": 6}
+  family         n    valid  seconds    qubits 
+  clique        57     1.00      2.1       444 
+  clique        58     1.00      2.5       452 
+  clique        59     1.00      4.2       467 
+  clique        60     0.75      8.2       470 <- threshold regime
+  clique        61     0.38     10.5       494 <- threshold regime
+  clique        62     0.08     11.5       520 
+  clique        63     0.00     11.2         - 
+FEASIBILITY DONE

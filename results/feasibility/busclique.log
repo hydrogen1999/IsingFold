@@ -1,0 +1,21 @@
+pegasus6 clique 56  deterministic yes  qubits 376  0.0s
+pegasus6 clique 58  deterministic yes  qubits 388  0.0s
+pegasus6 clique 60  deterministic yes  qubits 400  0.0s
+pegasus6 clique 61  deterministic no  qubits 0  0.0s
+pegasus6 clique 62  deterministic no  qubits 0  0.0s
+pegasus6 clique 63  deterministic no  qubits 0  0.0s
+pegasus6 clique 64  deterministic no  qubits 0  0.0s
+pegasus6 clique 66  deterministic no  qubits 0  0.0s
+pegasus6 clique 68  deterministic no  qubits 0  0.0s
+pegasus6 clique 72  deterministic no  qubits 0  0.0s
+zephyr4 clique 56  deterministic yes  qubits 280  0.0s
+zephyr4 clique 58  deterministic no  qubits 0  0.0s
+zephyr4 clique 60  deterministic no  qubits 0  0.0s
+zephyr4 clique 61  deterministic no  qubits 0  0.0s
+zephyr4 clique 62  deterministic no  qubits 0  0.0s
+zephyr4 clique 63  deterministic no  qubits 0  0.0s
+zephyr4 clique 64  deterministic no  qubits 0  0.0s
+zephyr4 clique 66  deterministic no  qubits 0  0.0s
+zephyr4 clique 68  deterministic no  qubits 0  0.0s
+zephyr4 clique 72  deterministic no  qubits 0  0.0s
+BUSCLIQUE DONE

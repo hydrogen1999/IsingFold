@@ -1,0 +1,16 @@
+{"host": "pegasus6", "qubits": 680, "tries": 10, "draws": 4, "instances": 6}
+  family         n    valid  seconds    qubits 
+  dense         72     1.00      0.2       231 
+  dense         80     1.00      0.3       274 
+  dense         96     1.00      0.3       374 
+  dense        112     1.00      0.3       495 
+  dense        128     1.00      1.5       580 
+  dense        160     0.00      9.8         - 
+  scalefree     72     1.00      0.2       165 
+  scalefree     80     1.00      0.3       189 
+  scalefree     96     1.00      0.3       250 
+  scalefree    112     1.00      0.4       314 
+  scalefree    128     1.00      0.4       376 
+  scalefree    160     1.00      0.5       542 
+  scalefree    192     0.33      9.7       605 <- threshold regime
+FEASIBILITY DONE

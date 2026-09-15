@@ -1,0 +1,33 @@
+{"host": "pegasus6", "qubits": 680, "tries": 10, "draws": 4, "instances": 6}
+  family         n    valid  seconds    qubits 
+  clique        16     1.00      0.1        39 
+  clique        20     1.00      0.1        56 
+  clique        24     1.00      0.3        81 
+  clique        28     1.00      0.4       107 
+  clique        32     1.00      0.6       139 
+  clique        36     1.00      0.8       174 
+  clique        40     1.00      0.8       218 
+  clique        48     1.00      1.3       309 
+  clique        56     1.00      1.6       423 
+  clique        64     0.00     10.9         - 
+  dense         16     1.00      0.0        28 
+  dense         20     1.00      0.0        36 
+  dense         24     1.00      0.0        46 
+  dense         28     1.00      0.0        56 
+  dense         32     1.00      0.1        67 
+  dense         36     1.00      0.1        80 
+  dense         40     1.00      0.1        95 
+  dense         48     1.00      0.1       121 
+  dense         56     1.00      0.2       159 
+  dense         64     1.00      0.2       190 
+  scalefree     16     1.00      0.0        21 
+  scalefree     20     1.00      0.0        28 
+  scalefree     24     1.00      0.0        35 
+  scalefree     28     1.00      0.0        44 
+  scalefree     32     1.00      0.0        53 
+  scalefree     36     1.00      0.1        60 
+  scalefree     40     1.00      0.1        72 
+  scalefree     48     1.00      0.1        92 
+  scalefree     56     1.00      0.1       113 
+  scalefree     64     1.00      0.1       142 
+FEASIBILITY DONE

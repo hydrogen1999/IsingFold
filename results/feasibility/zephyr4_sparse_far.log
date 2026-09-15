@@ -1,0 +1,16 @@
+{"host": "zephyr4", "qubits": 576, "tries": 10, "draws": 4, "instances": 6}
+  family         n    valid  seconds    qubits 
+  dense         72     1.00      0.2       196 
+  dense         80     1.00      0.2       227 
+  dense         96     1.00      0.2       302 
+  dense        112     1.00      0.2       407 
+  dense        128     1.00      0.5       479 
+  dense        160     0.00      7.3         - 
+  scalefree     72     1.00      0.2       142 
+  scalefree     80     1.00      0.2       158 
+  scalefree     96     1.00      0.2       213 
+  scalefree    112     1.00      0.3       264 
+  scalefree    128     1.00      0.3       321 
+  scalefree    160     1.00      0.3       458 
+  scalefree    192     0.42      7.2       514 <- threshold regime
+FEASIBILITY DONE

@@ -1,0 +1,33 @@
+{"host": "zephyr4", "qubits": 576, "tries": 10, "draws": 4, "instances": 6}
+  family         n    valid  seconds    qubits 
+  clique        16     1.00      0.0        34 
+  clique        20     1.00      0.1        50 
+  clique        24     1.00      0.2        64 
+  clique        28     1.00      0.3        86 
+  clique        32     1.00      0.6       110 
+  clique        36     1.00      0.8       138 
+  clique        40     1.00      0.8       172 
+  clique        48     1.00      1.0       248 
+  clique        56     1.00      1.9       331 
+  clique        64     0.00     10.0         - 
+  dense         16     1.00      0.0        24 
+  dense         20     1.00      0.0        31 
+  dense         24     1.00      0.0        39 
+  dense         28     1.00      0.0        48 
+  dense         32     1.00      0.1        57 
+  dense         36     1.00      0.1        66 
+  dense         40     1.00      0.1        81 
+  dense         48     1.00      0.1       103 
+  dense         56     1.00      0.2       128 
+  dense         64     1.00      0.2       162 
+  scalefree     16     1.00      0.0        19 
+  scalefree     20     1.00      0.0        25 
+  scalefree     24     1.00      0.0        30 
+  scalefree     28     1.00      0.0        39 
+  scalefree     32     1.00      0.0        46 
+  scalefree     36     1.00      0.0        54 
+  scalefree     40     1.00      0.1        61 
+  scalefree     48     1.00      0.1        81 
+  scalefree     56     1.00      0.1        97 
+  scalefree     64     1.00      0.1       115 
+FEASIBILITY DONE
