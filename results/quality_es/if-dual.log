@@ -1,0 +1,33 @@
+{"corpus": "runs/v1/corpus", "family": "if-dual", "train_lineages": 200, "eval_lineages": 60, "states": 2, "max_candidates": 8, "reads": 256}
+  389 training states, 118 held-out states, 3834 labelled candidates, 746s
+  fitting on 291 states, stopping on 98 held out of the training lineages
+  epoch   0  loss 2.70278  inner rank -0.060  best -0.060
+  epoch  25  loss 2.63870  inner rank -0.048  best 0.048
+  stopping at epoch 45; the inner split stopped improving at 0.048
+  restored the checkpoint with the best inner rank correlation 0.048
+
+== TRAINING states, fitted on, 118 states, every pick re-measured on 512 independent reads
+  picking by oracle     0.6218
+  picking by head       0.5020
+  picking by random     0.4710
+  picking by resource   0.4838
+  picking by incumbent  0.4858
+  head minus random                    n 118  +0.0310 [+0.0017, +0.0627]
+  head minus the protected incumbent   n 118  +0.0162 [-0.0118, +0.0449]
+  oracle minus random, the ceiling     n 118  +0.1508 [+0.1217, +0.1818]
+  head minus oracle, what is left on the table n 118  -0.1198 [-0.1507, -0.0893]
+  median within-state rank correlation +0.143
+
+== HELD-OUT lineages, never trained on, 118 states, every pick re-measured on 512 independent reads
+  picking by oracle     0.7037
+  picking by head       0.5844
+  picking by random     0.5970
+  picking by resource   0.5738
+  picking by incumbent  0.6018
+  head minus random                    n 118  -0.0126 [-0.0475, +0.0222]
+  head minus the protected incumbent   n 118  -0.0173 [-0.0534, +0.0175]
+  oracle minus random, the ceiling     n 118  +0.1067 [+0.0808, +0.1352]
+  head minus oracle, what is left on the table n 118  -0.1192 [-0.1522, -0.0901]
+  median within-state rank correlation +0.029
+
+TRAIN QUALITY DONE

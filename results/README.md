@@ -133,13 +133,36 @@ That is IF-MLP; IF-Dual gives -0.0344 [-0.0724, +0.0029] held out with correlati
 states it was fitted on the head captures 84 percent of a +0.157 ceiling. On new lineages it
 captures nothing, while the ceiling there is still +0.1063 [+0.0809, +0.1346].
 
-This run has no early stopping and no weight decay: 389 states, 200 epochs, full batch, a model
-with millions of parameters. The gap is therefore also consistent with plain memorisation, and a
-failure to transfer under those conditions does not establish that the signal is untransferable.
-`scripts/apollo/run_quality_es.sh` runs the control that separates the two, holding a quarter of
-the training lineages out of the fit to stop on and adding weight decay, with the held-out
-lineages touched by neither the gradient nor the stopping rule. Read that before drawing a
-conclusion from this table.
+That run has no early stopping and no weight decay, so the gap was equally consistent with plain
+memorisation. The control that separates the two is in `results/quality_es/`: a quarter of the
+training lineages held out of the fit to stop on, weight decay, and the held-out lineages touched
+by neither the gradient nor the stopping rule.
+
+It settles it. Both families fit 291 states, stopped on 98 held out of the training lineages,
+both stopped at epoch 45, and the best rank correlation the stopping rule could find on that
+inner split was 0.048 and 0.071. The model never has a transferable ordering at any epoch; it is
+not a case of learning one and then losing it to memorisation.
+
+| held-out lineages, 118 states | IF-MLP | IF-Dual |
+|---|---|---|
+| oracle | 0.7037 | 0.7037 |
+| head | 0.5764 | 0.5844 |
+| random | 0.5945 | 0.5970 |
+| resource | 0.5727 | 0.5738 |
+| head minus random | -0.0181 [-0.0561, +0.0190] | -0.0126 [-0.0475, +0.0222] |
+| ceiling | +0.1092 [+0.0833, +0.1380] | +0.1067 [+0.0808, +0.1352] |
+| rank correlation | +0.029 | +0.029 |
+
+On the fitted states early stopping takes the head from +0.1322 to +0.0358 and the correlation
+from +0.381 to +0.098, which is what confirms the larger figure was memorisation.
+
+**What this establishes and what it does not.** Within one state, which candidate is better is not
+predicted by features that transfer between instances, for this architecture, this observation,
+this corpus and a label budget of 256 reads. It was tested with direct supervision, a loss suited
+to ranking, and a stopping rule able to catch memorisation, so the earlier failures were not
+caused by the teacher or the loss. It does not show that no model could do this. It shows that
+the model the specification names, trained properly, does not, and that three unrelated methods
+now fail at the same place while the ceiling there is +0.11 and reproduces on independent reads.
 
 ## Audit checks
 
