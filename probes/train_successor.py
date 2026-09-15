@@ -8,7 +8,7 @@ representation and not capacity, data or loss.
 
 Labels come from the cache `train_quality.py` writes, so the two are compared on identical rows.
 """
-import argparse, hashlib, json, os, pickle, sys, time
+import argparse, re, hashlib, json, os, pickle, sys, time
 from pathlib import Path
 
 sys.path.insert(0, os.environ["ISINGFOLD_SRC"])
@@ -116,6 +116,11 @@ def main() -> int:
                          "reached 4200, so the optimiser was taking a step of fixed tiny length "
                          "in a direction it was confident about; a model constrained that way "
                          "can look like it cannot learn when it is only learning slowly")
+    ap.add_argument("--holdout-family", default="",
+                    help="re-split the cache by logical family: fit on every other family and "
+                         "hold this one out entirely. The cache's own split holds out lineages "
+                         "of every family, which tests transfer between coefficient draws; this "
+                         "tests transfer between graph structures, which is the claim.")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out", default="")
     a = ap.parse_args()
@@ -131,6 +136,17 @@ def main() -> int:
                          a.physics, a.space)
     eval_states = build(blob["eval"], ctx, device, "held-out lineages", a.coords,
                         a.physics, a.space)
+    if a.holdout_family:
+        def family_of(st):
+            # lineage ids read host-family<size>-<cell>-l<k>; the family is the second token
+            # with its size stripped
+            return re.sub(r"\d+$", "", st["lineage"].split("-")[1])
+        pool = train_states + eval_states
+        train_states = [st for st in pool if family_of(st) != a.holdout_family]
+        eval_states = [st for st in pool if family_of(st) == a.holdout_family]
+        print("  family split: %d states from %d families fit, %d states of %s held out"
+              % (len(train_states), len({family_of(s) for s in train_states}),
+                 len(eval_states), a.holdout_family), flush=True)
     if not train_states or not eval_states:
         print("  nothing to fit"); return 1
 

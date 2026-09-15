@@ -127,6 +127,55 @@ What holds is the ordering. At the same cost, contact-seeking growth beats redun
 spent matters a great deal; spending more of them does not improve quality on any topology tested.
 The claim that unused hardware is an opportunity is not supported by this test.
 
+## The learning curve is flat, and the list of suspects is empty
+
+Held-out gain of the successor scorer against random selection, two seeds per point, one cache:
+
+    lineages fitted     25        50        100       200
+    held-out gain    +0.0235   +0.0088   +0.0096   +0.0199   (three earlier seeds at 200: +0.0120)
+
+Eight times the data changes nothing. Every point sits in [+0.009, +0.024] with intervals that
+contain zero. Data joins capacity, loss, labels, teacher and representation as a ruled-out
+cause. On the hard corpus the four representation arms read +0.0074, -0.0045, +0.0071 and
++0.0018 held-out, all within seed noise. Logs in `results/curve/` and `results/hard_abl/`.
+
+## Learn to propose, not to predict: the pool ceiling
+
+If quality cannot be predicted, a learned embedder can only help by proposing a better set of
+candidates for measurement to choose from. `probes/pool_ceiling.py` measures the ceiling of
+four pools of eight measured candidates each, Pegasus 6 and Zephyr 4, ninety lineages, the
+chosen candidate re-measured on independent reads:
+
+    pool                                      Pegasus 6                 Zephyr 4
+    eight minorminer draws                    0.8232                    0.8500
+    eight draws grown toward coupled chains   -0.0086 [-0.026, +0.010]  -0.0084 [-0.027, +0.011]
+    four draws and the grown copy of each     -0.0635 [-0.091, -0.038]  -0.0404 [-0.066, -0.015]
+    eight of twenty-four, chosen for distance +0.0040 [-0.026, +0.035]  +0.0140 [-0.015, +0.043]
+
+Eight independent draws is the best pool measured. The mixed pool is the informative row: its
+candidates are no worse one by one, but a grown copy is correlated with its parent, so the pool
+has four independent seeds where the others have eight. Pool diversity is worth more than any
+way of spending qubits, and choosing draws for structural distance does not add to it.
+
+The first run of this probe built the mixed pool from the best half of each other pool and
+read +0.011 and +0.021 with intervals excluding zero. That was a maximum over sixteen measured
+candidates against eight. It is the eleventh withdrawn number and it was withdrawn before it
+left the log. All three versions are in `results/modern/*/pool*.log`.
+
+## Where the learned embedder stands
+
+Against minorminer with measured selection at matched budget, no learned component tested here
+has a lever: not predicting quality at any data scale, not spending qubits in any of three
+ways, not proposing for diversity. The finding that stands is the one every measurement
+agrees on: quality is not a function of structure the model can see, it is a function the
+sampler has to be asked, and asking scales. That finding is the paper's claim. A learned
+embedder is not, on this evidence.
+
+Two regimes are untested and are where a learned embedder could still be measured to win:
+instances near the embeddability threshold, where minorminer's draws fail often and validity
+rate is the score; and allocation of measurement budget across candidates, which is a bandit
+over the pool rather than a change to it.
+
 ## Withdrawn, and why
 
 Seven numbers have been published here and then withdrawn. Four were caught by external audit
@@ -152,6 +201,8 @@ rather than by me.
   interval containing zero. Neither measurement tests the premise: the cheaper and dearer halves
   are 43.5 and 48.9 qubits apart, a twelve percent range rather than a budget sweep. The honest
   statement is that nobody has tested it.
+- A mixed proposal pool at +0.011 and +0.021, which was sixteen measured candidates against
+  eight. Withdrawn from the log before it was reported.
 - Contact growth at +0.0996 and +0.0636, which was a maximum over two draws against a start
   measured once. Caught before publication this time, by running the control first.
 - Reading the mean column of a frontier table and calling the frontier flat, when the best column,

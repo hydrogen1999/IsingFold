@@ -1,0 +1,12 @@
+{"corpus": "runs/modern/pegasus6/corpus", "lineages": 90, "k": 8, "alpha": 3.0, "reads": 256, "assess_reads": 512}
+  90 lineages in 725s
+
+  pool         ceiling    qubits    against the minorminer pool
+  minorminer   0.8273     23.5      +0.0000 [+0.0000, +0.0000] over 90
+  grown        0.8081     27.7      -0.0192 [-0.0371, -0.0019] over 90
+  mixed        0.8384     25.5      +0.0110 [+0.0025, +0.0214] over 90
+
+  Each ceiling is the pool's best candidate by its selection block, re-measured on
+  independent reads. All pools are size K, so the selection inflation is matched.
+
+POOL CEILING DONE

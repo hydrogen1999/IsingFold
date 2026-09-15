@@ -122,3 +122,17 @@ Ruled out one at a time: capacity, the loss, the labels, the teacher. Bounded: t
 is worth about +0.008, which is below the spread between seeds. Never varied: how much data the
 model is fitted on. A learning curve at 25, 50, 100 and 200 lineages is running, with the held-out
 set fixed and the training subsets nested.
+
+## Update 2026-09-15
+
+- Power-law chain lengths: built (`probes/powerlaw_embeddings.py`), three spends separated,
+  measured on Pegasus 6 and Zephyr 4 with one draw per arm. No spend beats the start; contact
+  beats redundancy by +0.07 to +0.09 at equal cost.
+- Learning curve: flat, 25 to 200 lineages. Data ruled out.
+- Representation ablation on the hard corpus: four arms within seed noise.
+- Pool ceiling: eight independent minorminer draws beat every grown, mixed or
+  diversity-chosen pool of eight at matched measurements. Diversity is the resource and a
+  variant of a draw is not a new seed.
+- All earlier conclusions were Chimera-only; Pegasus and Zephyr are now the default hosts.
+- Still open: feasibility-threshold regime, measurement-budget allocation, section 5 budget
+  conditioning, section 9 completion heads, coordinate-permutation control, paper outline.

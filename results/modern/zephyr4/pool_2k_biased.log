@@ -1,0 +1,12 @@
+{"corpus": "runs/modern/zephyr4/corpus", "lineages": 90, "k": 8, "alpha": 3.0, "reads": 256, "assess_reads": 512}
+  90 lineages in 829s
+
+  pool         ceiling    qubits    against the minorminer pool
+  minorminer   0.8479     21.6      +0.0000 [+0.0000, +0.0000] over 90
+  grown        0.8464     26.1      -0.0015 [-0.0185, +0.0157] over 90
+  mixed        0.8693     23.6      +0.0214 [+0.0101, +0.0343] over 90
+
+  Each ceiling is the pool's best candidate by its selection block, re-measured on
+  independent reads. All pools are size K, so the selection inflation is matched.
+
+POOL CEILING DONE

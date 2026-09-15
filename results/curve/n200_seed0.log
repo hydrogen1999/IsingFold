@@ -1,0 +1,40 @@
+{"cache": "runs/r1/labels.pkl", "key": ["runs/v1/corpus", 200, 60, 2, 8, 256, 0], "device": "cuda", "width": 64}
+  training lineages: 389 states compiled, 0 candidates dropped, 0 without native coordinates, 115s
+  held-out lineages: 118 states compiled, 0 candidates dropped, 0 without native coordinates, 39s
+  fitting on 200 lineages, 389 states
+  scorer parameters 123905
+  step   1  nll 0.69712  rank 2.01663  train regret 0.1767  grad 31.999  inner -
+  step  51  nll 0.66083  rank 1.86194  train regret 0.1114  grad 713.928  inner -
+  step 101  nll 0.65503  rank 1.69825  train regret 0.0682  grad 2478.120  inner -
+  step 151  nll 0.67776  rank 1.69441  train regret 0.0573  grad 4629.889  inner -
+  step 201  nll 0.66709  rank 1.52264  train regret 0.0285  grad 5905.901  inner -
+  step 251  nll 0.65734  rank 1.42439  train regret 0.0224  grad 4850.512  inner -
+  step 301  nll 0.63975  rank 1.42536  train regret 0.0217  grad 4573.476  inner -
+  step 351  nll 0.64007  rank 1.38334  train regret 0.0150  grad 4929.816  inner -
+  step 400  nll 0.64413  rank 1.32716  train regret 0.0149  grad 5597.484  inner -
+
+== TRAINING states, fitted on, 118 states, every pick re-measured on 512 independent reads
+  picking by oracle     0.6242  over 118 states
+  picking by head       0.6234  over 118 states
+  picking by random     0.4879  over 118 states
+  picking by resource   0.4832  over 118 states
+  picking by incumbent  0.4919  over 118 states
+  head minus random                    n 118 states in  61 lineages  +0.1344 [+0.1031, +0.1669]  (paired by lineage)
+  head minus the protected incumbent   n 118 states in  61 lineages  +0.1315 [+0.0945, +0.1694]  (paired by lineage)
+  oracle minus random, the ceiling     n 118 states in  61 lineages  +0.1350 [+0.1051, +0.1654]  (paired by lineage)
+  head minus oracle, left on the table n 118 states in  61 lineages  -0.0005 [-0.0070, +0.0052]  (paired by lineage)
+  median within-state rank correlation +0.709
+
+== HELD-OUT lineages, never trained on, 118 states, every pick re-measured on 512 independent reads
+  picking by oracle     0.7083  over 118 states
+  picking by head       0.6035  over 118 states
+  picking by random     0.5780  over 118 states
+  picking by resource   0.5739  over 118 states
+  picking by incumbent  0.5991  over 118 states
+  head minus random                    n 118 states in  60 lineages  +0.0264 [+0.0006, +0.0542]  (paired by lineage)
+  head minus the protected incumbent   n 118 states in  60 lineages  +0.0050 [-0.0276, +0.0374]  (paired by lineage)
+  oracle minus random, the ceiling     n 118 states in  60 lineages  +0.1297 [+0.0981, +0.1635]  (paired by lineage)
+  head minus oracle, left on the table n 118 states in  60 lineages  -0.1034 [-0.1313, -0.0783]  (paired by lineage)
+  median within-state rank correlation +0.107
+
+SUCCESSOR SCORER DONE
