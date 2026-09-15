@@ -1,0 +1,13 @@
+{"corpus": "runs/hard/corpus", "digest": "e5382da2349ebafb", "generator": "rev2-inkdrop-frustrated-1", "examined": 48}
+
+  instances examined            48
+  nominal variables             16.0
+  logical edges                 45.3
+  isolated spins                0.42 mean, present in 16 of 48
+  independent components        1.42 mean, more than one in 16 of 48
+  largest component             15.58 mean, smallest 14, at most 12 in 0 of 48
+  minorminer seconds per draw   0.008 mean, 0.017 max
+  headroom over 6 embeddings    0.3390 mean spread, 0.3320 median
+  instances with no headroom    1 of 48 (spread below 0.02)
+
+CORPUS REPORT DONE

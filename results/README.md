@@ -284,6 +284,42 @@ it gets the first one right more often. For choosing a single candidate that is 
 matters, and it suggests rank correlation was the wrong headline statistic throughout. Top-choice
 regret is the quantity to report.
 
+## A corpus where the objective can show itself
+
+The measurement above says the qubit budget explains under a tenth of the variance in quality,
+with the wrong sign. The corpus it was measured on explains why: nominally sixteen variables, it
+holds 4.48 independent components whose largest piece has 11 of them and three spins coupled to
+nothing, chains one or two qubits long, and minorminer finishes in two milliseconds. Chain
+integrity is almost never the binding constraint there, so "more qubits" only ever means a longer
+chain the problem did not need.
+
+`probes/gen_hard_corpus.py` inverts the construction. Rather than dropping chains onto the
+hardware and keeping whatever contact graph falls out, it starts from a dense logical graph,
+plants a frustrated-loop Ising for a certified ground energy, and asks minorminer whether the
+result can be embedded within the cap at all. The witness is minorminer's embedding: it proves
+feasibility and is never a quality label.
+
+| | ink-drop corpus | clique-16 corpus |
+|---|---|---|
+| logical edges | 21.6 | 45.3 |
+| isolated spins | 3.00, in 41 of 48 | 0.42, in 16 of 48 |
+| independent components | 4.48, more than one in 45 of 48 | 1.42, more than one in 16 of 48 |
+| largest component | 11.06, at most 12 in 30 of 48 | 15.58, at most 12 in 0 of 48 |
+| qubits used | about 22 | 43.2 |
+| longest chain | about 2 | 4.36 |
+| headroom over six embeddings | 0.358 | 0.339 |
+
+600 instances, digest `e5382da2349ebafb`, none lost to planting or to the cap. It is one
+connected problem over 15.6 of its 16 variables, with twice the edges, twice the qubits and
+chains twice as long, and the spread in quality between independent embeddings of one instance
+survives the change. Forty-three of the hundred and twenty allowed qubits are used, so there is
+room to spend more if spending more helps.
+
+Whether it helps is being measured, not assumed. minorminer still embeds these in eight
+milliseconds, so this is not a corpus that is hard to embed at all; it is one where chain
+integrity is on the critical path, which is the condition under which choosing an embedding by
+the right objective can differ from choosing it by resource.
+
 ## Audit checks
 
 An external audit of commit 41fcfac found five things worth fixing in the measurement and the

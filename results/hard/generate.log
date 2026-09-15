@@ -1,0 +1,21 @@
+{"kept": 600, "attempted": 600, "no_planting": 0, "minorminer_found_nothing": 0, "over_qubit_cap": 0, "mean_qubits": 43.2, "mean_max_chain": 4.355, "mean_qubits_per_variable": 2.7, "mean_minorminer_seconds": 0.00795177698135376, "max_minorminer_seconds": 0.019246578216552734, "seconds": 5}
+{
+ "generator_version": "rev2-inkdrop-frustrated-1",
+ "instances": 600,
+ "strength_records": 510,
+ "split": {
+  "train": 420,
+  "validation": 90,
+  "test": 90,
+  "ood": 0
+ },
+ "files": [
+  "evaluator_only.jsonl",
+  "instances.jsonl",
+  "splits.json",
+  "strength_counts.jsonl"
+ ],
+ "digest": "e5382da2349ebafb"
+}
+
+HARD CORPUS DONE
