@@ -1,0 +1,22 @@
+{"corpus": "runs/modern/pegasus6/corpus", "lineages": 90, "alphas": [3.0, 2.2, 1.6], "modes": ["length", "redundant", "contact"], "lmin": 1, "lmax": 8, "reads": 512, "repeats": 1}
+  instances swept 90, invalid growths 0, over cap 0, qubits short of target 1, 405s
+
+  alpha    qubits    mean chain  max chain   quality   vs the minorminer start
+  start       -       23.3      -           0.5655    -
+  length      3.0     27.4      1.52        0.5510    -0.0145 [-0.0248, -0.0046] over 90
+  length      2.2     32.6      1.81        0.5175    -0.0480 [-0.0710, -0.0266] over 90
+  length      1.6     42.5      2.36        0.4617    -0.1038 [-0.1355, -0.0712] over 90
+  redundant   3.0     26.9      1.49        0.5415    -0.0240 [-0.0442, -0.0046] over 90
+  redundant   2.2     32.9      1.83        0.4566    -0.1089 [-0.1424, -0.0788] over 90
+  redundant   1.6     42.4      2.36        0.3724    -0.1931 [-0.2440, -0.1435] over 90
+  contact     3.0     27.4      1.52        0.5645    -0.0010 [-0.0265, +0.0258] over 90
+  contact     2.2     33.2      1.84        0.5298    -0.0357 [-0.0666, -0.0055] over 90
+  contact     1.6     40.9      2.27        0.4759    -0.0896 [-0.1383, -0.0450] over 90
+
+  Growth only adds qubits, so these are nested in resource: every row realises the
+  same couplings as the row above it and costs more. A quality column that rises with
+  the qubit column is the advisor's claim that unused hardware is an opportunity; one
+  that falls is the opposite; one that does nothing says the budget is not the
+  variable, and this time the comparison is a budget sweep rather than a perturbation.
+
+BUDGET SWEEP DONE
