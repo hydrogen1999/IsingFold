@@ -156,6 +156,29 @@ not a case of learning one and then losing it to memorisation.
 On the fitted states early stopping takes the head from +0.1322 to +0.0358 and the correlation
 from +0.381 to +0.098, which is what confirms the larger figure was memorisation.
 
+**Withdrawn.** A fourth external audit found two label bugs in the code that produced the table
+above, and both are in the direction that manufactures a negative result.
+
+COMMIT was resolved as workspace plus new_chains. COMMIT carries no new_chains at all: the
+environment returns the archive entry the candidate names. At the root state the workspace and
+the archived entry coincide, so the error is invisible there and appears at every state after a
+change, which is most of the dataset. Four fixtures out of four reproduce it.
+
+The control named "incumbent" was the current workspace rather than the protected archive entry,
+so the baseline the head was compared against changed identity partway through an episode. Eight
+of sixteen probe states had the two differing.
+
+Four statistical faults accompany them: the inner split cut a list of states instead of splitting
+lineages, so a lineage could sit on both sides of it; arms were zipped to a common length instead
+of joined on the state each number belongs to; the bootstrap treated two states of one lineage as
+two independent draws; and the fresh-read seeds came from Python's per-process salted string
+hash, the trap this repository wrote a hand-test for in the same week.
+
+All are fixed and the experiment is re-running. On a fourteen-lineage probe of the corrected code
+the held-out difference is +0.0343 rather than negative, so the sign of the earlier result was a
+consequence of the labels. Nothing in the paragraph below should be relied on until the full
+re-run is in.
+
 **What this establishes and what it does not.** Within one state, which candidate is better is not
 predicted by features that transfer between instances, for this architecture, this observation,
 this corpus and a label budget of 256 reads. It was tested with direct supervision, a loss suited

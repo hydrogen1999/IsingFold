@@ -33,7 +33,7 @@ if _pin:
 import torch
 import torch.nn.functional as F
 
-from isingfold.rl.contracts import Context, InitFailureRecord, Mode
+from isingfold.rl.contracts import Context, InitFailureRecord, Mode, Opcode
 from isingfold.rl.data.generate import load_instances
 from isingfold.rl.env import (LEGACY_ONLINE_INITIALIZER_RESTARTS_V1, EmbeddingEnv,
                               fixed_strength_selector)
@@ -82,14 +82,20 @@ def hindsight_prefix(env_factory, rows, target, max_steps=64):
                 return None
         if not hasattr(dec, "candidates"):
             return None
-        base = {n: frozenset(c) for n, c in env.state.chains.items()}
+        # Only a COMMIT returns anything, and what it returns is the archive entry it names,
+        # not the workspace. The first version of this matched any legal candidate whose
+        # workspace-plus-new_chains equalled the target and handed that index back as the
+        # commit: on a fixture whose winner was REWRITE_ONE then COMMIT it produced a teacher of
+        # one REWRITE_ONE labelled as the commit, and on an archive with two entries it picked
+        # the wrong one. A fourth external audit reproduced both.
         for i, (cand, ok) in enumerate(zip(dec.candidates, dec.legal_mask)):
-            if not ok:
+            if not ok or cand.opcode is not Opcode.COMMIT:
                 continue
-            succ = dict(base)
-            for node, chain in cand.new_chains.items():
-                succ[node] = frozenset(chain)
-            if succ == want:
+            ref = cand.archive_ref
+            if ref is None or ref >= len(env.state.archive):
+                continue
+            entry = {n: frozenset(c) for n, c in env.state.archive[ref].chains.items()}
+            if entry == want:
                 return step, i, dec
         if step >= len(actions):
             return None
@@ -118,6 +124,10 @@ def main() -> None:
                     help="which lineages the in-training curve is measured on. Keep it at "
                          "validation: the curve is looked at repeatedly and steers decisions, "
                          "so whatever it reads stops being a held-out set")
+    ap.add_argument("--strict-prefix", action="store_true",
+                    help="when no commit for the returned embedding is found along the replay, "
+                         "drop the lineage instead of falling back to the whole trajectory, so "
+                         "a prefix arm measures the prefix teacher and nothing else")
     ap.add_argument("--teacher", default="prefix", choices=["prefix", "whole"],
                     help="'whole' clones every action of the winning rollout, including the "
                          "ones taken after its output already existed. 'prefix' replays the "
@@ -325,7 +335,12 @@ def main() -> None:
                 if found is not None:
                     break
             if found is None:
+                # A prefix ablation that silently falls back to the whole trajectory is not an
+                # ablation. The fallback is counted and, when --strict-prefix is set, the
+                # lineage is dropped instead of being taught the thing under test.
                 prefix_not_found += 1
+                if a.strict_prefix:
+                    continue
                 kept.extend(episode_rows)
                 taught_steps.append(len(episode_rows))
                 full_steps.append(len(episode_rows))

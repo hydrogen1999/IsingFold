@@ -62,6 +62,42 @@ def block(task, ctx, chains, seed, reads):
     return float(o.utility), int(hits), int(o.evaluator_reads or reads)
 
 
+
+def resolve_candidate(state, candidate):
+    """The embedding an action actually returns, which is not always workspace plus new_chains.
+
+    COMMIT carries no new_chains at all: the environment returns `archive[archive_ref].chains`.
+    Resolving it the workspace way labels a commit of an older embedding with whatever the
+    workspace happens to hold, which is right at the root, where the two coincide, and wrong at
+    every state after a change. A fourth external audit reproduced it on four fixtures out of
+    four. Returning None says this opcode has no immediate-commit estimand rather than inventing
+    one for it.
+    """
+    if candidate.opcode is Opcode.COMMIT:
+        ref = candidate.archive_ref
+        if ref is None or ref >= len(state.archive):
+            return None
+        return {n: frozenset(c) for n, c in state.archive[ref].chains.items()}
+    if not candidate.changes_workspace:
+        return None
+    succ = {n: frozenset(c) for n, c in state.chains.items()}
+    for node, chain in candidate.new_chains.items():
+        succ[node] = frozenset(chain)
+    return succ
+
+
+def protected_entry(state):
+    """The embedding the episode is guaranteed to be able to return, which is the control.
+
+    The workspace after a rewrite is a different object and calling it the incumbent renames the
+    baseline halfway through the experiment; the audit found eight of sixteen states where the
+    two differ.
+    """
+    for entry in state.archive:
+        if getattr(entry, "protected", False):
+            return {n: frozenset(c) for n, c in entry.chains.items()}
+    return None
+
 def states_for(task, ctx, mm, rng, n_states, max_candidates, reads, seed0):
     """Collect candidate pools with labels at a few states of one lineage."""
     env = EmbeddingEnv(task, ctx, mode=Mode.IMPROVEMENT, initializer=mm,
@@ -77,13 +113,14 @@ def states_for(task, ctx, mm, rng, n_states, max_candidates, reads, seed0):
         if len(legal) < 3:
             break
         chosen = list(rng.permutation(legal))[:max_candidates]
-        base = {n: frozenset(c) for n, c in env.state.chains.items()}
-        rows, seen = [], set()
+        rows, seen, skipped_opcode = [], set(), 0
+        protected = protected_entry(env.state)
         for slot, i in enumerate(chosen):
             cand = dec.candidates[i]
-            succ = dict(base)
-            for node, chain in cand.new_chains.items():
-                succ[node] = frozenset(chain)
+            succ = resolve_candidate(env.state, cand)
+            if succ is None:
+                skipped_opcode += 1
+                continue
             key = frozenset((n, frozenset(c)) for n, c in succ.items())
             if key in seen:
                 continue
@@ -94,9 +131,11 @@ def states_for(task, ctx, mm, rng, n_states, max_candidates, reads, seed0):
             rows.append({"i": i, "succ": succ, "rate": lab[0], "hits": lab[1], "reads": lab[2],
                          "qubits": sum(len(c) for c in succ.values()),
                          "max_chain": max(len(c) for c in succ.values())})
-        if len(rows) >= 3:
+        if len(rows) >= 3 and protected is not None:
             out.append({"task": task, "obs": dec.observation, "rows": rows,
-                        "incumbent": base, "dec": dec})
+                        "incumbent": protected, "lineage": task.lineage,
+                        "state_id": "%s#%d" % (task.name, step), "dec": dec,
+                        "skipped_opcode": skipped_opcode})
         if step + 1 >= n_states:
             break
         pick = int(rng.integers(0, len(legal)))
@@ -165,9 +204,14 @@ def main() -> int:
     # by the stopping rule as well as by the gradient.
     inner_states = []
     if a.inner_fraction > 0:
-        cut = int(len(train_states) * (1.0 - a.inner_fraction))
-        inner_states = train_states[cut:]
-        train_states = train_states[:cut]
+        # By lineage, not by position. Two states of one lineage landing on opposite sides of
+        # the cut would let the stopping rule read a lineage the fit had already seen.
+        roots = sorted({st["lineage"] for st in train_states})
+        keep = set(roots[: int(len(roots) * (1.0 - a.inner_fraction))])
+        inner_states = [st for st in train_states if st["lineage"] not in keep]
+        train_states = [st for st in train_states if st["lineage"] in keep]
+        assert not ({st["lineage"] for st in train_states}
+                    & {st["lineage"] for st in inner_states}), "inner split shares a lineage"
         print("  fitting on %d states, stopping on %d held out of the training lineages"
               % (len(train_states), len(inner_states)), flush=True)
 
@@ -244,8 +288,8 @@ def main() -> int:
               flush=True)
     model.eval()
     def evaluate(states, label):
-        picks = {k: [] for k in ("head", "oracle", "random", "resource", "incumbent")}
-        corr = []
+        picks = {k: {} for k in ("head", "oracle", "random", "resource", "incumbent")}
+        corr, lineage_of = [], {}
         for n, st in enumerate(states):
             rows = st["rows"]
             with torch.no_grad():
@@ -264,35 +308,61 @@ def main() -> int:
             pick_random = rows[int(rng.integers(0, len(rows)))]
             inc = block(st["task"], ctx, st["incumbent"], FRESH_BASE + 13 * (n * 97 + 77),
                         a.fresh_reads)
+            # A fixed table, because Python hashes strings with a per-process salt and the
+            # seeds would then differ between runs of the same experiment. This project wrote a
+            # hand-test for exactly that trap and then reproduced it here.
+            tags = {"head": 1, "oracle": 2, "random": 3, "resource": 4}
+            sid = st["state_id"]
+            lineage_of[sid] = st["lineage"]
             for key, row in (("head", best_by_head), ("oracle", best_by_label),
                              ("random", pick_random), ("resource", worst_res)):
-                v = fresh(row, hash(key) % 50)
+                v = fresh(row, tags[key])
                 if v is not None:
-                    picks[key].append(v)
+                    picks[key][sid] = v
             if inc is not None:
-                picks["incumbent"].append(inc[0])
+                picks["incumbent"][sid] = inc[0]
             if len(set(scores.tolist())) > 1 and len(set(truths.tolist())) > 1:
-                sr = np.argsort(np.argsort(scores)).astype(float)
-                tr = np.argsort(np.argsort(truths)).astype(float)
-                c = np.corrcoef(sr, tr)[0, 1]
+                # Average ranks, so the ties that 256-read labels produce are handled the way
+                # Spearman defines rather than broken arbitrarily by argsort order.
+                def ranks(v):
+                    order = np.argsort(v)
+                    out = np.empty(len(v), dtype=float)
+                    i = 0
+                    while i < len(v):
+                        j = i
+                        while j + 1 < len(v) and v[order[j + 1]] == v[order[i]]:
+                            j += 1
+                        out[order[i:j + 1]] = 0.5 * (i + j) + 1.0
+                        i = j + 1
+                    return out
+                c = np.corrcoef(ranks(scores), ranks(truths))[0, 1]
                 if np.isfinite(c):
                     corr.append(float(c))
         print("\n== %s, %d states, every pick re-measured on %d independent reads"
               % (label, len(states), a.fresh_reads), flush=True)
         for k in ("oracle", "head", "random", "resource", "incumbent"):
             if picks[k]:
-                print("  picking by %-10s %.4f" % (k, float(np.mean(picks[k]))), flush=True)
+                print("  picking by %-10s %.4f  over %d states"
+                      % (k, float(np.mean(list(picks[k].values()))), len(picks[k])), flush=True)
 
         def delta(x, y, lab):
-            n2 = min(len(picks[x]), len(picks[y]))
-            if n2 < 5:
-                return
-            d = np.array(picks[x][:n2]) - np.array(picks[y][:n2])
+            # Joined on the state each number belongs to, not zipped to a common length: two
+            # arms that lost different states to evaluator failures would otherwise be paired
+            # across different problems. Resampled by lineage, because two states of one lineage
+            # are not two independent draws and treating them as such narrows every interval.
+            shared = sorted(set(picks[x]) & set(picks[y]))
+            if len(shared) < 5:
+                print("  %-36s (too few paired states: %d)" % (lab, len(shared))); return
+            groups: dict[str, list[float]] = {}
+            for sid in shared:
+                groups.setdefault(lineage_of[sid], []).append(picks[x][sid] - picks[y][sid])
+            keys = sorted(groups)
+            per = np.array([float(np.mean(groups[k])) for k in keys])
             r2 = np.random.default_rng(0)
-            bs = [d[r2.integers(0, n2, n2)].mean() for _ in range(4000)]
-            print("  %-36s n %3d  %+.4f [%+.4f, %+.4f]"
-                  % (lab, n2, d.mean(), np.percentile(bs, 2.5), np.percentile(bs, 97.5)),
-                  flush=True)
+            bs = [per[r2.integers(0, len(per), len(per))].mean() for _ in range(4000)]
+            print("  %-36s n %3d states in %3d lineages  %+.4f [%+.4f, %+.4f]  (paired by lineage)"
+                  % (lab, len(shared), len(keys), per.mean(),
+                     np.percentile(bs, 2.5), np.percentile(bs, 97.5)), flush=True)
         delta("head", "random", "head minus random")
         delta("head", "incumbent", "head minus the protected incumbent")
         delta("oracle", "random", "oracle minus random, the ceiling")
