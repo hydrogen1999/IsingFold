@@ -1,3 +1,5 @@
 {"host": "zephyr4", "qubits": 576, "tries": 10, "draws": 4, "instances": 6}
   family         n    valid  seconds    qubits 
   dense        136     0.92      3.1       504 
+  dense        144     0.00      7.6         - 
+FEASIBILITY DONE

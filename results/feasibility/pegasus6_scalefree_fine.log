@@ -1,3 +1,7 @@
 {"host": "pegasus6", "qubits": 680, "tries": 10, "draws": 4, "instances": 6}
   family         n    valid  seconds    qubits 
   scalefree    176     1.00      2.0       582 
+  scalefree    184     0.62      6.2       602 <- threshold regime
+  scalefree    200     0.04     12.2       603 
+  scalefree    208     0.00     11.8         - 
+FEASIBILITY DONE

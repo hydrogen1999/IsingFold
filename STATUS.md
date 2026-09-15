@@ -176,6 +176,27 @@ instances near the embeddability threshold, where minorminer's draws fail often 
 rate is the score; and allocation of measurement budget across candidates, which is a bandit
 over the pool rather than a change to it.
 
+## The embeddability threshold on Pegasus 6 and Zephyr 4
+
+Validity rate of minorminer at ten tries, six instances by four draws per cell, in
+`results/feasibility/`:
+
+    family      Pegasus 6                          Zephyr 4
+    clique      59: 1.00  60: 0.75  61: 0.38  62: 0.08   57: 1.00  58: 0.83  59: 0.58  60: 0.21
+    dense       128: 1.00  136: 0.25  144: 0.00           136: 0.92  144: 0.00
+    scalefree   176: 1.00  184: 0.62  200: 0.04           184: 0.96  200: 0.00
+
+At fifty tries the clique threshold moves by about one variable (Pegasus 61: 0.88, 62: 0.25;
+Zephyr 59: 0.88, 60: 0.25) at three to five times the wall time. The deterministic clique
+embedder stops at K60 on Pegasus 6 and K56 on Zephyr 4, below the random search, so the
+threshold is not already solved by the standard tool. At the threshold the host is about
+88 percent full and a draw costs eight to fifty seconds.
+
+Two facts before anything is built for this regime. The current learned embedder cannot
+enter it: it starts from a minorminer embedding, and here there is none. And whether a valid
+embedding at the threshold has any solve probability is unmeasured; if every one is near
+zero, a validity win is a win on problems the annealer cannot solve.
+
 ## Withdrawn, and why
 
 Seven numbers have been published here and then withdrawn. Four were caught by external audit
