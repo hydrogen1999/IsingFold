@@ -176,6 +176,14 @@ instances near the embeddability threshold, where minorminer's draws fail often 
 rate is the score; and allocation of measurement budget across candidates, which is a bandit
 over the pool rather than a change to it.
 
+## Representation, third corpus, family held out
+
+Five arms on the diverse corpus with the modular family held out entirely, one seed, 44
+lineages: F0 +0.0433, Fpos +0.0457, Fphys +0.0544, Fspace +0.0295, Fall +0.0137, every
+interval about 0.09 wide and every pair within 0.02. No arm separates from the bare program.
+That is three corpora and three splits on which the representation does not matter. Logs in
+`results/diverse_abl/`.
+
 ## The embeddability threshold on Pegasus 6 and Zephyr 4
 
 Validity rate of minorminer at ten tries, six instances by four draws per cell, in
