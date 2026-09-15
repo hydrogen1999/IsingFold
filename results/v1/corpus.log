@@ -1,0 +1,23 @@
+pinned to /home/nguyencongt/prj_IsingFold/src/isingfold/rl/contracts.py
+{
+ "scope": "development-smoke-only",
+ "manifest": {
+  "generator_version": "rev2-inkdrop-frustrated-1",
+  "instances": 600,
+  "strength_records": 510,
+  "split": {
+   "train": 420,
+   "validation": 90,
+   "test": 90,
+   "ood": 0
+  },
+  "files": [
+   "evaluator_only.jsonl",
+   "instances.jsonl",
+   "splits.json",
+   "strength_counts.jsonl"
+  ],
+  "digest": "25570ef89d385f2c"
+ }
+}
+CORPUS digest 25570ef89d385f2c instances 600 split {'train': 420, 'validation': 90, 'test': 90, 'ood': 0}

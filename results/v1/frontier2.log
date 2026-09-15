@@ -1,0 +1,77 @@
+{"lineages": 60, "split": "test", "ladder": [2, 4, 8, 12, 16, 24, 40], "rounds": [1, 2, 4], "draws": 8, "reads": 128, "assess_reads": 512}
+  drew and scored 40 embeddings per lineage in 402.4s (0.168s each)
+
+== noise control: the same unchanged embedding, assessed five times
+  range over five assessments of one fixed embedding: mean 0.0303, max 0.0762 over 12 lineages
+  a difference smaller than this is inside what the instrument can invent
+
+== minorminer, selected on 128-read blocks, assessed on 512 fresh reads
+  minorminer best-of-2                         solved 60/60  assessed 0.5542  with failures as zero 0.5542  2 blocks  20.1s
+  minorminer best-of-4                         solved 60/60  assessed 0.6455  with failures as zero 0.6455  4 blocks  40.2s
+  minorminer best-of-8                         solved 60/60  assessed 0.7073  with failures as zero 0.7073  8 blocks  80.5s
+  minorminer best-of-12                        solved 60/60  assessed 0.7355  with failures as zero 0.7355  12 blocks  120.7s
+  minorminer best-of-16                        solved 60/60  assessed 0.7372  with failures as zero 0.7372  16 blocks  161.0s
+  minorminer best-of-24                        solved 60/60  assessed 0.7453  with failures as zero 0.7453  24 blocks  241.4s
+  minorminer best-of-40                        solved 60/60  assessed 0.7668  with failures as zero 0.7668  40 blocks  402.4s
+
+== the same draws, selected by qubit count, assessed the same way
+  resource-picked best-of-2                    solved 60/60  assessed 0.4827  with failures as zero 0.4827  0 blocks  0.0s   (no selection blocks needed)
+  resource-picked best-of-4                    solved 60/60  assessed 0.4910  with failures as zero 0.4910  0 blocks  0.0s   (no selection blocks needed)
+  resource-picked best-of-8                    solved 60/60  assessed 0.5095  with failures as zero 0.5095  0 blocks  0.0s   (no selection blocks needed)
+  resource-picked best-of-12                   solved 60/60  assessed 0.5006  with failures as zero 0.5006  0 blocks  0.0s   (no selection blocks needed)
+  resource-picked best-of-16                   solved 60/60  assessed 0.4874  with failures as zero 0.4874  0 blocks  0.0s   (no selection blocks needed)
+  resource-picked best-of-24                   solved 60/60  assessed 0.5107  with failures as zero 0.5107  0 blocks  0.0s   (no selection blocks needed)
+  resource-picked best-of-40                   solved 60/60  assessed 0.5104  with failures as zero 0.5104  0 blocks  0.0s   (no selection blocks needed)
+
+== objective selection against resource selection, identical draws, fresh assessment
+  best-of-2: objective minus resource                  n  60  +0.0714 [+0.0403, +0.1069]  (objective spends 2 blocks to choose, resource spends none)
+  best-of-4: objective minus resource                  n  60  +0.1546 [+0.1099, +0.2020]  (objective spends 4 blocks to choose, resource spends none)
+  best-of-8: objective minus resource                  n  60  +0.1978 [+0.1497, +0.2468]  (objective spends 8 blocks to choose, resource spends none)
+  best-of-12: objective minus resource                 n  60  +0.2350 [+0.1834, +0.2907]  (objective spends 12 blocks to choose, resource spends none)
+  best-of-16: objective minus resource                 n  60  +0.2498 [+0.1952, +0.3050]  (objective spends 16 blocks to choose, resource spends none)
+  best-of-24: objective minus resource                 n  60  +0.2346 [+0.1801, +0.2909]  (objective spends 24 blocks to choose, resource spends none)
+  best-of-40: objective minus resource                 n  60  +0.2564 [+0.2020, +0.3132]  (objective spends 40 blocks to choose, resource spends none)
+
+== if-core applied to the best of 8 minorminer draws (runs/v1/frozen/if-core.pt), sampled at temperature one
+  if-core: 1 rounds, final state only          solved 60/60  assessed 0.6411  with failures as zero 0.6411  9 blocks  142.7s
+  if-core: 1 rounds, keep the better of the two solved 60/60  assessed 0.7179  with failures as zero 0.7179  10 blocks  142.7s
+  1 rounds, final state, against its own starting point n  60  -0.0661 [-0.1161, -0.0232]  (same embedding before and after)
+  1 rounds, keep better, against minorminer best-of-8  n  60  +0.0107 [+0.0015, +0.0240]  (10 blocks vs 8 blocks)
+  if-core: 2 rounds, final state only          solved 60/60  assessed 0.6168  with failures as zero 0.6168  10 blocks  187.6s
+  if-core: 2 rounds, keep the better of the two solved 60/60  assessed 0.7215  with failures as zero 0.7215  11 blocks  187.6s
+  2 rounds, final state, against its own starting point n  60  -0.0905 [-0.1395, -0.0463]  (same embedding before and after)
+  2 rounds, keep better, against minorminer best-of-12 n  60  -0.0140 [-0.0417, +0.0070]  (11 blocks vs 12 blocks)
+  if-core: 4 rounds, final state only          solved 60/60  assessed 0.5783  with failures as zero 0.5783  12 blocks  273.3s
+  if-core: 4 rounds, keep the better of the two solved 60/60  assessed 0.7199  with failures as zero 0.7199  13 blocks  273.3s
+  4 rounds, final state, against its own starting point n  60  -0.1289 [-0.1822, -0.0781]  (same embedding before and after)
+  4 rounds, keep better, against minorminer best-of-12 n  60  -0.0157 [-0.0436, +0.0049]  (13 blocks vs 12 blocks)
+
+== if-dual applied to the best of 8 minorminer draws (runs/v1/frozen/if-dual.pt), sampled at temperature one
+  if-dual: 1 rounds, final state only          solved 60/60  assessed 0.6732  with failures as zero 0.6732  9 blocks  148.2s
+  if-dual: 1 rounds, keep the better of the two solved 60/60  assessed 0.7099  with failures as zero 0.7099  10 blocks  148.2s
+  1 rounds, final state, against its own starting point n  60  -0.0340 [-0.0687, -0.0073]  (same embedding before and after)
+  1 rounds, keep better, against minorminer best-of-8  n  60  +0.0026 [-0.0005, +0.0063]  (10 blocks vs 8 blocks)
+  if-dual: 2 rounds, final state only          solved 60/60  assessed 0.6491  with failures as zero 0.6491  10 blocks  196.5s
+  if-dual: 2 rounds, keep the better of the two solved 60/60  assessed 0.7125  with failures as zero 0.7125  11 blocks  196.5s
+  2 rounds, final state, against its own starting point n  60  -0.0582 [-0.0970, -0.0247]  (same embedding before and after)
+  2 rounds, keep better, against minorminer best-of-12 n  60  -0.0230 [-0.0507, -0.0025]  (11 blocks vs 12 blocks)
+  if-dual: 4 rounds, final state only          solved 60/60  assessed 0.6278  with failures as zero 0.6278  12 blocks  291.5s
+  if-dual: 4 rounds, keep the better of the two solved 60/60  assessed 0.7167  with failures as zero 0.7167  13 blocks  291.5s
+  4 rounds, final state, against its own starting point n  60  -0.0795 [-0.1199, -0.0411]  (same embedding before and after)
+  4 rounds, keep better, against minorminer best-of-12 n  60  -0.0188 [-0.0474, +0.0050]  (13 blocks vs 12 blocks)
+
+== if-mlp applied to the best of 8 minorminer draws (runs/v1/frozen/if-mlp.pt), sampled at temperature one
+  if-mlp: 1 rounds, final state only           solved 60/60  assessed 0.6865  with failures as zero 0.6865  9 blocks  140.1s
+  if-mlp: 1 rounds, keep the better of the two solved 60/60  assessed 0.7231  with failures as zero 0.7231  10 blocks  140.1s
+  1 rounds, final state, against its own starting point n  60  -0.0207 [-0.0547, +0.0118]  (same embedding before and after)
+  1 rounds, keep better, against minorminer best-of-8  n  60  +0.0159 [+0.0007, +0.0366]  (10 blocks vs 8 blocks)
+  if-mlp: 2 rounds, final state only           solved 60/60  assessed 0.6891  with failures as zero 0.6891  10 blocks  178.2s
+  if-mlp: 2 rounds, keep the better of the two solved 60/60  assessed 0.7319  with failures as zero 0.7319  11 blocks  178.2s
+  2 rounds, final state, against its own starting point n  60  -0.0182 [-0.0532, +0.0155]  (same embedding before and after)
+  2 rounds, keep better, against minorminer best-of-12 n  60  -0.0036 [-0.0340, +0.0234]  (11 blocks vs 12 blocks)
+  if-mlp: 4 rounds, final state only           solved 60/60  assessed 0.6604  with failures as zero 0.6604  12 blocks  246.4s
+  if-mlp: 4 rounds, keep the better of the two solved 60/60  assessed 0.7384  with failures as zero 0.7384  13 blocks  246.4s
+  4 rounds, final state, against its own starting point n  60  -0.0469 [-0.0906, -0.0024]  (same embedding before and after)
+  4 rounds, keep better, against minorminer best-of-12 n  60  +0.0029 [-0.0291, +0.0308]  (13 blocks vs 12 blocks)
+
+FRONTIER2 DONE

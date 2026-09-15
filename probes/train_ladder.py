@@ -308,11 +308,35 @@ def main() -> None:
                     for ep in buffer.episodes:
                         key = lineage_of(start_index + ep.index)
                         groups.setdefault(key, []).extend(ep.transitions)
+                    # The comment above claims the baseline depends on the state only. It did
+                    # not: subtracting the group mean subtracts a term that contains the
+                    # episode's own return, which correlates with its own advantage and shrinks
+                    # the gradient toward zero. An external audit measured it on a one-step
+                    # control with four episodes: the true gradient is 0.025, this estimator
+                    # gives 0.01875, and leaving the episode out gives 0.025 back.
+                    #
+                    # Leave-one-out is the fix and it costs nothing: for each episode subtract
+                    # the mean of the others in its lineage, which is independent of its own
+                    # return and so leaves the estimator unbiased.
                     adv = buffer.gae_utility
-                    for rows_ in groups.values():
-                        if len(rows_) > 1:
-                            idx = np.asarray(rows_, dtype=int)
-                            adv[idx] -= float(adv[idx].mean())
+                    ep_rows = {ep.index: np.asarray(ep.transitions, dtype=int)
+                               for ep in buffer.episodes}
+                    for key, rows_ in groups.items():
+                        members = [ep for ep in buffer.episodes
+                                   if lineage_of(start_index + ep.index) == key]
+                        if len(members) < 2:
+                            continue
+                        means = {ep.index: float(adv[ep_rows[ep.index]].mean())
+                                 for ep in members if ep_rows[ep.index].size}
+                        if len(means) < 2:
+                            continue
+                        total = sum(means.values())
+                        for ep in members:
+                            idx = ep_rows[ep.index]
+                            if not idx.size:
+                                continue
+                            others = (total - means[ep.index]) / (len(means) - 1)
+                            adv[idx] -= others
                     buffer.gae_utility = adv
                 logs = (guarded_update(trainer, buffer, a.kl_guard) if a.kl_guard > 0
                         else trainer.update(buffer))
@@ -375,6 +399,11 @@ def main() -> None:
                 "final_learning_rate": trainer.optimizer.param_groups[0]["lr"],
                 "kl_guard_stops": sum(h.get("kl_guard_stopped", 0.0) for h in history),
                 "updates_with_gradient": sum(1 for h in history if h.get("epochs_run", 0.0) > 0),
+                # An update counter is not a count of learning steps that survived: the KL guard
+                # and the trainer's transactional backtracking both discard work after doing it.
+                # Read these instead of updates_done.
+                "optimizer_steps_kept": sum(float(h.get("optimizer_steps", 0.0)) for h in history),
+                "rollbacks": sum(float(h.get("rollbacks", 0.0)) for h in history),
             }
             results[family].append(record)
             print(json.dumps(record, default=float), flush=True)
