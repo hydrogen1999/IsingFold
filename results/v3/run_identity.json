@@ -1,0 +1,9 @@
+{
+ "corpus": "runs/v1/corpus",
+ "corpus_digest": "25570ef89d385f2c",
+ "seed": 0,
+ "rounds": 60,
+ "source_sha256": "297cc76bed18fca2",
+ "trainer": "probes/train_bestof.py",
+ "teacher_gate": "remeasured_gain > margin"
+}

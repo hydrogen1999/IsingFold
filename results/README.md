@@ -35,6 +35,44 @@ and the test split holds ninety lineages rather than the sixty used here.
 The development curve in the training logs reads +0.02 to +0.04 above the protected initializer,
 but it was measured on validation and test pooled, watched every five rounds. It is a diagnostic.
 
+## v3, the first run with both audits' P0 findings fixed
+
+`runs/v3/seed0` on apollo, same corpus `25570ef89d385f2c`, sixty rounds, one seed per family.
+`v3/run_identity.json` records the corpus digest, the seed, the round count and a sha256 of the
+RL source tree, because a launcher that skips on round count alone cannot tell one seed or one
+code version from another.
+
+What differs from v1 and v2: the teacher accepts a trajectory on its re-measured gain rather than
+on the block that made it the winner; RESTART reaches the real initializer during training, as it
+does at deployment; the in-training curve reads validation only; the advantage baseline leaves
+the episode out of its own baseline.
+
+Two quantities the earlier runs could not produce.
+
+The inflation a maximum over eight noisy blocks invents, measured rather than assumed:
+`selected_gain` minus `remeasured_gain` is 0.0303, 0.0236 and 0.0270 across the three families.
+About one lineage in five per round produced a rollout that won its own block and then failed its
+independent re-measurement; under the old gate all of those were taught on.
+
+The single-episode policy against the protected initializer, on a fixed forty-instance validation
+subset:
+
+| family | rounds 0-25 | rounds 30-59 | final CE loss |
+|---|---|---|---|
+| IF-Core | +0.0150 | +0.0237 | 0.425 |
+| IF-Dual | +0.0069 | +0.0373 | 0.328 |
+| IF-MLP | +0.0075 | +0.0203 | 0.469 |
+
+This is the first time in this project that a single policy episode beats the initializer on a
+fixed subset and the margin grows with training. It is also not the bar: the best of forty-eight
+random rollouts beats the initializer by +0.26 without learning anything. The registered
+comparison against a random controller at matched episodes is what decides, and it is reported
+separately when it finishes.
+
+The curve is noisy enough that any three consecutive points mislead. IF-Core reads +0.0709 at
+round 35 and -0.0373 at round 50. Read the block means, not the points; this document's author
+read three points as a trend at round 13 and had to withdraw it.
+
 ## Audit checks
 
 An external audit of commit 41fcfac found five things worth fixing in the measurement and the
