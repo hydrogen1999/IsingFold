@@ -106,6 +106,41 @@ reaches 0.7055 and the policies 0.7251 to 0.7363. The search is doing most of th
 improvement in the body of the distribution is worth little when the deployment rule takes the
 tail.
 
+## Learned quality, step one of the V4 plan
+
+The question a third audit isolated: the signal within a state is real and a network fits it on
+the states it was fitted on, but does the fit transfer to lineages it never saw? That is what
+decides whether a learned scorer can stand in for evaluator budget.
+
+`probes/train_quality.py` labels candidate pools with the real evaluator, supervises the
+per-action quality head directly with a binomial likelihood on the counts plus a within-state
+ranking term, and then measures the argmax pick on independent reads at states from lineages that
+took no part in training. 200 training lineages gave 389 states, 60 held-out lineages gave 118,
+3,834 labelled candidates in all.
+
+| | fitted states | held-out lineages |
+|---|---|---|
+| oracle | 0.6239 | 0.7019 |
+| head | 0.5991 | 0.5744 |
+| random | 0.4669 | 0.5956 |
+| resource | 0.4826 | 0.5698 |
+| incumbent | 0.4858 | 0.6018 |
+| head minus random | **+0.1322 [+0.0976, +0.1669]** | **-0.0212 [-0.0619, +0.0183]** |
+| head minus oracle | -0.0247 | -0.1275 |
+| rank correlation | +0.381 | +0.048 |
+
+That is IF-MLP; IF-Dual gives -0.0344 [-0.0724, +0.0029] held out with correlation +0.095. On the
+states it was fitted on the head captures 84 percent of a +0.157 ceiling. On new lineages it
+captures nothing, while the ceiling there is still +0.1063 [+0.0809, +0.1346].
+
+This run has no early stopping and no weight decay: 389 states, 200 epochs, full batch, a model
+with millions of parameters. The gap is therefore also consistent with plain memorisation, and a
+failure to transfer under those conditions does not establish that the signal is untransferable.
+`scripts/apollo/run_quality_es.sh` runs the control that separates the two, holding a quarter of
+the training lineages out of the fit to stop on and adding weight decay, with the held-out
+lineages touched by neither the gradient nor the stopping rule. Read that before drawing a
+conclusion from this table.
+
 ## Audit checks
 
 An external audit of commit 41fcfac found five things worth fixing in the measurement and the

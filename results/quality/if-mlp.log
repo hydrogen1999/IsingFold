@@ -1,0 +1,33 @@
+{"corpus": "runs/v1/corpus", "family": "if-mlp", "train_lineages": 200, "eval_lineages": 60, "states": 2, "max_candidates": 8, "reads": 256}
+  389 training states, 118 held-out states, 3834 labelled candidates, 764s
+  epoch   0  mean loss 2.71082
+  epoch  50  mean loss 2.62128
+  epoch 100  mean loss 2.51566
+  epoch 150  mean loss 2.37958
+  epoch 199  mean loss 2.23146
+
+== TRAINING states, fitted on, 118 states, every pick re-measured on 512 independent reads
+  picking by oracle     0.6239
+  picking by head       0.5991
+  picking by random     0.4669
+  picking by resource   0.4826
+  picking by incumbent  0.4858
+  head minus random                    n 118  +0.1322 [+0.0976, +0.1669]
+  head minus the protected incumbent   n 118  +0.1134 [+0.0822, +0.1460]
+  oracle minus random, the ceiling     n 118  +0.1569 [+0.1262, +0.1886]
+  head minus oracle, what is left on the table n 118  -0.0247 [-0.0409, -0.0120]
+  median within-state rank correlation +0.381
+
+== HELD-OUT lineages, never trained on, 118 states, every pick re-measured on 512 independent reads
+  picking by oracle     0.7019
+  picking by head       0.5744
+  picking by random     0.5956
+  picking by resource   0.5698
+  picking by incumbent  0.6018
+  head minus random                    n 118  -0.0212 [-0.0619, +0.0183]
+  head minus the protected incumbent   n 118  -0.0274 [-0.0643, +0.0079]
+  oracle minus random, the ceiling     n 118  +0.1063 [+0.0809, +0.1346]
+  head minus oracle, what is left on the table n 118  -0.1275 [-0.1640, -0.0950]
+  median within-state rank correlation +0.048
+
+TRAIN QUALITY DONE
