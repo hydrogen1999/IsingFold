@@ -180,30 +180,40 @@ def main() -> int:
         return None if got is None else got[0]
 
     # One shared pool per lineage: the same draws, selected over by every arm.
+    # Every attempt is kept, including the ones that produced nothing. best-of-n means the first
+    # n attempts, not the first n successes: dropping a failed draw and reaching for another one
+    # spends budget the arm was not charged for, and hides that the generator ever failed.
     biggest = max(ladder + [a.draws])
-    pool, started = {}, time.time()
+    pool, started, failures = {}, time.time(), 0
     for t in dev:
-        draws = []
+        attempts = []
         for j in range(biggest):
             chains = mm(t.logical, t.host, SELECT_BASE + 97 * j)
-            if chains is None:
-                continue
-            got = measure(t, ctx, chains, SELECT_BASE + 97 * j, a.reads)
-            if got is not None:
-                draws.append({"select": got[0], "qubits": got[1], "max_chain": got[2],
-                              "j": j, "chains": chains})
-        pool[t.name] = draws
+            got = None if chains is None else measure(t, ctx, chains, SELECT_BASE + 97 * j,
+                                                      a.reads)
+            if got is None:
+                attempts.append(None)
+                failures += 1
+            else:
+                attempts.append({"select": got[0], "qubits": got[1], "max_chain": got[2],
+                                 "j": j, "chains": chains})
+        pool[t.name] = attempts
     pool_secs = time.time() - started
     per_draw = pool_secs / max(1, len(dev) * biggest)
-    print("  drew and scored %d embeddings per lineage in %.1fs (%.3fs each)"
-          % (biggest, pool_secs, per_draw), flush=True)
+    print("  attempted %d draws per lineage in %.1fs (%.3fs each), %d attempts returned nothing"
+          % (biggest, pool_secs, per_draw, failures), flush=True)
+
+    def successes(name, n):
+        """The successful draws among the first n attempts, which is what a budget of n buys."""
+        return [d for d in pool.get(name, [])[:n] if d is not None]
 
     print("\n== noise control: the same unchanged embedding, assessed five times")
     spreads = []
     for t in dev[:12]:
-        if not pool[t.name]:
+        first = successes(t.name, 1)
+        if not first:
             continue
-        ch = pool[t.name][0]["chains"]
+        ch = first[0]["chains"]
         vals = [measure(t, ctx, ch, ASSESS_BASE + 7717 * k, a.assess_reads) for k in range(5)]
         vals = [v[0] for v in vals if v is not None]
         if len(vals) >= 2:
@@ -221,7 +231,7 @@ def main() -> int:
     for n in ladder:
         vals = {}
         for t in dev:
-            draws = pool[t.name][:n]
+            draws = successes(t.name, n)
             if not draws:
                 vals[t.name] = None
                 continue
@@ -237,7 +247,7 @@ def main() -> int:
     for n in ladder:
         vals = {}
         for t in dev:
-            draws = pool[t.name][:n]
+            draws = successes(t.name, n)
             if not draws:
                 vals[t.name] = None
                 continue
@@ -268,9 +278,10 @@ def main() -> int:
                  "mode" if a.greedy else "sampled at temperature one"))
         for rounds in rounds_list:
             started = time.time()
+            search_secs = 0.0
             final_only, best_of_both, initial_assessed = {}, {}, {}
             for t in dev:
-                draws = pool[t.name][: a.draws]
+                draws = successes(t.name, a.draws)
                 if not draws:
                     final_only[t.name] = best_of_both[t.name] = None
                     initial_assessed[t.name] = None
@@ -285,8 +296,10 @@ def main() -> int:
                 # difference is between two different instruments rather than two states.
                 base = (frontier[a.draws].get(t.name) if a.improve_target == "best"
                         else assess(t, win["chains"], 31000 + win["j"]))
+                move_started = time.time()
                 out = improve(t, ctx, controller, win["chains"],
                               IMPROVE_BASE + 97 * win["j"], rounds, reward_reads=a.reads)
+                search_secs += time.time() - move_started
                 initial_assessed[t.name] = base
                 if out is None:
                     final_only[t.name] = None
@@ -302,9 +315,14 @@ def main() -> int:
                     pick = measure(t, ctx, out, SELECT_BASE + 555 + win["j"], a.reads)
                     keep_new = pick is not None and pick[0] >= win["select"]
                     best_of_both[t.name] = got if keep_new else base
-            secs = time.time() - started + per_draw * len(dev) * a.draws
+            # The budget is what the arm spends to choose what it returns: the draws it was
+            # given plus the policy's own episodes. The assessment that estimates the quality of
+            # that choice is the instrument, not the method, and is excluded from both sides.
+            secs = search_secs + per_draw * len(dev) * a.draws
+            wall_with_assessment = time.time() - started + per_draw * len(dev) * a.draws
             summarise("%s: %d rounds, final state only" % (fam, rounds), final_only, len(dev),
-                      a.draws + rounds, secs)
+                      a.draws + rounds, secs,
+                      extra="   (assessment excluded; with it %.1fs)" % wall_with_assessment)
             summarise("%s: %d rounds, keep the better of the two" % (fam, rounds), best_of_both,
                       len(dev), a.draws + rounds + 1, secs)
             # Against the embedding actually handed to the policy, which is only the

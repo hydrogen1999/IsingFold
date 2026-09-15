@@ -50,6 +50,11 @@ from _initializers import pick_initializer
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--corpus", required=True)
+    ap.add_argument("--dev-split", default="validation",
+                    choices=["validation", "test", "both"],
+                    help="which lineages the in-training curve is measured on. Keep it at "
+                         "validation: the curve is looked at repeatedly and steers decisions, "
+                         "so whatever it reads stops being a held-out set")
     ap.add_argument("--require-gain", action="store_true", default=True,
                     help="teach only on rollouts that beat returning their own starting "
                          "embedding, measured by a control block that shares no reads with them")
@@ -88,7 +93,13 @@ def main() -> None:
     out = Path(a.out); out.mkdir(parents=True, exist_ok=True)
     tasks = load_instances(a.corpus)
     split = json.loads((Path(a.corpus) / "splits.json").read_text())
-    train_roots, dev_roots = set(split["train"]), set(split["validation"]) | set(split["test"])
+    train_roots = set(split["train"])
+    # Validation only, by default. Pooling test in here and watching the curve every few rounds
+    # is how a held-out set stops being held out: no gradient touches it, but every decision
+    # about rounds, learning rate and which checkpoint to keep is made against it. The external
+    # audit called this correctly. Anything measured on this set is a development diagnostic.
+    dev_roots = set(split[a.dev_split]) if a.dev_split != "both" else (
+        set(split["validation"]) | set(split["test"]))
     ctx = Context(qubit_cap=a.qubit_cap)
     initializer = pick_initializer(a.initializer, a.mm_tries)
     selector = fixed_strength_selector()
@@ -131,7 +142,8 @@ def main() -> None:
     train = [t for t in train
              if all(not isinstance(make_env(t, 1000 + k).reset(), InitFailureRecord) for k in range(3))]
     dev = [t for t in tasks if t.lineage in dev_roots][: a.eval_instances]
-    print(json.dumps({"train": len(train), "dev": len(dev), "device": str(device)}), flush=True)
+    print(json.dumps({"train": len(train), "dev": len(dev), "dev_split": a.dev_split,
+                      "device": str(device)}), flush=True)
 
     torch.manual_seed(a.seed)
     model = build_model(a.family, improvement_mode=True).to(device)
@@ -219,6 +231,7 @@ def main() -> None:
             model.eval()
             arm = run_controller(dev, ctx, torch_controller(model, device), seed=17, **common)
             base = run_controller(dev, ctx, first_commit_controller, seed=17, **common)
+            rec["dev_split"] = a.dev_split
             rec["dev_policy"] = secondary_metrics(arm)["utility_mean"]
             rec["dev_initial"] = secondary_metrics(base)["utility_mean"]
             torch.save(model.state_dict(), out / "policy.pt")
