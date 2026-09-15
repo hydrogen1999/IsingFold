@@ -1,0 +1,22 @@
+{
+ "model": "SuccessorScorer",
+ "width": 64,
+ "parameters": 123905,
+ "optimizer_steps": 400,
+ "learning_rate": 0.001,
+ "weight_decay": 0.0,
+ "rank_weight": 1.0,
+ "inner_fraction": 0.0,
+ "cache": "runs/r1/labels.pkl",
+ "cache_key": [
+  "runs/v1/corpus",
+  200,
+  60,
+  2,
+  8,
+  256,
+  0
+ ],
+ "source_sha256": "297cc76bed18fca2",
+ "seed": 0
+}

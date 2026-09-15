@@ -251,7 +251,30 @@ or the other candidates, which is the property being tested: two searches reachi
 program must score it the same.
 
 `train_successor.py` fits it on the same cached labels, the same states and the same references,
-so the comparison is a representation ablation and not a new experiment. Running.
+so the comparison is a representation ablation and not a new experiment.
+
+| held-out lineages, 118 states in 60 lineages | head reading the state | scorer reading the program |
+|---|---|---|
+| head minus random | -0.0287 [-0.0610, +0.0018] | **+0.0362 [-0.0020, +0.0737]** |
+| head minus the protected incumbent | -0.0343 [-0.0722, +0.0054] | +0.0148 [-0.0213, +0.0538] |
+| rank correlation | +0.139 | +0.143 |
+| ceiling | +0.1123 | +0.1297 |
+| fitted states, head minus oracle | -0.0000 | -0.0002 |
+
+Both reach the label oracle on the states they were fitted on, so capacity is matched and the
+only difference is what the model is shown. Changing that moves the held-out difference by about
++0.065, from below a random pick to above it.
+
+It is not a pass. The interval's lower bound is -0.0020, so by the rule applied to everything
+else in this file it is a positive direction without the power to claim it, from one seed, with
+the optimiser clipped at a gradient norm of 1.0 while the raw norm reached 4,200. Three seeds at
+a looser clip are running.
+
+One detail worth keeping: the rank correlation barely moved, +0.143 against +0.139, while the
+quality of the top pick moved a great deal. The new scorer does not order the whole list better;
+it gets the first one right more often. For choosing a single candidate that is the property that
+matters, and it suggests rank correlation was the wrong headline statistic throughout. Top-choice
+regret is the quantity to report.
 
 ## Audit checks
 

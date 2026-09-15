@@ -75,6 +75,11 @@ def main() -> int:
     ap.add_argument("--patience", type=int, default=60)
     ap.add_argument("--fresh-reads", type=int, default=512)
     ap.add_argument("--qubit-cap", type=int, default=120)
+    ap.add_argument("--clip", type=float, default=1.0,
+                    help="gradient norm cap. The first run clipped at 1.0 while the raw norm "
+                         "reached 4200, so the optimiser was taking a step of fixed tiny length "
+                         "in a direction it was confident about; a model constrained that way "
+                         "can look like it cannot learn when it is only learning slowly")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out", default="")
     a = ap.parse_args()
@@ -140,7 +145,7 @@ def main() -> int:
             with torch.no_grad():
                 tv = target.cpu().numpy()
                 regret_sum += float(tv.max()) - float(tv[int(np.argmax(logit.detach().cpu()))])
-        grad = float(torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0))
+        grad = float(torch.nn.utils.clip_grad_norm_(model.parameters(), a.clip))
         opt.step(); steps += 1
         n = max(1, len(train_states))
         if inner_states and (epoch % 5 == 0 or epoch == a.epochs - 1):
