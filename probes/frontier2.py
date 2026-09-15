@@ -142,6 +142,11 @@ def main() -> int:
                          "the policy was trained on and 'best' is not: asking it to improve the "
                          "best of eight puts it on states it has never seen. Reporting only "
                          "'best' would blame the operator for a deployment choice")
+    ap.add_argument("--noop-control", action="store_true",
+                    help="replace the policy with a controller that commits the embedding it "
+                         "was given. The reported delta against its own starting point must "
+                         "then be zero up to read noise; anything else is a comparator bug, "
+                         "which is how the external audit found the last one")
     ap.add_argument("--greedy", action="store_true",
                     help="take the policy mode instead of sampling at temperature one. The "
                          "deployment rule in the specification samples, and every measurement "
@@ -253,17 +258,22 @@ def main() -> int:
         model = build_model(fam, improvement_mode=True)
         model.load_state_dict(torch.load(path, map_location="cpu"))
         model.eval()
-        controller = torch_controller(model, None, greedy=a.greedy)
+        controller = (first_commit_controller if a.noop_control
+                      else torch_controller(model, None, greedy=a.greedy))
+        if a.noop_control:
+            print("  NO-OP CONTROL: the policy is replaced by commit-what-you-were-given",
+                  flush=True)
         print("\n== %s applied to the %s of %d minorminer draws (%s), %s"
               % (fam, a.improve_target, a.draws, path,
                  "mode" if a.greedy else "sampled at temperature one"))
         for rounds in rounds_list:
             started = time.time()
-            final_only, best_of_both = {}, {}
+            final_only, best_of_both, initial_assessed = {}, {}, {}
             for t in dev:
                 draws = pool[t.name][: a.draws]
                 if not draws:
                     final_only[t.name] = best_of_both[t.name] = None
+                    initial_assessed[t.name] = None
                     continue
                 if a.improve_target == "best":
                     win = max(draws, key=lambda d: d["select"])
@@ -277,6 +287,7 @@ def main() -> int:
                         else assess(t, win["chains"], 31000 + win["j"]))
                 out = improve(t, ctx, controller, win["chains"],
                               IMPROVE_BASE + 97 * win["j"], rounds, reward_reads=a.reads)
+                initial_assessed[t.name] = base
                 if out is None:
                     final_only[t.name] = None
                     best_of_both[t.name] = base
@@ -296,8 +307,14 @@ def main() -> int:
                       a.draws + rounds, secs)
             summarise("%s: %d rounds, keep the better of the two" % (fam, rounds), best_of_both,
                       len(dev), a.draws + rounds + 1, secs)
+            # Against the embedding actually handed to the policy, which is only the
+            # best-of-draws winner when --improve-target is "best". Comparing a policy that was
+            # given a random draw against the best-of-eight assessment made a no-op look like a
+            # loss of a tenth of a unit, and the label on the line claimed the two were the same
+            # embedding. External audit, section 8.
             paired("%d rounds, final state, against its own starting point" % rounds,
-                   final_only, frontier[a.draws], "same embedding before and after")
+                   final_only, initial_assessed,
+                   "the %s draw, assessed before and after" % a.improve_target)
             spent_blocks = a.draws + rounds + 1
             m = min(ladder, key=lambda q: abs(q - spent_blocks))
             paired("%d rounds, keep better, against minorminer best-of-%d" % (rounds, m),
