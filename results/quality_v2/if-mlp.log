@@ -1,0 +1,33 @@
+{"corpus": "runs/v1/corpus", "family": "if-mlp", "train_lineages": 200, "eval_lineages": 60, "states": 2, "max_candidates": 8, "reads": 256}
+  389 training states, 118 held-out states, 3831 labelled candidates, 741s
+  fitting on 293 states, stopping on 96 held out of the training lineages
+  epoch   0  loss 2.71014  inner rank -0.042  best -0.042
+  epoch  25  loss 2.63887  inner rank -0.012  best 0.090
+  stopping at epoch 45; the inner split stopped improving at 0.090
+  restored the checkpoint with the best inner rank correlation 0.090
+
+== TRAINING states, fitted on, 118 states, every pick re-measured on 512 independent reads
+  picking by oracle     0.6422  over 118 states
+  picking by head       0.5102  over 118 states
+  picking by random     0.4986  over 118 states
+  picking by resource   0.4996  over 118 states
+  picking by incumbent  0.4965  over 118 states
+  head minus random                    n 118 states in  61 lineages  +0.0152 [-0.0194, +0.0536]  (paired by lineage)
+  head minus the protected incumbent   n 118 states in  61 lineages  +0.0189 [-0.0251, +0.0639]  (paired by lineage)
+  oracle minus random, the ceiling     n 118 states in  61 lineages  +0.1467 [+0.1125, +0.1848]  (paired by lineage)
+  head minus oracle, what is left on the table n 118 states in  61 lineages  -0.1315 [-0.1608, -0.1038]  (paired by lineage)
+  median within-state rank correlation +0.141
+
+== HELD-OUT lineages, never trained on, 118 states, every pick re-measured on 512 independent reads
+  picking by oracle     0.7083  over 118 states
+  picking by head       0.5973  over 118 states
+  picking by random     0.5947  over 118 states
+  picking by resource   0.5739  over 118 states
+  picking by incumbent  0.6006  over 118 states
+  head minus random                    n 118 states in  60 lineages  +0.0028 [-0.0281, +0.0329]  (paired by lineage)
+  head minus the protected incumbent   n 118 states in  60 lineages  -0.0028 [-0.0416, +0.0386]  (paired by lineage)
+  oracle minus random, the ceiling     n 118 states in  60 lineages  +0.1123 [+0.0832, +0.1440]  (paired by lineage)
+  head minus oracle, what is left on the table n 118 states in  60 lineages  -0.1095 [-0.1399, -0.0809]  (paired by lineage)
+  median within-state rank correlation +0.084
+
+TRAIN QUALITY DONE

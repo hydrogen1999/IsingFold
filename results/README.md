@@ -187,6 +187,36 @@ caused by the teacher or the loss. It does not show that no model could do this.
 the model the specification names, trained properly, does not, and that three unrelated methods
 now fail at the same place while the ceiling there is +0.11 and reproduces on independent reads.
 
+### The same experiment after the label bugs were fixed
+
+`results/quality_v2/`, same 200 training and 60 held-out lineages, early stopping on a
+lineage-disjoint inner split, bootstrap resampled by lineage.
+
+| held-out lineages, 118 states in 60 lineages | IF-MLP | IF-Dual |
+|---|---|---|
+| oracle | 0.7083 | 0.7083 |
+| head | 0.5973 | 0.5895 |
+| random | 0.5947 | 0.5947 |
+| resource | 0.5739 | 0.5739 |
+| head minus random | +0.0028 [-0.0281, +0.0329] | -0.0049 [-0.0378, +0.0266] |
+| ceiling | +0.1123 [+0.0832, +0.1440] | +0.1123 [+0.0832, +0.1440] |
+| rank correlation | +0.084 | +0.048 |
+
+The held-out conclusion survives the correction: the head sits at zero where the ceiling is
++0.11. The +0.0343 seen on a fourteen-lineage probe of the fixed code was noise at that size.
+
+What does not survive is the claim of capacity. On the states it was fitted on the head is now
++0.0152 and +0.0113, not the +0.1322 reported before, because that figure came from a run with
+no stopping rule and the wrong labels. This pair of runs therefore cannot separate "cannot fit
+correct labels" from "fits them but does not transfer", and `scripts/apollo/run_quality_cap.sh`
+runs the arm that can: correct labels, no stopping rule, no weight decay.
+
+How much the label bug mattered, on the corpus rather than on fixtures
+(`results/audit/commit_label_check.log`, reproducible with `probes/check_commit_labels.py`):
+of 178 legal COMMIT rows across 120 states, 60 named the wrong embedding. None of the 60 root
+rows were wrong and 60 of the 118 later rows were. The error cannot occur at the first state
+anyone would check by hand and affects half of everything after it.
+
 ## Audit checks
 
 An external audit of commit 41fcfac found five things worth fixing in the measurement and the

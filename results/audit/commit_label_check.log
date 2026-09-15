@@ -1,0 +1,7 @@
+states examined              120
+legal COMMIT rows            178
+named the wrong embedding    60  (33.7%)
+  at the root state          0 of 60
+  after at least one step    60 of 118
+
+COMMIT LABEL CHECK DONE
