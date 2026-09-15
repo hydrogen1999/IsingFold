@@ -24,7 +24,8 @@ from isingfold.rl.env import fixed_strength_selector
 from isingfold.rl.evaluate import first_commit_controller, run_controller
 from isingfold.rl.program import compile_program
 
-from successor_scorer import SuccessorScorer, program_graph
+from successor_scorer import (COORD_WIDTH, SuccessorScorer, native_coordinates,
+                              parse_host_name, program_graph)
 from train_quality import rank_corr
 
 FRESH_BASE = 95_000_000
@@ -43,22 +44,34 @@ def compile_for(task, ctx, chains, index=1):
         return None
 
 
-def build(states, ctx, device, tag):
+def build(states, ctx, device, tag, use_coords=False):
     """Compile every labelled successor once; the graphs are what the model trains on."""
     out, dropped, started = [], 0, time.time()
+    coord_cache: dict[int, object] = {}
+    missing = 0
     for st in states:
+        coords = None
+        if use_coords:
+            fam, size = parse_host_name(st["task"].name.split("-")[0])
+            key = (fam, size)
+            if key not in coord_cache:
+                coord_cache[key] = native_coordinates(st["task"].host, fam, size)
+            coords = coord_cache[key]
+            if coords is None:
+                missing += 1
         rows = []
         for r in st["rows"]:
             prog = compile_for(st["task"], ctx, r["succ"])
             if prog is None:
                 dropped += 1
                 continue
-            g = program_graph(prog, r["succ"], st["task"].problem, device=device)
+            g = program_graph(prog, r["succ"], st["task"].problem, device=device,
+                              coords=coords)
             rows.append({**r, "graph": g})
         if len(rows) >= 3:
             out.append({**st, "rows": rows})
-    print("  %s: %d states compiled, %d candidates dropped, %.0fs"
-          % (tag, len(out), dropped, time.time() - started), flush=True)
+    print("  %s: %d states compiled, %d candidates dropped, %d without native coordinates, %.0fs"
+          % (tag, len(out), dropped, missing, time.time() - started), flush=True)
     return out
 
 
@@ -75,6 +88,10 @@ def main() -> int:
     ap.add_argument("--patience", type=int, default=60)
     ap.add_argument("--fresh-reads", type=int, default=512)
     ap.add_argument("--qubit-cap", type=int, default=120)
+    ap.add_argument("--coords", action="store_true",
+                    help="give every qubit its topology coordinates from the generator\'s own "
+                         "converter, Chimera (i,j,u,k), Pegasus (u,w,k,z), Zephyr (u,w,k,j,z), "
+                         "with a flag marking a host family that has no native mapping")
     ap.add_argument("--clip", type=float, default=1.0,
                     help="gradient norm cap. The first run clipped at 1.0 while the raw norm "
                          "reached 4200, so the optimiser was taking a step of fixed tiny length "
@@ -91,8 +108,8 @@ def main() -> int:
     print(json.dumps({"cache": a.cache, "key": blob["key"], "device": str(device),
                       "width": a.width}), flush=True)
 
-    train_states = build(blob["train"], ctx, device, "training lineages")
-    eval_states = build(blob["eval"], ctx, device, "held-out lineages")
+    train_states = build(blob["train"], ctx, device, "training lineages", a.coords)
+    eval_states = build(blob["eval"], ctx, device, "held-out lineages", a.coords)
     if not train_states or not eval_states:
         print("  nothing to fit"); return 1
 
@@ -107,7 +124,8 @@ def main() -> int:
               % (len(train_states), len(inner_states)), flush=True)
 
     torch.manual_seed(a.seed)
-    model = SuccessorScorer(width=a.width).to(device)
+    node_dim = 4 + (COORD_WIDTH + 1 if a.coords else 0)
+    model = SuccessorScorer(width=a.width, node_dim=node_dim).to(device)
     opt = torch.optim.Adam(model.parameters(), lr=a.learning_rate, weight_decay=a.weight_decay)
     print("  scorer parameters %d" % sum(p.numel() for p in model.parameters()), flush=True)
 
@@ -247,7 +265,8 @@ def main() -> int:
         out = Path(a.out); out.parent.mkdir(parents=True, exist_ok=True)
         torch.save(model.state_dict(), out.with_suffix(".pt"))
         out.write_text(json.dumps({
-            "model": "SuccessorScorer", "width": a.width, "parameters":
+            "model": "SuccessorScorer", "coords": bool(a.coords), "width": a.width,
+            "parameters":
                 sum(p.numel() for p in model.parameters()),
             "optimizer_steps": steps, "learning_rate": a.learning_rate,
             "weight_decay": a.weight_decay, "rank_weight": a.rank_weight,

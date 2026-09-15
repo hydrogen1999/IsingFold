@@ -28,11 +28,90 @@ different searches that arrive at the same program must get the same score.
 """
 from __future__ import annotations
 
+COORD_WIDTH = 5
+"""Widest native tuple in the registered families, Zephyr's five; shorter ones are padded."""
+
 import torch
 import torch.nn as nn
 
 
-def program_graph(program, chains, problem, device=None):
+
+def parse_host_name(name):
+    """Split a corpus host name such as "chimera4" into its family and size."""
+    letters = "".join(c for c in name if c.isalpha())
+    digits = "".join(c for c in name if c.isdigit())
+    return (letters, int(digits)) if letters and digits else (None, None)
+
+
+def native_coordinates(host, family_hint=None, size_hint=None):
+    """Per-qubit topology coordinates, from the generator's own converter.
+
+    The meeting design asks for the hardware's own indices rather than an arbitrary integer
+    label: Chimera (i, j, u, k), Pegasus (u, w, k, z), Zephyr (u, w, k, j, z). They are topology
+    indices, not a Euclidean position, so they are handed over as normalised offsets and an
+    orientation flag and nothing is inferred from a relabelled id. A host whose family is not one
+    of the three gets zeros and a flag saying so, rather than invented coordinates.
+    """
+    # A corpus stores the host as a plain graph with string labels and no generator attributes,
+    # so the family and size are taken from the instance's declared host name when the graph
+    # itself does not carry them. The labels are the generator's own linear indices as text, so
+    # the converter still applies; nothing is inferred from an arbitrary relabelling.
+    family = host.graph.get("family") or family_hint
+    size = host.graph.get("rows") or size_hint
+    if family is None or size is None:
+        return None
+    try:
+        import dwave_networkx as dnx
+    except Exception:
+        return None
+
+    def linear(q):
+        try:
+            return int(q)
+        except (TypeError, ValueError):
+            return None
+
+    if family == "chimera":
+        rows = cols = int(size)
+        tile = host.graph.get("tile", 4)
+        conv = dnx.chimera_coordinates(rows, cols, tile)
+        out = {}
+        for q in host.nodes():
+            n = linear(q)
+            if n is None:
+                return None
+            i, j, u, k = conv.linear_to_chimera(n)
+            out[q] = [i / max(1, rows - 1), j / max(1, cols - 1), float(u),
+                      k / max(1, tile - 1)]
+        return out
+    if family == "pegasus":
+        m = int(size)
+        conv = dnx.pegasus_coordinates(m)
+        out = {}
+        for q in host.nodes():
+            n = linear(q)
+            if n is None:
+                return None
+            u, w, k, z = conv.linear_to_pegasus(n)
+            out[q] = [float(u), w / max(1, m), k / 11.0, z / max(1, m)]
+        return out
+    if family == "zephyr":
+        m = int(size)
+        t = host.graph.get("tile", 4)
+        conv = dnx.zephyr_coordinates(m, t)
+        out = {}
+        for q in host.nodes():
+            n = linear(q)
+            if n is None:
+                return None
+            u, w, k, j, z = conv.linear_to_zephyr(n)
+            out[q] = [float(u), w / max(1, 2 * m), k / max(1, t - 1), float(j),
+                      z / max(1, m)]
+        return out
+    return None
+
+
+def program_graph(program, chains, problem, device=None, coords=None):
     """Turn one compiled program into the tensors the scorer reads.
 
     Qubit labels are sorted so the encoding of a program does not depend on dictionary order,
@@ -62,8 +141,20 @@ def program_graph(program, chains, problem, device=None):
             feats.append([float(j), abs(float(j)), 1.0 if j < 0 else 0.0,
                           1.0 if same else 0.0])
 
-    node_feat = [[float(program.h_phys[q]), float(inside[q]), float(outside[q]),
-                  float(nodes_per_chain.get(owner.get(q), 1))] for q in qubits]
+    # Four structural channels, then the hardware's own coordinates when the family provides
+    # them. A missing-coordinate flag rides along so a host without a native mapping is a
+    # declared absence rather than a row of plausible-looking zeros.
+    node_feat = []
+    for q in qubits:
+        row = [float(program.h_phys[q]), float(inside[q]), float(outside[q]),
+               float(nodes_per_chain.get(owner.get(q), 1))]
+        if coords is not None:
+            c = coords.get(q)
+            if c is None:
+                row += [0.0] * COORD_WIDTH + [0.0]
+            else:
+                row += list(c) + [0.0] * (COORD_WIDTH - len(c)) + [1.0]
+        node_feat.append(row)
 
     logical = sorted(chains, key=str)
     lindex = {v: i for i, v in enumerate(logical)}
@@ -91,7 +182,7 @@ def program_graph(program, chains, problem, device=None):
     t = lambda v, shape: (torch.tensor(v, dtype=torch.float32, device=device) if v
                           else torch.zeros(shape, dtype=torch.float32, device=device))
     return {
-        "node": t(node_feat, (0, 4)),
+        "node": t(node_feat, (0, 4 + (COORD_WIDTH + 1 if coords is not None else 0))),
         "edge_index": (torch.tensor(edges, dtype=torch.long, device=device).t()
                        if edges else torch.zeros((2, 0), dtype=torch.long, device=device)),
         "edge": t(feats, (0, 4)),
@@ -119,9 +210,10 @@ class SuccessorScorer(nn.Module):
     """Qubits, then chains, then one number. Small on purpose: the question is whether this
     representation transfers, and a large model would confound that with capacity."""
 
-    def __init__(self, width: int = 64, qubit_rounds: int = 2, chain_rounds: int = 2):
+    def __init__(self, width: int = 64, qubit_rounds: int = 2, chain_rounds: int = 2,
+                 node_dim: int = 4):
         super().__init__()
-        self.qubit_in = _mlp([4, width, width])
+        self.qubit_in = _mlp([node_dim, width, width])
         self.qubit_msg = nn.ModuleList(_mlp([2 * width + 4, width, width])
                                        for _ in range(qubit_rounds))
         self.qubit_upd = nn.ModuleList(_mlp([2 * width, width, width])

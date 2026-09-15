@@ -265,10 +265,18 @@ Both reach the label oracle on the states they were fitted on, so capacity is ma
 only difference is what the model is shown. Changing that moves the held-out difference by about
 +0.065, from below a random pick to above it.
 
-It is not a pass. The interval's lower bound is -0.0020, so by the rule applied to everything
-else in this file it is a positive direction without the power to claim it, from one seed, with
-the optimiser clipped at a gradient norm of 1.0 while the raw norm reached 4,200. Three seeds at
-a looser clip are running.
+It is not a pass, and the number itself does not replicate. Three seeds at a looser gradient clip
+give +0.0093 [-0.0264, +0.0451], +0.0109 [-0.0147, +0.0381] and +0.0157 [-0.0161, +0.0474], a
+mean of +0.0120 rather than +0.0362. The single-seed figure was a lucky draw, which was said when
+it was reported and then used as the headline anyway. Loosening the clip did not help either, so
+the idea that clipping was holding the estimate down is also wrong; seed variance dominates.
+
+What survives is the direction and roughly a third of the size. Against the action head's -0.0287,
+-0.0197 and -0.0140 on the same task, the representation is worth about +0.025 to +0.030, with
+every individual interval still containing zero.
+
+The loss is no longer a suspect either: `results/r1/bce.log` fits the action head with a
+likelihood term alone, no ranking term, and lands at -0.0140 [-0.0405, +0.0119] held out.
 
 One detail worth keeping: the rank correlation barely moved, +0.143 against +0.139, while the
 quality of the top pick moved a great deal. The new scorer does not order the whole list better;
