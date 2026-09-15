@@ -1,0 +1,45 @@
+{"corpus": "runs/v1/corpus", "split": "validation", "lineages": 40, "max_candidates": 10, "reads": 256}
+
+== if-core (runs/v3/seed0/frozen/if-core.pt)
+  states 40, candidates measured 375
+  picking by observed_max utility 0.7341
+  picking by oracle       utility 0.7232
+  picking by quality      utility 0.5976
+  picking by random       utility 0.5831
+  picking by resource     utility 0.5770
+  picking by mean         utility 0.5776
+  quality head minus random          n  40  +0.0145 [-0.0427, +0.0795]
+  oracle minus random, the ceiling   n  40  +0.1401 [+0.0839, +0.2003]
+  what the selection maximum invents n  40  +0.0108 [-0.0027, +0.0236]
+  resource criterion minus random    n  40  -0.0062 [-0.0684, +0.0609]
+  median within-state rank correlation of the head with the truth: +0.097
+
+== if-dual (runs/v3/seed0/frozen/if-dual.pt)
+  states 40, candidates measured 375
+  picking by observed_max utility 0.7341
+  picking by oracle       utility 0.7232
+  picking by quality      utility 0.5930
+  picking by random       utility 0.5831
+  picking by resource     utility 0.5770
+  picking by mean         utility 0.5776
+  quality head minus random          n  40  +0.0099 [-0.0468, +0.0733]
+  oracle minus random, the ceiling   n  40  +0.1401 [+0.0839, +0.2003]
+  what the selection maximum invents n  40  +0.0108 [-0.0027, +0.0236]
+  resource criterion minus random    n  40  -0.0062 [-0.0684, +0.0609]
+  median within-state rank correlation of the head with the truth: +0.075
+
+== if-mlp (runs/v3/seed0/frozen/if-mlp.pt)
+  states 40, candidates measured 375
+  picking by observed_max utility 0.7341
+  picking by oracle       utility 0.7232
+  picking by quality      utility 0.5782
+  picking by random       utility 0.5831
+  picking by resource     utility 0.5770
+  picking by mean         utility 0.5776
+  quality head minus random          n  40  -0.0049 [-0.0564, +0.0519]
+  oracle minus random, the ceiling   n  40  +0.1401 [+0.0839, +0.2003]
+  what the selection maximum invents n  40  +0.0108 [-0.0027, +0.0236]
+  resource criterion minus random    n  40  -0.0062 [-0.0684, +0.0609]
+  median within-state rank correlation of the head with the truth: +0.036
+
+RANK ACTIONS DONE

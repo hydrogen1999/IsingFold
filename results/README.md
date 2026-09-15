@@ -50,9 +50,19 @@ the episode out of its own baseline.
 Two quantities the earlier runs could not produce.
 
 The inflation a maximum over eight noisy blocks invents, measured rather than assumed:
-`selected_gain` minus `remeasured_gain` is 0.0303, 0.0236 and 0.0270 across the three families.
-About one lineage in five per round produced a rollout that won its own block and then failed its
-independent re-measurement; under the old gate all of those were taught on.
+`selected_gain` minus `remeasured_gain`, averaged over all sixty rounds, is 0.0151, 0.0131 and
+0.0150 across the three families.
+
+An earlier version of this file gave 0.0303, 0.0236 and 0.0270 for the same quantity. Those are
+the first two rounds, read while the run was still starting and then written down as if they
+described the run. A fourth external audit recomputed the sixty-round means and found the
+discrepancy. The inflation is real and it is about half what this document previously claimed.
+
+Between 17.4 and 18.8 percent of lineage-rounds produced no accepted teacher, 251, 270 and 256 of
+1,440 attempts. The aggregate log does not separate a rollout rejected by the gate from a round
+that collected no episodes, so this is a count of non-accepted attempts and not, as this file
+previously said, a count of false teachers the old gate would have admitted. Separating the two
+needs its own counter.
 
 The single-episode policy against the protected initializer, on a fixed forty-instance validation
 subset:
@@ -72,6 +82,29 @@ separately when it finishes.
 The curve is noisy enough that any three consecutive points mislead. IF-Core reads +0.0709 at
 round 35 and -0.0373 at round 50. Read the block means, not the points; this document's author
 read three points as a trend at round 13 and had to withdraw it.
+
+### v3 at the registered bar, all ninety test lineages
+
+Every arm protected by the same minorminer floor. Reference: initializer 0.4529 assessed, random
+one episode 0.4985, random best-of-8 0.7055.
+
+| family | one episode | best-of-8 | against random best-of-8, registered | assessed |
+|---|---|---|---|---|
+| IF-Core | 0.5118 | 0.7251 | +0.0157 [-0.0093, +0.0420] | +0.0196 [-0.0080, +0.0478] |
+| IF-Dual | 0.5449 | 0.7363 | +0.0262 [-0.0041, +0.0563] | +0.0308 [-0.0013, +0.0622] |
+| IF-MLP | 0.5211 | 0.7260 | +0.0135 [-0.0167, +0.0442] | +0.0204 [-0.0123, +0.0535] |
+
+Three positives, every interval containing zero, on the full test split with every fix from two
+audits applied. By the registered rule this does not pass, and the point estimates are no larger
+than v1's were on sixty lineages, so the earlier reading that more lineages would settle it was
+wrong.
+
+The per-episode arms are the part that moved. A single policy episode reaches 0.5118, 0.5449 and
+0.5211 against a random controller's 0.4985 and the initializer's 0.4529, so the policy is better
+than random at producing one embedding. That edge does not survive the maximum: random best-of-8
+reaches 0.7055 and the policies 0.7251 to 0.7363. The search is doing most of the work and an
+improvement in the body of the distribution is worth little when the deployment rule takes the
+tail.
 
 ## Audit checks
 

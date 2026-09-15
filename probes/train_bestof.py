@@ -47,6 +47,69 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _initializers import pick_initializer
 
 
+
+def hindsight_prefix(env_factory, rows, target, max_steps=64):
+    """Replay a winning episode and stop the moment its output could have been returned.
+
+    The reason this exists: the winner's trajectory is cloned in full, and a third external audit
+    measured that 87 of 154 non-terminal actions in such trajectories happen after the returned
+    embedding already existed, while 29 of 32 commits take an archived embedding rather than the
+    final workspace. More than half of what the teacher teaches did not produce the output.
+
+    The audit is also explicit that truncating the transition list and reusing the old commit
+    index is wrong: at an earlier decision the masks, the archive indices and the remaining
+    budget are all different, so the old index may point at another action or at none. So this
+    replays the episode step by step in a fresh environment and, at each decision, asks whether
+    some legal candidate would return exactly the target embedding. The first decision where one
+    does is where the episode should have stopped.
+
+    Returns (prefix_length, commit_index, decision) or None when no such decision exists, which
+    happens when the target only becomes reachable through the actions that were actually taken.
+    """
+    want = {n: frozenset(c) for n, c in target.items()}
+    env = env_factory()
+    dec = env.reset()
+    actions = [r.chosen_index for r in rows]
+    for step in range(min(len(actions), max_steps) + 1):
+        # Replaying with the wrong seed produces a different candidate list, and the recorded
+        # action index then points at another action or outside the support entirely. Rather
+        # than trust the reconstruction, check it: the environment stamps each decision with a
+        # support fingerprint, and the recorded transition carries the one that held when the
+        # action was chosen. A mismatch means this is not the same episode.
+        if step < len(rows) and hasattr(dec, "support_fingerprint"):
+            recorded = getattr(rows[step], "support_fingerprint", "")
+            if recorded and dec.support_fingerprint != recorded:
+                return None
+        if not hasattr(dec, "candidates"):
+            return None
+        base = {n: frozenset(c) for n, c in env.state.chains.items()}
+        for i, (cand, ok) in enumerate(zip(dec.candidates, dec.legal_mask)):
+            if not ok:
+                continue
+            succ = dict(base)
+            for node, chain in cand.new_chains.items():
+                succ[node] = frozenset(chain)
+            if succ == want:
+                return step, i, dec
+        if step >= len(actions):
+            return None
+        nxt = env.step(dec, int(actions[step]),
+                       evaluate_training_reward=False).next_decision_or_terminal
+        if not hasattr(nxt, "candidates"):
+            return None
+        dec = nxt
+    return None
+
+
+class _TeachRow:
+    """The two fields the cross-entropy update reads, for a decision that was never taken."""
+
+    __slots__ = ("observation", "chosen_index")
+
+    def __init__(self, observation, chosen_index):
+        self.observation = observation
+        self.chosen_index = int(chosen_index)
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--corpus", required=True)
@@ -55,6 +118,11 @@ def main() -> None:
                     help="which lineages the in-training curve is measured on. Keep it at "
                          "validation: the curve is looked at repeatedly and steers decisions, "
                          "so whatever it reads stops being a held-out set")
+    ap.add_argument("--teacher", default="prefix", choices=["prefix", "whole"],
+                    help="'whole' clones every action of the winning rollout, including the "
+                         "ones taken after its output already existed. 'prefix' replays the "
+                         "episode and teaches the shortest sequence that could have returned "
+                         "that output, plus the commit that returns it")
     ap.add_argument("--require-gain", action="store_true", default=True,
                     help="teach only on rollouts whose re-measured gain over their own starting "
                          "embedding is positive. The re-measurement shares no reads with the "
@@ -177,7 +245,8 @@ def main() -> None:
         picked = [train[int(i)] for i in rng.integers(0, len(train), a.lineages)]
         kept, stats = [], []
         selected, remeasured, accepted, attempted = [], [], 0, 0
-        skipped_no_embedding = skipped_no_fresh = 0
+        skipped_no_embedding = skipped_no_fresh = prefix_not_found = 0
+        taught_steps, full_steps = [], []
         for j, task in enumerate(picked):
             init_seed = 30_000_000 + 7919 * rnd + j
             chains, base = shared_initial(task, init_seed)
@@ -187,8 +256,16 @@ def main() -> None:
             cfg = PPOConfig(episodes_per_batch=a.k, seed=a.seed + 7919 * rnd + j,
                             init_attempt_cap=a.init_attempts)
             model.eval()
-            buffer, _ = collect(lambda s, idx=0, t=task, c=chains: make_env(t, s, c), model, cfg,
-                                update_index=rnd, device=device)
+            # The collector derives a seed per episode and hands it to the factory; the prefix
+            # replay needs that exact seed, so it is recorded as the factory is called rather
+            # than reconstructed from the collector\'s internals.
+            episode_seeds: dict[int, int] = {}
+
+            def factory(s, idx=0, t=task, c=chains, store=episode_seeds):
+                store[int(idx)] = int(s)
+                return make_env(t, s, c)
+
+            buffer, _ = collect(factory, model, cfg, update_index=rnd, device=device)
             if not buffer.n_episodes:
                 continue
             rewards = [e.terminal_reward for e in buffer.episodes]
@@ -225,8 +302,39 @@ def main() -> None:
             if a.require_gain and fresh_gain <= a.gain_margin:
                 continue
             accepted += 1
-            # Episode.transitions holds indices into the buffer, not the rows themselves.
-            kept.extend(buffer.transitions[int(i)] for i in buffer.episodes[best].transitions)
+            rows_idx = [int(i) for i in buffer.episodes[best].transitions]
+            episode_rows = [buffer.transitions[i] for i in rows_idx]
+            if a.teacher == "whole":
+                kept.extend(episode_rows)
+                taught_steps.append(len(episode_rows))
+                full_steps.append(len(episode_rows))
+                continue
+            # Teach the shortest sequence that could have produced this output, and the commit
+            # that returns it, rather than everything the rollout happened to do afterwards.
+            # The index the collector hands the factory is its own schedule counter, not the
+            # buffer index of the episode, and the two stop agreeing once episodes finish out of
+            # order. Rather than guess the mapping, try the seeds it used and let the support
+            # fingerprints say which one replays this episode. There are only K of them, the
+            # replay is cheap, and a wrong seed is rejected rather than silently accepted.
+            candidate_seeds = [episode_seeds.get(best)] + list(episode_seeds.values())
+            found = None
+            for sd_try in [x for x in candidate_seeds if x is not None]:
+                found = hindsight_prefix(
+                    lambda t=task, c=chains, sd=sd_try: make_env(t, sd, c),
+                    episode_rows, chains_out)
+                if found is not None:
+                    break
+            if found is None:
+                prefix_not_found += 1
+                kept.extend(episode_rows)
+                taught_steps.append(len(episode_rows))
+                full_steps.append(len(episode_rows))
+                continue
+            cut, commit_index, dec = found
+            kept.extend(episode_rows[:cut])
+            kept.append(_TeachRow(dec.observation, commit_index))
+            taught_steps.append(cut + 1)
+            full_steps.append(len(episode_rows))
         if not kept:
             continue
         replay.append(kept)
@@ -256,6 +364,9 @@ def main() -> None:
                    accepted_teacher=accepted, attempted_lineages=attempted,
                    skipped_no_embedding=skipped_no_embedding,
                    skipped_no_fresh=skipped_no_fresh,
+                   teacher=a.teacher, prefix_not_found=prefix_not_found,
+                   taught_steps=float(np.mean(taught_steps)) if taught_steps else None,
+                   episode_steps=float(np.mean(full_steps)) if full_steps else None,
                    seconds=round(time.time() - t0))
         if rnd % a.eval_every == 0 or rnd == a.rounds - 1:
             model.eval()
