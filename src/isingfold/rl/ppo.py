@@ -516,6 +516,12 @@ def _finish_episode(episode: Episode, terminal: TerminalRecord) -> None:
     episode.selected_strength = terminal.selected_strength
     if terminal.embedding is not None:
         episode.qubits = sum(len(chain) for chain in terminal.embedding.values())
+        # Kept so a caller can re-measure the rollout it selected on reads that took no part in
+        # selecting it. Without this the only number available for a winning episode is the
+        # block that made it the winner, which is exactly the one a maximum inflates.
+        episode.returned_embedding = {
+            node: frozenset(chain) for node, chain in terminal.embedding.items()
+        }
 
 
 def _forward_decision_wave(

@@ -512,6 +512,9 @@ class Episode:
     returned_valid: bool = False
     qubits: int = 0
     selected_strength: float | None = None
+    returned_embedding: dict | None = field(default=None, repr=False)
+    """The embedding this episode returned, kept so a caller can re-measure the rollout it
+    selected on reads that took no part in selecting it."""
 
 
 @dataclass
