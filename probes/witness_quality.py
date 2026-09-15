@@ -11,6 +11,9 @@ from pathlib import Path
 
 sys.path.insert(0, os.environ["ISINGFOLD_SRC"])
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.meta_path[:] = [f for f in sys.meta_path
+                    if not ("editable" in (getattr(type(f), "__module__", "") or "").lower()
+                            and "isingfold" in (getattr(type(f), "__module__", "") or "").lower())]
 import numpy as np
 from isingfold.rl.data.generate import load_instances
 from isingfold.rl.env import fixed_strength_selector
@@ -35,7 +38,7 @@ def main() -> int:
     print(json.dumps({"corpus": a.corpus, "instances": len(tasks), "qubits": cap}), flush=True)
 
     def measure(task, chains, seed, reads):
-        chains = {v: list(c) for v, c in chains.items()}
+        chains = {v: frozenset(c) for v, c in chains.items()}
         def fixed(l, h, s):
             return chains
         try:

@@ -11,6 +11,9 @@ from pathlib import Path
 
 sys.path.insert(0, os.environ["ISINGFOLD_SRC"])
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.meta_path[:] = [f for f in sys.meta_path
+                    if not ("editable" in (getattr(type(f), "__module__", "") or "").lower()
+                            and "isingfold" in (getattr(type(f), "__module__", "") or "").lower())]
 import numpy as np
 from isingfold.rl.data.generate import load_instances
 from _initializers import minorminer_initializer
