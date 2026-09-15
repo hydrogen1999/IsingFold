@@ -1,0 +1,35 @@
+{"cache": "runs/r1/labels.pkl", "split": "both", "states": 507, "candidates": 3831}
+
+1. Within a state, does spending more qubits score better?
+   correlation of qubit count with measured quality: median -0.203, mean -0.154
+   states where it is positive: 189 of 498
+   states where every candidate uses the same qubit count: 6 of 507
+
+2. How often do the two orderings disagree?
+   comparable pairs 8842
+   the cheaper embedding scored strictly better: 4848 (54.8%)
+   the two tied on quality:                     312 (3.5%)
+   so resource ordering predicts quality ordering 41.6% of the time
+
+3. What does the frontier look like?
+   qubits         n        mean     best     spread
+   17-20          642      0.7034   1.0000   1.0000
+   21-24          1295     0.5293   1.0000   1.0000
+   25-28          1002     0.4762   1.0000   1.0000
+   29-32          519      0.4347   0.9961   0.9961
+   33-36          278      0.3878   1.0000   1.0000
+   37-40          76       0.4097   0.9453   0.9453
+   41-44          14       0.2536   0.8320   0.8242
+   45-48          3        0.3008   0.3633   0.1719
+   49-52          1        0.0312   0.0312   0.0000
+   53-56          1        0.1016   0.1016   0.0000
+
+   pooled correlation of qubits with quality: -0.308
+   variance of quality explained by qubit count: 9.5%
+   mean spread of quality within one state: 0.3124
+
+   A trade-off worth conditioning on needs the frontier to rise and the pooled
+   correlation to carry real variance. A within-state spread much larger than what
+   resource explains means the budget is not the variable that decides quality.
+
+FRONTIER PREMISE DONE
