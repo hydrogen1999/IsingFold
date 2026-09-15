@@ -27,7 +27,8 @@ qubits an embedding uses carries no information about its quality at all.
 | The network fits that choice exactly on seen states | regret -0.0000 and +0.0031 | holds |
 | It does not transfer | -0.029, -0.020, -0.014 | holds |
 | Reading the compiled program instead of the state helps | +0.0093, +0.0109, +0.0157 | holds, three seeds, intervals contain zero |
-| Qubit count predicts quality | -0.002, 0.0% of variance on the hard corpus | holds: it does not |
+| Qubit count predicts quality among sampled candidates | -0.002, 0.0% of variance on the hard corpus | holds, but answers the wrong question |
+| A larger budget buys a better best embedding | -0.0241 easy, +0.0141 [-0.0064, +0.0340] hard | untested: the candidates span 5 qubits, not a budget range |
 | Registered bar, RL best-of-8 against random best-of-8 | +0.0157, +0.0262, +0.0135 | holds: does not pass |
 | The improvement operator degrades a selected embedding | -0.057 at one round, -0.085 at two | holds |
 | Capacity, teacher, loss or labels explain the failure | | ruled out, each separately |
@@ -74,9 +75,19 @@ structures rather than only other coefficient draws.
 
 ## Running now
 
-Eight representation arms on the clique-16 corpus, F0 against Fpos (native hardware coordinates),
-Fphys (the energy margin of each chain's cheapest cut) and Fall, two seeds each, one shared label
-cache. Three coordinate seeds on the ink-drop corpus, at step 351 of 400.
+On apollo: eight representation arms on the clique-16 corpus, F0 against Fpos (native hardware
+coordinates), Fphys (the energy margin of each chain's cheapest cut) and Fall, two seeds each,
+one shared label cache. And a learning curve, fitting on 25, 50, 100 and 200 lineages with the
+held-out set fixed and the training subsets nested, two seeds each.
+
+On goose: label collection for the diverse corpus, 220 training and 70 held-out lineages across
+seven structural families.
+
+The learning curve is the one that matters. Capacity, the loss, the labels, the teacher and the
+representation have each been ruled out or bounded, one at a time. The quantity nobody has varied
+is how much data the thing is fitted on: 389 states from 200 lineages is about three thousand
+labelled candidates for a function over program graphs. If the curve is still climbing at 200,
+the bottleneck is data and the other effects are noise around it.
 
 ## Open, in the order the evidence points
 
@@ -85,6 +96,8 @@ cache. Three coordinate seeds on the ink-drop corpus, at step 351 of 400.
 2. Do the hardware coordinates or the chain-robustness margin add anything on top?
 3. Does any of it transfer across structures rather than across coefficient draws? The diverse
    corpus makes this askable for the first time; nothing in this repository has answered it.
+   Sections 7.2 to 7.4 of the meeting design are implemented and unrun: residual reachability
+   after occupancy and faults, free volume at three radii, and first-edge directional capacity.
 4. Only then: whether a learned scorer can stand in for evaluator budget at deployment, which is
    the claim that would be worth a paper.
 
@@ -105,6 +118,16 @@ rather than by me.
 - "Three unrelated methods fail in the same place", which stopped being true when one of the
   three turned out to be measuring wrongly.
 - The successor scorer at +0.0362, a single seed that three seeds put at +0.0120.
+- "The resource-quality premise fails." It was measured by correlating qubit count with quality
+  across the candidates at a state. Those are local perturbations of one embedding, and the
+  monotonicity the design claims is a property of the optimum at each budget, which that
+  measurement never touches. The design says so explicitly and it was read and then contradicted
+  anyway. Asked within instances instead, the sign flips on the hard corpus to +0.0141 with the
+  interval containing zero. Neither measurement tests the premise: the cheaper and dearer halves
+  are 43.5 and 48.9 qubits apart, a twelve percent range rather than a budget sweep. The honest
+  statement is that nobody has tested it.
+- Reading the mean column of a frontier table and calling the frontier flat, when the best column,
+  which is what a frontier is, rose from 0.8242 to 0.9727 before falling.
 
 The pattern is the same every time: report the first result, state its limits correctly, then let
 it become the headline anyway. Nothing goes into the results README now before three seeds.

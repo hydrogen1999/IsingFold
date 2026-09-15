@@ -30,6 +30,8 @@ from __future__ import annotations
 
 import networkx as nx
 
+from space_features import SPACE_WIDTH, chain_space_features
+
 COORD_WIDTH = 5
 PHYS_WIDTH = 4
 """Chain-robustness channels: smallest margin, mean single-qubit margin, bridge fraction,
@@ -187,7 +189,8 @@ def chain_robustness(program, chains, host, node, problem):
             min(bridge_margins) if bridge_margins else min(singles)]
 
 
-def program_graph(program, chains, problem, device=None, coords=None, host=None):
+def program_graph(program, chains, problem, device=None, coords=None, host=None,
+                  space_host=None):
     """Turn one compiled program into the tensors the scorer reads.
 
     Qubit labels are sorted so the encoding of a program does not depend on dictionary order,
@@ -247,6 +250,10 @@ def program_graph(program, chains, problem, device=None, coords=None, host=None)
                float(contacts.get(v, 0)), float(len(program.chain_edges.get(v, ())))]
         if host is not None:
             row += chain_robustness(program, chains, host, v, problem)
+        if space_host is not None:
+            # How much room this chain has to grow, on the graph as it is after occupancy, not on
+            # the pristine host. Sections 7.2 to 7.4 of the design.
+            row += chain_space_features(space_host, chains, v)
         chain_feat.append(row)
 
     lo_edges, lo_feats = [], []
@@ -268,7 +275,8 @@ def program_graph(program, chains, problem, device=None, coords=None, host=None)
         "edge": t(feats, (0, 4)),
         "membership": torch.tensor(membership, dtype=torch.long, device=device) if membership
         else torch.zeros((0,), dtype=torch.long, device=device),
-        "chain": t(chain_feat, (0, 4 + (PHYS_WIDTH if host is not None else 0))),
+        "chain": t(chain_feat, (0, 4 + (PHYS_WIDTH if host is not None else 0)
+                                + (SPACE_WIDTH if space_host is not None else 0))),
         "chain_edge_index": (torch.tensor(lo_edges, dtype=torch.long, device=device).t()
                              if lo_edges else torch.zeros((2, 0), dtype=torch.long,
                                                           device=device)),

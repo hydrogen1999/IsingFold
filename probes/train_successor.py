@@ -24,6 +24,7 @@ from isingfold.rl.env import fixed_strength_selector
 from isingfold.rl.evaluate import first_commit_controller, run_controller
 from isingfold.rl.program import compile_program
 
+from space_features import SPACE_WIDTH
 from successor_scorer import (COORD_WIDTH, PHYS_WIDTH, SuccessorScorer,
                               native_coordinates, parse_host_name, program_graph)
 from train_quality import rank_corr
@@ -44,7 +45,8 @@ def compile_for(task, ctx, chains, index=1):
         return None
 
 
-def build(states, ctx, device, tag, use_coords=False, use_physics=False):
+def build(states, ctx, device, tag, use_coords=False, use_physics=False,
+          use_space=False):
     """Compile every labelled successor once; the graphs are what the model trains on."""
     out, dropped, started = [], 0, time.time()
     coord_cache: dict[int, object] = {}
@@ -67,7 +69,8 @@ def build(states, ctx, device, tag, use_coords=False, use_physics=False):
                 continue
             g = program_graph(prog, r["succ"], st["task"].problem, device=device,
                               coords=coords,
-                              host=st["task"].host if use_physics else None)
+                              host=st["task"].host if use_physics else None,
+                              space_host=st["task"].host if use_space else None)
             rows.append({**r, "graph": g})
         if len(rows) >= 3:
             out.append({**st, "rows": rows})
@@ -89,6 +92,16 @@ def main() -> int:
     ap.add_argument("--patience", type=int, default=60)
     ap.add_argument("--fresh-reads", type=int, default=512)
     ap.add_argument("--qubit-cap", type=int, default=120)
+    ap.add_argument("--train-subset", type=int, default=0,
+                    help="fit on this many training lineages instead of all of them, drawn in a "
+                         "fixed order so the smaller sets are nested inside the larger ones. "
+                         "The held-out lineages never change, so the curve measures data and "
+                         "not a different test set")
+    ap.add_argument("--space", action="store_true",
+                    help="give each chain its room to grow on the residual graph: free volume at "
+                         "radius one, two and three, the size of the free component it touches, "
+                         "the best and most boxed-in direction out of it, dead directions and "
+                         "blocked neighbours per qubit, and a flag when a bounded walk was cut")
     ap.add_argument("--physics", action="store_true",
                     help="give each chain the energy margin of its cheapest cut, from section "
                          "8.2 of the design: flipping a subset A of a chain costs at least "
@@ -115,11 +128,17 @@ def main() -> int:
                       "width": a.width}), flush=True)
 
     train_states = build(blob["train"], ctx, device, "training lineages", a.coords,
-                         a.physics)
+                         a.physics, a.space)
     eval_states = build(blob["eval"], ctx, device, "held-out lineages", a.coords,
-                        a.physics)
+                        a.physics, a.space)
     if not train_states or not eval_states:
         print("  nothing to fit"); return 1
+
+    if a.train_subset:
+        roots = sorted({st["lineage"] for st in train_states})[: a.train_subset]
+        keep = set(roots)
+        train_states = [st for st in train_states if st["lineage"] in keep]
+        print("  fitting on %d lineages, %d states" % (len(keep), len(train_states)), flush=True)
 
     inner_states = []
     if a.inner_fraction > 0:
@@ -133,7 +152,7 @@ def main() -> int:
 
     torch.manual_seed(a.seed)
     node_dim = 4 + (COORD_WIDTH + 1 if a.coords else 0)
-    chain_dim = 4 + (PHYS_WIDTH if a.physics else 0)
+    chain_dim = 4 + (PHYS_WIDTH if a.physics else 0) + (SPACE_WIDTH if a.space else 0)
     model = SuccessorScorer(width=a.width, node_dim=node_dim, chain_dim=chain_dim).to(device)
     opt = torch.optim.Adam(model.parameters(), lr=a.learning_rate, weight_decay=a.weight_decay)
     print("  scorer parameters %d" % sum(p.numel() for p in model.parameters()), flush=True)
@@ -275,7 +294,7 @@ def main() -> int:
         torch.save(model.state_dict(), out.with_suffix(".pt"))
         out.write_text(json.dumps({
             "model": "SuccessorScorer", "coords": bool(a.coords),
-            "physics": bool(a.physics), "width": a.width,
+            "physics": bool(a.physics), "space": bool(a.space), "width": a.width,
             "parameters":
                 sum(p.numel() for p in model.parameters()),
             "optimizer_steps": steps, "learning_rate": a.learning_rate,
