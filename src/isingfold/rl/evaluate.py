@@ -1223,6 +1223,7 @@ def run_controller(
                 num_reads=reads,
                 seed=evaluator_seed,
                 num_sweeps=ctx.num_sweeps,
+                beta_range=ctx.beta_range,
             )
             evaluator_seconds = time.perf_counter() - evaluator_started
             if block.strength_index != result.selected_index or block.reads != reads:

@@ -213,6 +213,31 @@ def conflict_groups(
     return [seed.group for seed in repair_seeds(chains, logical, host, (size,))]
 
 
+
+def _collapse_identical_successors(
+    items: "Sequence[tuple[Candidate, int]]",
+) -> "list[tuple[Candidate, int]]":
+    """Keep one entry per distinct successor assignment, the one that costs least work.
+
+    Two restores that rebuild the same chains are the same move to the environment and to the
+    policy; they differ only in the bookkeeping of how the archive was replayed. Letting both
+    hold a slot spends the action pool on a choice that does not exist.
+    """
+
+    best: dict[frozenset, tuple[Candidate, int]] = {}
+    order: list[frozenset] = []
+    for cand, used in items:
+        key = (cand.opcode,
+               frozenset((node, frozenset(chain))
+                         for node, chain in cand.new_chains.items()))
+        prior = best.get(key)
+        if prior is None:
+            best[key] = (cand, used)
+            order.append(key)
+        elif used < prior[1]:
+            best[key] = (cand, used)
+    return [best[key] for key in order]
+
 class ProposalGenerator:
     """Builds one candidate batch per decision under a fixed family allocation."""
 
@@ -667,7 +692,19 @@ class ProposalGenerator:
             )
             remaining = max(0, budget - len(restarted))
             return restarted + self._restore(chains, archive, remaining, meter)
-        restored = self._restore(chains, archive, budget, meter)
+        # The legacy branch used to hand the whole pool to restore and give restart whatever
+        # was left, which was nothing: four raw restores can all rebuild the same physical
+        # assignment while differing in payload and work, so they survive the payload-key
+        # dedup downstream and occupy every slot. One rewrite was enough to leave a state with
+        # restarts_left = 2 and no legal RESTART in it. An external audit reproduced this.
+        #
+        # Identical successors are collapsed to the cheapest first, so a slot buys a distinct
+        # state rather than a different way of reaching the same one, and the escape family
+        # keeps a reserved share of the pool whenever it is allowed and has allowance left.
+        restored = _collapse_identical_successors(self._restore(chains, archive, budget, meter))
+        if allow_restart and budget > 0:
+            reserved = max(1, budget // 2)
+            restored = restored[: max(0, budget - reserved)]
         remaining = max(0, budget - len(restored))
         restarted = self._restart(chains, rng, remaining, meter) if allow_restart else []
         return restored + restarted

@@ -186,6 +186,17 @@ class Context:
     reserve: WorkVector = RESERVE
     strength_ratios: tuple[float, ...] = (0.5, 1.0, 2.0, 4.0)
     epsilon_strength: float = 1e-6
+    beta_range: tuple[float, float] | None = None
+    """Inverse-temperature schedule for the surrogate annealer, or None to let it choose.
+
+    Left at None the sampler derives the range from the programmed h and J, so multiplying a
+    whole Hamiltonian by c rescales the schedule by 1/c and the product of beta and energy is
+    preserved: the common autoscale that the fixed-temperature theory relies on is undone
+    before it can have an effect. A two-qubit control makes this exact, and an external audit
+    reproduced it. Registering a range here pins the schedule in program units instead, which
+    is what a claim about energy-scale compression needs. It changes every measured utility,
+    so it is a registry field and not a call-site argument."""
+
     n_est_reads: int = 256
     audit_reads: int = 4_096
     num_sweeps: int = 200
@@ -292,6 +303,14 @@ class Context:
             value = getattr(self, name)
             if not math.isfinite(value) or value <= 0.0:
                 raise ValueError(f"{name} must be positive and finite")
+        if self.beta_range is not None:
+            if (
+                not isinstance(self.beta_range, tuple)
+                or len(self.beta_range) != 2
+                or any(not math.isfinite(v) or v <= 0.0 for v in self.beta_range)
+                or self.beta_range[0] >= self.beta_range[1]
+            ):
+                raise ValueError("beta_range must be an increasing pair of positive finites")
         if self.decode != "majority":
             raise ValueError("the rev2 pilot registers only majority decoding")
         if self.endpoint != "IF-Q3-S0":

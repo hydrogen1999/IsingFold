@@ -1543,6 +1543,7 @@ class EmbeddingEnv:
                 num_reads=self.reward_reads,
                 seed=evaluator_seed,
                 num_sweeps=self.ctx.num_sweeps,
+                beta_range=self.ctx.beta_range,
             )
             counts = (block.hits, block.reads)
             reward = block.rate

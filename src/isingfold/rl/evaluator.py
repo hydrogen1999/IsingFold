@@ -77,6 +77,7 @@ def sample_program(
     seed: int,
     num_sweeps: int = 200,
     tolerance: float | None = None,
+    beta_range: tuple[float, float] | None = None,
 ) -> ReadBlock:
     """Draw a fresh independent block at one strength and count decoded ground states."""
 
@@ -101,8 +102,12 @@ def sample_program(
             if q not in bqm.variables:
                 bqm.add_variable(q, 0.0)
 
+    # Passing the range through matters: left to itself the sampler derives beta from h and J,
+    # so a Hamiltonian multiplied by a common factor gets a schedule divided by it and the
+    # rescaling has no effect on the samples at all.
+    extra = {} if beta_range is None else {"beta_range": list(beta_range)}
     sampleset = SimulatedAnnealingSampler().sample(
-        bqm, num_reads=num_reads, num_sweeps=num_sweeps, seed=seed
+        bqm, num_reads=num_reads, num_sweeps=num_sweeps, seed=seed, **extra
     )
     tol = energy_tolerance(problem) if tolerance is None else tolerance
     rng = np.random.default_rng(seed)
