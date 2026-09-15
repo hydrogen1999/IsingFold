@@ -1,0 +1,22 @@
+{"families": ["clique", "dense", "sparse", "bipartite", "lattice", "modular", "scalefree"], "sizes": [14, 16, 18], "cells": 21, "target_per_cell": 30}
+{"kept": 630, "attempted": 630, "no_planting": 0, "minorminer_found_nothing": 0, "over_qubit_cap": 0, "mean_qubits": 29.83809523809524, "mean_max_chain": 3.066666666666667, "mean_qubits_per_variable": 1.8571428571428572, "mean_minorminer_seconds": 0.0038091504384600927, "max_minorminer_seconds": 0.020977020263671875, "seconds": 3, "per_cell": {"bipartite/14": 30, "bipartite/16": 30, "bipartite/18": 30, "clique/14": 30, "clique/16": 30, "clique/18": 30, "dense/14": 30, "dense/16": 30, "dense/18": 30, "lattice/14": 30, "lattice/16": 30, "lattice/18": 30, "modular/14": 30, "modular/16": 30, "modular/18": 30, "scalefree/14": 30, "scalefree/16": 30, "scalefree/18": 30, "sparse/14": 30, "sparse/16": 30, "sparse/18": 30}}
+{
+ "generator_version": "rev2-inkdrop-frustrated-1",
+ "instances": 630,
+ "strength_records": 535,
+ "split": {
+  "train": 441,
+  "validation": 94,
+  "test": 95,
+  "ood": 0
+ },
+ "files": [
+  "evaluator_only.jsonl",
+  "instances.jsonl",
+  "splits.json",
+  "strength_counts.jsonl"
+ ],
+ "digest": "b1167177611d43a4"
+}
+
+HARD CORPUS DONE

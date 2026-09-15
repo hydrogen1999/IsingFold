@@ -28,7 +28,12 @@ different searches that arrive at the same program must get the same score.
 """
 from __future__ import annotations
 
+import networkx as nx
+
 COORD_WIDTH = 5
+PHYS_WIDTH = 4
+"""Chain-robustness channels: smallest margin, mean single-qubit margin, bridge fraction,
+smallest bridge margin."""
 """Widest native tuple in the registered families, Zephyr's five; shorter ones are padded."""
 
 import torch
@@ -111,7 +116,78 @@ def native_coordinates(host, family_hint=None, size_hint=None):
     return None
 
 
-def program_graph(program, chains, problem, device=None, coords=None):
+
+def chain_robustness(program, chains, host, node, problem):
+    """How hard is it to break this chain, in the units of the programmed Hamiltonian.
+
+    Section 8.2 of the meeting design. Start from a chain-consistent configuration and flip a
+    proper nonempty subset A of chain i. With ferromagnetic chain couplers the internal cost of
+    that cut is 2 * sum over boundary edges of |J_e|, and everything outside the chain, the local
+    fields and the couplings to other chains, can pay back at most 2 * L(A) where
+
+        L(A) = sum over q in A of ( |h_q| + sum over r outside C_i of |J_qr| ).
+
+    So dE >= 2*cut(A) - 2*L(A). A chain whose cheapest cut has a small or negative margin is one
+    the sampler can flip halfway, which is what a chain break is.
+
+    This is a bound for perturbing one chain from a chain-consistent state under the actual
+    programmed coefficients. It is not a solve-probability guarantee and it is not a statement
+    about every possible cut: the cuts examined here are the single-qubit ones and the ones a
+    bridge induces, so the number reported is the smallest margin among those, a proxy and not a
+    certificate.
+
+    Returns (min margin, mean single-qubit margin, bridge fraction, min bridge margin).
+    """
+    members = sorted(chains[node], key=str)
+    if len(members) < 2:
+        return [0.0, 0.0, 0.0, 0.0]
+    inside = set(members)
+    sub = host.subgraph(members)
+
+    def load(subset):
+        total = 0.0
+        for q in subset:
+            total += abs(float(program.h_phys.get(q, 0.0)))
+            for r in host.neighbors(q):
+                if r in inside:
+                    continue
+                j = program.j_phys.get((q, r), program.j_phys.get((r, q)))
+                if j is not None:
+                    total += abs(float(j))
+        return total
+
+    def cut(subset):
+        total = 0.0
+        for q in subset:
+            for r in sub.neighbors(q):
+                if r in subset:
+                    continue
+                j = program.j_phys.get((q, r), program.j_phys.get((r, q)))
+                if j is not None:
+                    total += abs(float(j))
+        return total
+
+    singles = [2.0 * cut({q}) - 2.0 * load({q}) for q in members]
+    margins = list(singles)
+
+    bridges = list(nx.bridges(sub)) if sub.number_of_edges() else []
+    bridge_margins = []
+    for u, v in bridges:
+        rest = sub.copy()
+        rest.remove_edge(u, v)
+        side = nx.node_connected_component(rest, u)
+        if 0 < len(side) < len(members):
+            m = 2.0 * cut(side) - 2.0 * load(side)
+            bridge_margins.append(m)
+            margins.append(m)
+
+    internal_edges = max(1, sub.number_of_edges())
+    return [min(margins), float(sum(singles) / len(singles)),
+            len(bridges) / internal_edges,
+            min(bridge_margins) if bridge_margins else min(singles)]
+
+
+def program_graph(program, chains, problem, device=None, coords=None, host=None):
     """Turn one compiled program into the tensors the scorer reads.
 
     Qubit labels are sorted so the encoding of a program does not depend on dictionary order,
@@ -165,9 +241,13 @@ def program_graph(program, chains, problem, device=None, coords=None):
             contacts[x] += int(n)
         if y in contacts:
             contacts[y] += int(n)
-    chain_feat = [[float(problem.h.get(v, 0.0)), float(len(chains[v])),
-                   float(contacts.get(v, 0)), float(len(program.chain_edges.get(v, ())))]
-                  for v in logical]
+    chain_feat = []
+    for v in logical:
+        row = [float(problem.h.get(v, 0.0)), float(len(chains[v])),
+               float(contacts.get(v, 0)), float(len(program.chain_edges.get(v, ())))]
+        if host is not None:
+            row += chain_robustness(program, chains, host, v, problem)
+        chain_feat.append(row)
 
     lo_edges, lo_feats = [], []
     for (x, y), coupling in problem.j.items():
@@ -188,7 +268,7 @@ def program_graph(program, chains, problem, device=None, coords=None):
         "edge": t(feats, (0, 4)),
         "membership": torch.tensor(membership, dtype=torch.long, device=device) if membership
         else torch.zeros((0,), dtype=torch.long, device=device),
-        "chain": t(chain_feat, (0, 4)),
+        "chain": t(chain_feat, (0, 4 + (PHYS_WIDTH if host is not None else 0))),
         "chain_edge_index": (torch.tensor(lo_edges, dtype=torch.long, device=device).t()
                              if lo_edges else torch.zeros((2, 0), dtype=torch.long,
                                                           device=device)),
@@ -211,14 +291,14 @@ class SuccessorScorer(nn.Module):
     representation transfers, and a large model would confound that with capacity."""
 
     def __init__(self, width: int = 64, qubit_rounds: int = 2, chain_rounds: int = 2,
-                 node_dim: int = 4):
+                 node_dim: int = 4, chain_dim: int = 4):
         super().__init__()
         self.qubit_in = _mlp([node_dim, width, width])
         self.qubit_msg = nn.ModuleList(_mlp([2 * width + 4, width, width])
                                        for _ in range(qubit_rounds))
         self.qubit_upd = nn.ModuleList(_mlp([2 * width, width, width])
                                        for _ in range(qubit_rounds))
-        self.chain_in = _mlp([width + 4, width, width])
+        self.chain_in = _mlp([width + chain_dim, width, width])
         self.chain_msg = nn.ModuleList(_mlp([2 * width + 4, width, width])
                                        for _ in range(chain_rounds))
         self.chain_upd = nn.ModuleList(_mlp([2 * width, width, width])

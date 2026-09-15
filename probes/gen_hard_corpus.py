@@ -39,22 +39,53 @@ from isingfold.rl.env import EmbeddingTask
 from _initializers import minorminer_initializer
 
 
-def dense_logical(n, degree, rng, kind):
-    """A logical graph that needs chains, rather than one that falls out of a placement."""
-    if kind == "clique":
-        return nx.complete_graph(n)
-    target = int(round(degree * n / 2))
-    for _ in range(200):
-        g = nx.gnm_random_graph(n, target, seed=int(rng.integers(0, 2 ** 31)))
-        if nx.is_connected(g):
-            return g
-    g = nx.gnm_random_graph(n, target, seed=int(rng.integers(0, 2 ** 31)))
-    # Connect what the draw left apart rather than returning several problems in a trenchcoat,
-    # which is the failure mode of the corpus this replaces.
-    comps = list(nx.connected_components(g))
+FAMILIES = ("clique", "dense", "sparse", "bipartite", "lattice", "modular", "scalefree")
+"""Structural axes, not 600 draws of one shape.
+
+A corpus of one family tests transfer between coefficient draws and calls it generalisation. It
+also cannot show a resource-quality relation that only appears between shapes: a clique forces
+long chains everywhere, so within it every embedding costs about the same and the question never
+arises. These seven differ in the thing that decides embedding difficulty, which is how demand
+for connectivity is distributed: uniformly and high, uniformly and low, concentrated in hubs,
+split between blocks, or laid out in a plane.
+"""
+
+
+def _connect(g, rng):
+    """Join components rather than returning several problems in a trenchcoat, which is how the
+    corpus this replaces ended up with 4.48 independent pieces per instance."""
+    comps = [sorted(c) for c in nx.connected_components(g)]
     for a, b in zip(comps, comps[1:]):
-        g.add_edge(sorted(a)[0], sorted(b)[0])
+        g.add_edge(a[0], b[0])
     return g
+
+
+def logical_graph(n, family, rng):
+    seed = int(rng.integers(0, 2 ** 31))
+    if family == "clique":
+        return nx.complete_graph(n)
+    if family == "dense":
+        return _connect(nx.gnm_random_graph(n, int(round(3.5 * n)), seed=seed), rng)
+    if family == "sparse":
+        return _connect(nx.gnm_random_graph(n, int(round(1.6 * n)), seed=seed), rng)
+    if family == "bipartite":
+        a = n // 2
+        return nx.complete_bipartite_graph(a, n - a)
+    if family == "lattice":
+        rows = max(2, int(round(n ** 0.5)))
+        cols = max(2, (n + rows - 1) // rows)
+        g = nx.convert_node_labels_to_integers(nx.grid_2d_graph(rows, cols))
+        return nx.convert_node_labels_to_integers(g.subgraph(list(g.nodes())[:n]).copy())
+    if family == "modular":
+        blocks = 3 if n >= 12 else 2
+        sizes = [n // blocks] * blocks
+        for i in range(n - sum(sizes)):
+            sizes[i] += 1
+        g = nx.random_partition_graph(sizes, 0.85, 0.06, seed=seed)
+        return _connect(nx.Graph(g), rng)
+    if family == "scalefree":
+        return _connect(nx.barabasi_albert_graph(n, 3, seed=seed), rng)
+    raise ValueError("unregistered family %r" % family)
 
 
 def main() -> int:
@@ -62,9 +93,10 @@ def main() -> int:
     ap.add_argument("--out", required=True)
     ap.add_argument("--host", default="chimera")
     ap.add_argument("--host-size", type=int, default=4)
-    ap.add_argument("--variables", type=int, default=14)
-    ap.add_argument("--degree", type=float, default=7.0)
-    ap.add_argument("--kind", default="dense", choices=["dense", "clique"])
+    ap.add_argument("--variables", default="14,16,18",
+                    help="comma list of logical sizes; every family is generated at every size")
+    ap.add_argument("--families", default=",".join(FAMILIES),
+                    help="comma list from %s" % ", ".join(FAMILIES))
     ap.add_argument("--instances", type=int, default=600)
     ap.add_argument("--alpha", type=float, default=0.9)
     ap.add_argument("--clause-length", type=int, default=5)
@@ -81,13 +113,25 @@ def main() -> int:
     weights = tuple(float(x) for x in a.weights.split(","))
     ctx = Context(qubit_cap=a.qubit_cap)
 
+    families = [f.strip() for f in a.families.split(",") if f.strip()]
+    sizes = [int(v) for v in a.variables.split(",") if v]
+    cells = [(f, v) for f in families for v in sizes]
+    per_cell = max(1, a.instances // len(cells))
+    print(json.dumps({"families": families, "sizes": sizes, "cells": len(cells),
+                      "target_per_cell": per_cell}), flush=True)
+
     kept, tried, no_embedding, over_cap, no_planting = [], 0, 0, 0, 0
     chain_stats, mm_secs = [], []
+    by_cell: dict[tuple, int] = {c: 0 for c in cells}
     started = time.time()
-    while len(kept) < a.instances and tried < a.instances * 12:
+    while len(kept) < a.instances and tried < a.instances * 20:
         tried += 1
         local = a.seed * 1000 + tried
-        logical = dense_logical(a.variables, a.degree, rng, a.kind)
+        # Round-robin over the cells that still want instances, so a family that is easy to
+        # generate cannot crowd out one that is not.
+        hungry = [c for c in cells if by_cell[c] < per_cell] or cells
+        family, n_vars = hungry[tried % len(hungry)]
+        logical = logical_graph(n_vars, family, rng)
         try:
             planted = frustrated_loops(logical, alpha=a.alpha, seed=local,
                                        max_length=a.clause_length, weight_choices=weights)
@@ -107,10 +151,12 @@ def main() -> int:
             continue
         chain_stats.append((used, max(len(c) for c in chains.values()),
                             used / max(1, graph.number_of_nodes())))
-        name = "%s%d-%s-%d" % (a.host, a.host_size, a.kind, len(kept))
-        lineage = Lineage(lineage_id="%s-l%d" % (name, local), family=a.kind,
-                          host="%s%d" % (a.host, a.host_size), size=a.variables,
-                          generator_version="hard-dense-frustrated-1")
+        name = "%s%d-%s%d-%d" % (a.host, a.host_size, family, n_vars,
+                                 by_cell[(family, n_vars)])
+        lineage = Lineage(lineage_id="%s-l%d" % (name, local),
+                          family="%s%d" % (family, n_vars),
+                          host="%s%d" % (a.host, a.host_size), size=n_vars,
+                          generator_version="hard-diverse-frustrated-1")
         task = EmbeddingTask(name=name, logical=graph, host=host, problem=planted.problem,
                              ground_energy=planted.ground_energy, lineage=lineage.lineage_id,
                              witness={v: frozenset(c) for v, c in chains.items()})
@@ -119,6 +165,7 @@ def main() -> int:
                                                        "qubits": used,
                                                        "max_chain": chain_stats[-1][1]},
                                       clause_report=planted.verify()))
+        by_cell[(family, n_vars)] += 1
 
     stats = np.array(chain_stats) if chain_stats else np.zeros((1, 3))
     print(json.dumps({
@@ -128,7 +175,9 @@ def main() -> int:
         "mean_qubits_per_variable": float(stats[:, 2].mean()),
         "mean_minorminer_seconds": float(np.mean(mm_secs)) if mm_secs else None,
         "max_minorminer_seconds": float(np.max(mm_secs)) if mm_secs else None,
-        "seconds": round(time.time() - started)}), flush=True)
+        "seconds": round(time.time() - started),
+        "per_cell": {"%s/%d" % (f, v): c for (f, v), c in sorted(by_cell.items())}}),
+        flush=True)
     if not kept:
         print("nothing survived; loosen the settings"); return 1
 

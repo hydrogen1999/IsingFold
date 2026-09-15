@@ -24,8 +24,8 @@ from isingfold.rl.env import fixed_strength_selector
 from isingfold.rl.evaluate import first_commit_controller, run_controller
 from isingfold.rl.program import compile_program
 
-from successor_scorer import (COORD_WIDTH, SuccessorScorer, native_coordinates,
-                              parse_host_name, program_graph)
+from successor_scorer import (COORD_WIDTH, PHYS_WIDTH, SuccessorScorer,
+                              native_coordinates, parse_host_name, program_graph)
 from train_quality import rank_corr
 
 FRESH_BASE = 95_000_000
@@ -44,7 +44,7 @@ def compile_for(task, ctx, chains, index=1):
         return None
 
 
-def build(states, ctx, device, tag, use_coords=False):
+def build(states, ctx, device, tag, use_coords=False, use_physics=False):
     """Compile every labelled successor once; the graphs are what the model trains on."""
     out, dropped, started = [], 0, time.time()
     coord_cache: dict[int, object] = {}
@@ -66,7 +66,8 @@ def build(states, ctx, device, tag, use_coords=False):
                 dropped += 1
                 continue
             g = program_graph(prog, r["succ"], st["task"].problem, device=device,
-                              coords=coords)
+                              coords=coords,
+                              host=st["task"].host if use_physics else None)
             rows.append({**r, "graph": g})
         if len(rows) >= 3:
             out.append({**st, "rows": rows})
@@ -88,6 +89,11 @@ def main() -> int:
     ap.add_argument("--patience", type=int, default=60)
     ap.add_argument("--fresh-reads", type=int, default=512)
     ap.add_argument("--qubit-cap", type=int, default=120)
+    ap.add_argument("--physics", action="store_true",
+                    help="give each chain the energy margin of its cheapest cut, from section "
+                         "8.2 of the design: flipping a subset A of a chain costs at least "
+                         "2*cut(A) - 2*L(A) in programmed units, so a chain whose cheapest cut "
+                         "has a small margin is one the sampler can break in half")
     ap.add_argument("--coords", action="store_true",
                     help="give every qubit its topology coordinates from the generator\'s own "
                          "converter, Chimera (i,j,u,k), Pegasus (u,w,k,z), Zephyr (u,w,k,j,z), "
@@ -108,8 +114,10 @@ def main() -> int:
     print(json.dumps({"cache": a.cache, "key": blob["key"], "device": str(device),
                       "width": a.width}), flush=True)
 
-    train_states = build(blob["train"], ctx, device, "training lineages", a.coords)
-    eval_states = build(blob["eval"], ctx, device, "held-out lineages", a.coords)
+    train_states = build(blob["train"], ctx, device, "training lineages", a.coords,
+                         a.physics)
+    eval_states = build(blob["eval"], ctx, device, "held-out lineages", a.coords,
+                        a.physics)
     if not train_states or not eval_states:
         print("  nothing to fit"); return 1
 
@@ -125,7 +133,8 @@ def main() -> int:
 
     torch.manual_seed(a.seed)
     node_dim = 4 + (COORD_WIDTH + 1 if a.coords else 0)
-    model = SuccessorScorer(width=a.width, node_dim=node_dim).to(device)
+    chain_dim = 4 + (PHYS_WIDTH if a.physics else 0)
+    model = SuccessorScorer(width=a.width, node_dim=node_dim, chain_dim=chain_dim).to(device)
     opt = torch.optim.Adam(model.parameters(), lr=a.learning_rate, weight_decay=a.weight_decay)
     print("  scorer parameters %d" % sum(p.numel() for p in model.parameters()), flush=True)
 
@@ -265,7 +274,8 @@ def main() -> int:
         out = Path(a.out); out.parent.mkdir(parents=True, exist_ok=True)
         torch.save(model.state_dict(), out.with_suffix(".pt"))
         out.write_text(json.dumps({
-            "model": "SuccessorScorer", "coords": bool(a.coords), "width": a.width,
+            "model": "SuccessorScorer", "coords": bool(a.coords),
+            "physics": bool(a.physics), "width": a.width,
             "parameters":
                 sum(p.numel() for p in model.parameters()),
             "optimizer_steps": steps, "learning_rate": a.learning_rate,
