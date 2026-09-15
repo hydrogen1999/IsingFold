@@ -217,6 +217,42 @@ of 178 legal COMMIT rows across 120 states, 60 named the wrong embedding. None o
 rows were wrong and 60 of the 118 later rows were. The error cannot occur at the first state
 anyone would check by hand and affects half of everything after it.
 
+### Capacity, settled
+
+`results/quality_cap/`: correct labels, no stopping rule, no weight decay, 400 optimizer steps.
+This is the arm that separates a model which cannot fit the labels from one that fits them and
+does not transfer.
+
+| | IF-MLP | IF-Dual |
+|---|---|---|
+| fitted states, head minus oracle | **-0.0000 [-0.0049, +0.0050]** | **+0.0031 [-0.0018, +0.0080]** |
+| fitted states, head minus random | +0.1513 [+0.1214, +0.1853] | +0.1544 [+0.1245, +0.1880] |
+| fitted states, rank correlation | +0.714 | +0.833 |
+| held-out, head minus random | -0.0287 [-0.0610, +0.0018] | -0.0197 [-0.0530, +0.0133] |
+| held-out, rank correlation | +0.139 | +0.060 |
+| held-out ceiling | +0.1123 [+0.0832, +0.1440] | +0.1123 [+0.0832, +0.1440] |
+
+The network reaches the label oracle exactly on the states it was fitted on, in both families.
+Capacity, the gradient path, the teacher, the loss and the labels are therefore all ruled out.
+What is left is generalisation: it learns a map from those particular states to their answers and
+carries nothing to a new lineage.
+
+That is a different diagnosis from the one this file carried two revisions ago, which said the
+network could not learn the signal. It can, completely. It cannot transfer it.
+
+### Changing what the model is shown
+
+The fifth audit's reading is that the head has to reconstruct quality from the current state and
+the factors that changed, so there is nothing for it to generalise over. `successor_scorer.py`
+scores an embedding from the physical program it compiles to at the strength it will be run at:
+qubit messages over the physical graph, pooling into the chain each qubit belongs to, messages
+between chains along realised logical couplings, one number. It cannot see the state, the history
+or the other candidates, which is the property being tested: two searches reaching the same
+program must score it the same.
+
+`train_successor.py` fits it on the same cached labels, the same states and the same references,
+so the comparison is a representation ablation and not a new experiment. Running.
+
 ## Audit checks
 
 An external audit of commit 41fcfac found five things worth fixing in the measurement and the
