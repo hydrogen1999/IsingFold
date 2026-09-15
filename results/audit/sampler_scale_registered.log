@@ -1,0 +1,12 @@
+{"corpus": "runs/v1/corpus", "lineages": 10, "scales": [1.0, 0.25, 0.0625], "beta_range": [0.1, 2.0]}
+
+  scale      utility    n            change from scale 1
+  1          0.4301     10           +0.0000
+  0.25       0.0793     10           -0.3508
+  0.0625     0.0105     10           -0.4195
+
+  A schedule that tracks the programmed coefficients makes these rows identical.
+  A registered schedule makes the compressed rows worse, which is the effect the
+  fixed-temperature theory predicts and the quantity a claim about it must report.
+
+SAMPLER SCALE DONE

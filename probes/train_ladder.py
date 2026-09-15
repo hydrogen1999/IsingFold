@@ -184,7 +184,11 @@ def main() -> None:
     out = Path(a.out); out.mkdir(parents=True, exist_ok=True)
     tasks = load_instances(a.corpus)
     split = json.loads((Path(a.corpus) / "splits.json").read_text())
-    train_roots, dev_roots = set(split["train"]), set(split["validation"]) | set(split["test"])
+    train_roots, dev_roots = set(split["train"]), set(split["validation"])
+    if not dev_roots:
+        # A corpus without a validation split is a configuration error, not an invitation to use
+        # every task as development and then report the number as held out.
+        raise SystemExit("corpus has no validation split; refusing to fall back to all tasks")
     train_tasks = [t for t in tasks if t.lineage in train_roots]
     dev_tasks = [t for t in tasks if t.lineage in dev_roots] or tasks
     ctx = Context(qubit_cap=a.qubit_cap)
@@ -403,7 +407,8 @@ def main() -> None:
                 # and the trainer's transactional backtracking both discard work after doing it.
                 # Read these instead of updates_done.
                 "optimizer_steps_kept": sum(float(h.get("optimizer_steps", 0.0)) for h in history),
-                "rollbacks": sum(float(h.get("rollbacks", 0.0)) for h in history),
+                "optimizer_steps_rolled_back": sum(
+                    float(h.get("optimizer_steps_rolled_back", 0.0)) for h in history),
             }
             results[family].append(record)
             print(json.dumps(record, default=float), flush=True)

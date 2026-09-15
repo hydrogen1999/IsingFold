@@ -1,0 +1,30 @@
+{"lineages": 12, "split": "test", "ladder": [2, 4, 8], "rounds": [1], "draws": 8, "reads": 128, "assess_reads": 512}
+  attempted 8 draws per lineage in 16.2s (0.169s each), 0 attempts returned nothing
+
+== noise control: the same unchanged embedding, assessed five times
+  range over five assessments of one fixed embedding: mean 0.0303, max 0.0762 over 12 lineages
+  a difference smaller than this is inside what the instrument can invent
+
+== minorminer, selected on 128-read blocks, assessed on 512 fresh reads
+  minorminer best-of-2                         solved 12/12  assessed 0.6908  with failures as zero 0.6908  2 blocks  4.1s
+  minorminer best-of-4                         solved 12/12  assessed 0.7459  with failures as zero 0.7459  4 blocks  8.1s
+  minorminer best-of-8                         solved 12/12  assessed 0.7778  with failures as zero 0.7778  8 blocks  16.2s
+
+== the same draws, selected by qubit count, assessed the same way
+  resource-picked best-of-2                    solved 12/12  assessed 0.6517  with failures as zero 0.6517  0 blocks  0.0s   (no selection blocks needed)
+  resource-picked best-of-4                    solved 12/12  assessed 0.7204  with failures as zero 0.7204  0 blocks  0.0s   (no selection blocks needed)
+  resource-picked best-of-8                    solved 12/12  assessed 0.7160  with failures as zero 0.7160  0 blocks  0.0s   (no selection blocks needed)
+
+== objective selection against resource selection, identical draws, fresh assessment
+  best-of-2: objective minus resource                  n  12  +0.0391 [-0.0107, +0.1209]  (objective spends 2 blocks to choose, resource spends none)
+  best-of-4: objective minus resource                  n  12  +0.0256 [-0.0005, +0.0545]  (objective spends 4 blocks to choose, resource spends none)
+  best-of-8: objective minus resource                  n  12  +0.0618 [+0.0161, +0.1213]  (objective spends 8 blocks to choose, resource spends none)
+  NO-OP CONTROL: the policy is replaced by commit-what-you-were-given
+
+== if-core applied to the best of 8 minorminer draws (runs/v1/frozen/if-core.pt), sampled at temperature one
+  if-core: 1 rounds, final state only          solved 12/12  assessed 0.7778  with failures as zero 0.7778  9 blocks  18.3s   (assessment excluded; with it 22.4s)
+  if-core: 1 rounds, keep the better of the two solved 12/12  assessed 0.7778  with failures as zero 0.7778  10 blocks  18.3s
+  1 rounds, final state, against its own starting point n  12  +0.0000 [+0.0000, +0.0000]  (the best draw, assessed before and after)
+  1 rounds, keep better, against minorminer best-of-8  n  12  +0.0000 [+0.0000, +0.0000]  (10 blocks vs 8 blocks)
+
+FRONTIER2 DONE

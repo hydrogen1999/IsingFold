@@ -1732,6 +1732,10 @@ def strength_counts(
             num_reads=reads,
             seed=seed + 101 * j,
             num_sweeps=ctx.num_sweeps,
+            # The label path has to sample the way the reward does. Without this a run with a
+            # registered schedule trains a supervised head against auto-scheduled labels and
+            # optimises a reward from a different evaluator, and nothing announces it.
+            beta_range=ctx.beta_range,
         )
         hits.append(block.hits)
         totals.append(block.reads)

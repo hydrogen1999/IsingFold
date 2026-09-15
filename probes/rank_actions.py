@@ -85,7 +85,8 @@ def main() -> int:
         model.eval()
         print("\n== %s (%s)" % (fam, path), flush=True)
 
-        picks = {k: [] for k in ("oracle", "random", "quality", "resource", "mean")}
+        picks = {k: [] for k in ("oracle", "observed_max", "random", "quality",
+                                 "resource", "mean")}
         spearman, states, measured = [], 0, 0
         rng = np.random.default_rng(0)
         for idx, t in enumerate(dev):
@@ -127,7 +128,18 @@ def main() -> int:
             head = None if head is None else head.detach().cpu().numpy()
 
             truths = np.array([r["u"] for r in rows])
-            picks["oracle"].append(float(truths.max()))
+            # The maximum of the same blocks used as truth is not the best candidate's quality,
+            # it is that quality plus whatever the luckiest block added. A control with twelve
+            # identical candidates at 256 reads puts the inflation near +0.046. So the winner is
+            # re-measured on independent reads, and the inflated figure is kept beside it under
+            # a name that says what it is.
+            top = rows[int(np.argmax(truths))]
+            fresh = truth(t, {**base, **{n: frozenset(c)
+                                         for n, c in dec.candidates[top["i"]].new_chains.items()}},
+                          500000 + idx)
+            picks["observed_max"].append(float(truths.max()))
+            if fresh is not None:
+                picks["oracle"].append(fresh)
             picks["mean"].append(float(truths.mean()))
             picks["random"].append(float(truths[rng.integers(0, len(truths))]))
             picks["resource"].append(
@@ -143,7 +155,7 @@ def main() -> int:
                         spearman.append(float(c))
 
         print("  states %d, candidates measured %d" % (states, measured), flush=True)
-        for k in ("oracle", "quality", "random", "resource", "mean"):
+        for k in ("observed_max", "oracle", "quality", "random", "resource", "mean"):
             if picks[k]:
                 print("  picking by %-12s utility %.4f" % (k, float(np.mean(picks[k]))),
                       flush=True)
@@ -161,6 +173,7 @@ def main() -> int:
 
         delta("quality", "random", "quality head minus random")
         delta("oracle", "random", "oracle minus random, the ceiling")
+        delta("observed_max", "oracle", "what the selection maximum invents")
         delta("resource", "random", "resource criterion minus random")
         if spearman:
             print("  median within-state rank correlation of the head with the truth: %+.3f"

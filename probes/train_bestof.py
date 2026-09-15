@@ -56,8 +56,9 @@ def main() -> None:
                          "validation: the curve is looked at repeatedly and steers decisions, "
                          "so whatever it reads stops being a held-out set")
     ap.add_argument("--require-gain", action="store_true", default=True,
-                    help="teach only on rollouts that beat returning their own starting "
-                         "embedding, measured by a control block that shares no reads with them")
+                    help="teach only on rollouts whose re-measured gain over their own starting "
+                         "embedding is positive. The re-measurement shares no reads with the "
+                         "block that made the rollout the winner, which is the point")
     ap.add_argument("--no-require-gain", dest="require_gain", action="store_false")
     ap.add_argument("--gain-margin", type=float, default=0.0,
                     help="how far a rollout must beat its control before it is taught on")
@@ -110,11 +111,28 @@ def main() -> None:
         `chains` pins the starting embedding. The K rollouts of one lineage must share it: with
         a fresh initializer draw per episode, the best of K is partly the best initializer draw,
         and copying the winner's actions teaches the policy to take credit for a good start it
-        did not produce. An external audit made this point with a worked counterexample, and it
-        is right. The episode seed still varies, so the policy and the evaluator keep their own
-        randomness; only the starting state is held fixed.
+        did not produce. The episode seed still varies, so the policy and the evaluator keep
+        their own randomness; only the starting state is held fixed.
+
+        The environment calls one initializer for two different jobs: it produces the protected
+        starting embedding, and RESTART draws from it too. Pinning both to one embedding made
+        RESTART a move that returns where the episode began, while at deployment the same action
+        draws a fresh minorminer embedding. The policy then trains against an action it will not
+        meet. So the two are separated here: the first call returns the shared start, and every
+        later call goes to the real initializer, which is what RESTART is supposed to reach.
+        An external audit found this and reproduced the difference in candidate support.
         """
-        init = initializer if chains is None else (lambda l, h, sd, c=chains: c)
+        if chains is None:
+            init = initializer
+        else:
+            state = {"served": False}
+
+            def init(logical, host, sd, c=chains, st=state):
+                if not st["served"]:
+                    st["served"] = True
+                    return c
+                return initializer(logical, host, sd)
+
         return EmbeddingEnv(task, ctx, mode=Mode.IMPROVEMENT, initializer=init,
                             selector=selector, reward_reads=a.reward_reads, seed=seed,
                             improvement_restart_protocol=LEGACY_ONLINE_INITIALIZER_RESTARTS_V1)
@@ -158,7 +176,8 @@ def main() -> None:
     for rnd in range(a.rounds):
         picked = [train[int(i)] for i in rng.integers(0, len(train), a.lineages)]
         kept, stats = [], []
-        gains, reassessed, verified, attempted = [], [], 0, 0
+        selected, remeasured, accepted, attempted = [], [], 0, 0
+        skipped_no_embedding = skipped_no_fresh = 0
         for j, task in enumerate(picked):
             init_seed = 30_000_000 + 7919 * rnd + j
             chains, base = shared_initial(task, init_seed)
@@ -175,28 +194,37 @@ def main() -> None:
             rewards = [e.terminal_reward for e in buffer.episodes]
             best = int(np.argmax(rewards))
             stats.append((float(np.max(rewards)), float(np.mean(rewards))))
-            gains.append(float(np.max(rewards)) - base)
-            # The line above is the selection maximum minus an independent control, so it still
-            # carries the inflation a maximum over K noisy blocks produces: about +0.06 at K=8
-            # and 128 reads even when every candidate is identical. Re-measuring the winner on
-            # reads that took no part in choosing it gives the gain without that term.
+            selected.append(float(np.max(rewards)) - base)
+            # The selection maximum minus the control still carries what a maximum over K noisy
+            # blocks invents: about +0.06 at K=8 and 128 reads even when every candidate is
+            # identical. It is logged, and it decides nothing. The gate below uses the winner
+            # re-measured on reads that took no part in choosing it, because a gate driven by
+            # the selection block admits exactly the rollouts that got lucky in it. The first
+            # version of this code logged the honest number and gated on the noisy one; an
+            # external audit reproduced a case where the winner's fresh measurement was 0.10
+            # below its control and the trajectory was taught on anyway.
             won = buffer.episodes[best]
-            chains_out = getattr(won, "returned_embedding", None) or getattr(won, "embedding", None)
-            if chains_out is not None:
-                fresh = run_controller(
-                    [task], ctx, first_commit_controller,
-                    initializer=(lambda l, h, sd, c=chains_out: {n: frozenset(v) for n, v in c.items()}),
-                    selector=selector, reward_reads=a.reward_reads, repetitions=1,
-                    seed=70_000_000 + init_seed)[0]
-                if fresh.returned_valid and fresh.utility is not None:
-                    reassessed.append(float(fresh.utility) - base)
+            chains_out = getattr(won, "returned_embedding", None)
+            if chains_out is None:
+                skipped_no_embedding += 1
+                continue
+            fresh = run_controller(
+                [task], ctx, first_commit_controller,
+                initializer=(lambda l, h, sd, c=chains_out: {n: frozenset(v) for n, v in c.items()}),
+                selector=selector, reward_reads=a.reward_reads, repetitions=1,
+                seed=70_000_000 + init_seed)[0]
+            if not fresh.returned_valid or fresh.utility is None:
+                skipped_no_fresh += 1
+                continue
+            fresh_gain = float(fresh.utility) - base
+            remeasured.append(fresh_gain)
             # A winning rollout that did not beat returning its own starting embedding is not a
             # teacher. Without this the target is whichever episode drew the luckiest read
             # block, and a synthetic control shows that alone manufactures about +0.06 of
             # apparent headroom at K=8 and 128 reads when every candidate is identical.
-            if a.require_gain and np.max(rewards) <= base + a.gain_margin:
+            if a.require_gain and fresh_gain <= a.gain_margin:
                 continue
-            verified += 1
+            accepted += 1
             # Episode.transitions holds indices into the buffer, not the rows themselves.
             kept.extend(buffer.transitions[int(i)] for i in buffer.episodes[best].transitions)
         if not kept:
@@ -223,9 +251,11 @@ def main() -> None:
         best_mean = float(np.mean([s[0] for s in stats])); roll_mean = float(np.mean([s[1] for s in stats]))
         rec = dict(round=rnd, kept_transitions=len(kept), pool=len(pool), loss=float(np.mean(losses)),
                    rollout_best=best_mean, rollout_mean=roll_mean,
-                   gain_over_initial=float(np.mean(gains)) if gains else None,
-                   reassessed_gain=float(np.mean(reassessed)) if reassessed else None,
-                   verified_lineages=verified, attempted_lineages=attempted,
+                   selected_gain=float(np.mean(selected)) if selected else None,
+                   remeasured_gain=float(np.mean(remeasured)) if remeasured else None,
+                   accepted_teacher=accepted, attempted_lineages=attempted,
+                   skipped_no_embedding=skipped_no_embedding,
+                   skipped_no_fresh=skipped_no_fresh,
                    seconds=round(time.time() - t0))
         if rnd % a.eval_every == 0 or rnd == a.rounds - 1:
             model.eval()

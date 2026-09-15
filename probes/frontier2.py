@@ -254,8 +254,11 @@ def main() -> int:
             win = min(draws, key=lambda d: (d["qubits"], d["max_chain"]))
             vals[t.name] = assess(t, win["chains"], 500 + n * 1000 + win["j"])
         resource[n] = vals
-        summarise("resource-picked best-of-%d" % n, vals, len(dev), 0, 0.0,
-                  extra="   (no selection blocks needed)")
+        # Zero evaluator blocks, but not zero seconds: the candidates still had to be generated,
+        # and reporting 0.0 there made a criterion that spends real time look free.
+        summarise("resource-picked best-of-%d" % n, vals, len(dev), 0,
+                  per_draw * len(dev) * n,
+                  extra="   (0 evaluator blocks; the draws still cost time)")
 
     print("\n== objective selection against resource selection, identical draws, fresh assessment")
     for n in ladder:
@@ -278,7 +281,7 @@ def main() -> int:
                  "mode" if a.greedy else "sampled at temperature one"))
         for rounds in rounds_list:
             started = time.time()
-            search_secs = 0.0
+            search_secs = keep_secs = 0.0
             final_only, best_of_both, initial_assessed = {}, {}, {}
             for t in dev:
                 draws = successes(t.name, a.draws)
@@ -312,13 +315,18 @@ def main() -> int:
                 if got is None or base is None:
                     best_of_both[t.name] = base if got is None else got
                 else:
+                    keep_started = time.time()
                     pick = measure(t, ctx, out, SELECT_BASE + 555 + win["j"], a.reads)
+                    keep_secs += time.time() - keep_started
                     keep_new = pick is not None and pick[0] >= win["select"]
                     best_of_both[t.name] = got if keep_new else base
             # The budget is what the arm spends to choose what it returns: the draws it was
             # given plus the policy's own episodes. The assessment that estimates the quality of
             # that choice is the instrument, not the method, and is excluded from both sides.
-            secs = search_secs + per_draw * len(dev) * a.draws
+            # keep-better spends a block to decide which of the two to return. It is selection,
+            # not assessment, so it belongs in the budget; leaving it out was undercharging the
+            # arm by exactly the block that makes the decision.
+            secs = search_secs + keep_secs + per_draw * len(dev) * a.draws
             wall_with_assessment = time.time() - started + per_draw * len(dev) * a.draws
             summarise("%s: %d rounds, final state only" % (fam, rounds), final_only, len(dev),
                       a.draws + rounds, secs,

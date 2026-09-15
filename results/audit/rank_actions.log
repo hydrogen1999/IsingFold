@@ -1,0 +1,15 @@
+{"corpus": "runs/v1/corpus", "split": "validation", "lineages": 30, "max_candidates": 10, "reads": 256}
+
+== if-core (runs/v1/frozen/if-core.pt)
+  states 30, candidates measured 282
+  picking by oracle       utility 0.7165
+  picking by quality      utility 0.5687
+  picking by random       utility 0.5530
+  picking by resource     utility 0.5410
+  picking by mean         utility 0.5461
+  quality head minus random          n  30  +0.0158 [-0.0754, +0.1046]
+  oracle minus random, the ceiling   n  30  +0.1635 [+0.0962, +0.2371]
+  resource criterion minus random    n  30  -0.0120 [-0.0761, +0.0685]
+  median within-state rank correlation of the head with the truth: +0.102
+
+RANK ACTIONS DONE
