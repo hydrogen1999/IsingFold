@@ -1,0 +1,18 @@
+{
+ "generator_version": "rev2-inkdrop-frustrated-1",
+ "instances": 48,
+ "strength_records": 41,
+ "split": {
+  "train": 34,
+  "validation": 7,
+  "test": 7,
+  "ood": 0
+ },
+ "files": [
+  "evaluator_only.jsonl",
+  "instances.jsonl",
+  "splits.json",
+  "strength_counts.jsonl"
+ ],
+ "digest": "92dc2afe8a973cfa"
+}
