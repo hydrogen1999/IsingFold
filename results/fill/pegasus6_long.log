@@ -1,0 +1,16 @@
+{"host": "pegasus6", "qubits": 680, "fills": [0.7, 0.75, 0.8, 0.85, 0.9, 0.95], "alphas": [1.5, 1.0], "per_cell": 6}
+  fill  alpha   vars  witness  mmvalid  mmqubits   mmsecs    mmfill
+  0.70  1.5      218      476     1.00       410      1.6      0.60
+  0.70  1.0      160      476     1.00       287      1.2      0.42
+  0.75  1.5      225      510     1.00       438      2.6      0.64
+  0.75  1.0      175      510     1.00       339      1.4      0.50
+  0.80  1.5      254      544     1.00       496      3.2      0.73
+  0.80  1.0      186      544     1.00       361      1.7      0.53
+  0.85  1.5      249      578     1.00       497      3.6      0.73
+  0.85  1.0      200      578     1.00       437      1.2      0.64
+  0.90  1.5      277      612     1.00       539     22.4      0.79
+  0.90  1.0      215      612     1.00       426      1.9      0.63
+  0.95  1.5      285      646     0.67       590      9.5      0.87
+  0.95  1.0      225      646     1.00       465      0.5      0.68
+{"generator_version": "rev2-inkdrop-frustrated-1", "instances": 72, "strength_records": 61, "split": {"train": 50, "validation": 11, "test": 11, "ood": 0}, "files": ["evaluator_only.jsonl", "instances.jsonl", "splits.json", "strength_counts.jsonl"], "digest": "02a9a4960e80b11b"}
+FILL CORPUS DONE

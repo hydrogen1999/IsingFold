@@ -184,6 +184,22 @@ interval about 0.09 wide and every pair within 0.02. No arm separates from the b
 That is three corpora and three splits on which the representation does not matter. Logs in
 `results/diverse_abl/`.
 
+## Planted fill is not hardness; minimal fill is
+
+`probes/gen_fill_corpus.py` plants a chain partition of the host at a chosen fill and takes the
+quotient as the logical graph, so a valid embedding at that fill is known. With chains of one
+or two qubits (alpha 3.0) minorminer at ten tries finds an embedding on none of the instances
+from eighty percent up, on either host. With longer chains (alpha 1.5 and 1.0) it finds one on
+all of them up to ninety-five percent, and its own embedding fills sixty to eighty-seven percent
+of the host: a long-chain witness is a wasteful embedding, and the tool compresses it.
+
+So the fraction of the host an embedding uses says nothing about the instance. What does is the
+fraction the instance cannot do without, its minimal fill, and the advisor's scale (ninety
+slightly hard, ninety-five hard, a hundred infeasible) has to be read on that quantity. Chains of
+length exactly one make it exact: the logical graph is then an induced subgraph of the host on
+n = f·|H| nodes, every embedding needs at least n qubits, and the witness uses exactly n. That
+sweep is running. Logs in `results/fill/`.
+
 ## The embeddability threshold on Pegasus 6 and Zephyr 4
 
 Validity rate of minorminer at ten tries, six instances by four draws per cell, in
