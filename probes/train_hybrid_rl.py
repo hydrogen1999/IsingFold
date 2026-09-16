@@ -26,7 +26,7 @@ from isingfold.rl.contracts import DecisionState, Opcode
 from isingfold.rl.data.generate import load_instances
 from isingfold.rl.env import EmbeddingEnv, Mode, fixed_strength_selector
 
-from _context import construction_context, qubit_budget
+from _context import construction_context, host_context, qubit_budget
 from candidate_features import FeatureContext
 from seeded_minorminer import attempt
 from fast_layout import sample_layout
@@ -68,7 +68,34 @@ def complete(task, roots, deadline, tries, seed):
     while ok is None and time.time() - t0 < deadline:
         n += 1
         ok = attempt(task, roots, seed + n, tries)
+    complete.last = ok
     return ok is not None, time.time() - t0, n
+
+
+_ctx_cache = {}
+
+
+def measure_residual(task, chains, seed, reads=256):
+    """Mean energy residual above the planted ground energy under the registered schedule,
+    the objective at this scale (solve probability reads zero for every embedding here).
+    Lower is better. None if the evaluator rejects the embedding."""
+    from isingfold.rl.env import fixed_strength_selector
+    from isingfold.rl.evaluate import first_commit_controller, run_controller
+    cap = task.host.number_of_nodes()
+    if cap not in _ctx_cache:
+        _ctx_cache[cap] = host_context(cap)
+    ctx = _ctx_cache[cap]
+    fixed = {v: frozenset(c) for v, c in chains.items()}
+    try:
+        out = run_controller([task], ctx, first_commit_controller, initializer=lambda l, h, s: fixed,
+                             selector=fixed_strength_selector(), reward_reads=reads,
+                             repetitions=1, seed=seed)
+    except Exception:
+        return None
+    o = out[0]
+    if not o.returned_valid or o.mean_energy_residual is None:
+        return None
+    return float(o.mean_energy_residual)
 
 
 def partial_score(task, roots, seed, tries=2):
@@ -120,6 +147,11 @@ def main() -> int:
                          "router finishes a right layout in under a second, so a long budget "
                          "only pays for wrong ones")
     ap.add_argument("--layout-tries", type=int, default=2)
+    ap.add_argument("--objective", default="valid", choices=("valid", "quality"),
+                    help="quality: a valid completion is rewarded by its measured energy "
+                         "residual against the router-alone embedding of the same instance, "
+                         "which is the objective; validity stays the gate")
+    ap.add_argument("--quality-weight", type=float, default=10.0)
     a = ap.parse_args()
     tasks = load_instances(a.corpus)
     rng = np.random.default_rng(a.seed)
@@ -141,6 +173,28 @@ def main() -> int:
             fcs[task.name] = FeatureContext(task, qubit_budget({v: frozenset(c) for v, c in task.witness.items()}))
         return fcs[task.name]
 
+    base_res = {}
+
+    def baseline_residual(task, k):
+        """The router alone, restarted within the evaluation deadline, then measured."""
+        if task.name not in base_res:
+            ok, _, _ = complete(task, None, a.eval_deadline, a.tries, 85_000 + 1000 * k)
+            base_res[task.name] = measure_residual(task, complete.last, 300 + k) if ok else None
+        return base_res[task.name]
+
+    def reward_of(task, roots, ok, k, e):
+        if not ok:
+            return 0.5 * partial_score(task, roots, 91_000 + 7 * e + 100 * k)
+        if a.objective == "valid":
+            return 1.0
+        res = measure_residual(task, complete.last, 400 + 7 * e + 100 * k)
+        base = baseline_residual(task, k)
+        if res is None:
+            return 1.0
+        if base is None:
+            return 1.5   # valid where the router alone is not: the best a layout can do here
+        return 1.0 + a.quality_weight * (base - res)
+
     layout = sample_layout if a.fast else place_roots
     print(json.dumps({"corpus": a.corpus, "train": len(train_tasks), "held_out": len(eval_tasks),
                       "init": a.init or None, "train_deadline": a.train_deadline,
@@ -154,15 +208,37 @@ def main() -> int:
         not get."""
         model.eval()
         cells = defaultdict(list)
+        pairs = []
         for k, t in enumerate(eval_tasks):
-            t0, ok, layouts = time.time(), False, 0
-            while not ok and time.time() - t0 < a.eval_deadline:
+            t0, ok, layouts, found = time.time(), False, 0, None
+            while time.time() - t0 < a.eval_deadline:
                 roots, _ = layout(t, model, fc_for(t), a.temperature, rng, train=True)
                 layouts += 1
                 left = a.eval_deadline - (time.time() - t0)
-                ok, _, _ = complete(t, roots, min(a.layout_router_secs, max(0.5, left)),
-                                    a.layout_tries, 70_000 + 1000 * k + 13 * layouts)
+                got, _, _ = complete(t, roots, min(a.layout_router_secs, max(0.5, left)),
+                                     a.layout_tries, 70_000 + 1000 * k + 13 * layouts)
+                if got:
+                    ok = True
+                    found = complete.last
+                    if a.objective == "valid":
+                        break
+                    # quality: keep searching for a better valid embedding until the deadline,
+                    # choosing by a selection block; the reported residual is a fresh block
+                    res = measure_residual(t, found, 500 + layouts)
+                    if res is not None and (not pairs or True):
+                        if getattr(t, "_best", None) is None or res < t._best[0]:
+                            t._best = (res, found)
             ok0, _, _ = complete(t, None, a.eval_deadline, a.tries, 80_000 + 1000 * k)
+            q, q0 = None, None
+            if a.objective == "quality" and ok and ok0:
+                best = getattr(t, "_best", None)
+                chosen = best[1] if best else found
+                q = measure_residual(t, chosen, 900 + k)
+                q0 = measure_residual(t, complete.last, 950 + k)
+                if q is not None and q0 is not None:
+                    pairs.append(q - q0)
+            if hasattr(t, "_best"):
+                del t._best
             cells[t.lineage.rsplit("-", 1)[0].split("-", 1)[1].rsplit("-", 1)[0]].append((ok, ok0, layouts))
         model.train()
         allr = [r for rs in cells.values() for r in rs]
@@ -171,7 +247,14 @@ def main() -> int:
                  np.mean([r[2] for r in allr]), len(allr)), flush=True)
         print("    " + "  ".join("%s %.2f/%.2f" % (c, np.mean([r[0] for r in rs]), np.mean([r[1] for r in rs]))
                                  for c, rs in sorted(cells.items())), flush=True)
-        return float(np.mean([r[0] for r in allr]))
+        if pairs:
+            d = np.array(pairs)
+            print("    residual, policy minus router alone, where both valid: %+.4f over %d (negative is better)"
+                  % (d.mean(), len(d)), flush=True)
+        score = float(np.mean([r[0] for r in allr]))
+        if pairs:
+            score -= float(np.mean(pairs))
+        return score
 
     best = -1.0
     evaluate("init")
@@ -185,7 +268,7 @@ def main() -> int:
                 roots, logps = layout(t, model, fc_for(t), a.temperature, rng, train=True)
                 ok, s, _ = complete(t, roots, a.layout_router_secs, a.layout_tries,
                                     90_000 + 7 * e + 100 * it)
-                r = 1.0 if ok else 0.5 * partial_score(t, roots, 91_000 + 7 * e + 100 * it)
+                r = reward_of(t, roots, ok, int(idx), e)
                 eps.append((r, logps)); wins.append(ok); secs.append(s)
             base = np.mean([r for r, _ in eps])
             for r, logps in eps:
