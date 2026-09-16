@@ -1,0 +1,157 @@
+{"corpus": "runs/small/pegasus3/corpus", "train": 90, "held_out": 30, "init": null, "episodes_per_instance": 2, "deadline": 30.0}
+  init held-out within 30s: valid 0.00  demands 0.550  episodes tried 1.8  over 30 instances
+    fill70-a2.0 0.00/4  fill70-a3.0 0.00/1  fill80-a2.0 0.00/3  fill80-a3.0 0.00/2  fill85-a2.0 0.00/2  fill85-a3.0 0.00/5  fill90-a2.0 0.00/3  fill90-a3.0 0.00/3  fill95-a2.0 0.00/5  fill95-a3.0 0.00/2
+  iter    0  train valid 0.00  demands 0.486  secs/episode 28.7
+  iter    1  train valid 0.00  demands 0.531  secs/episode 26.9
+  iter    2  train valid 0.00  demands 0.504  secs/episode 27.2
+  iter    3  train valid 0.00  demands 0.498  secs/episode 28.1
+  iter    4  train valid 0.00  demands 0.475  secs/episode 29.0
+  iter    5  train valid 0.00  demands 0.496  secs/episode 26.8
+  iter    6  train valid 0.00  demands 0.529  secs/episode 27.3
+  iter    7  train valid 0.00  demands 0.563  secs/episode 23.3
+  iter    8  train valid 0.00  demands 0.507  secs/episode 25.8
+  iter    9  train valid 0.00  demands 0.553  secs/episode 24.0
+  iter 9 held-out within 30s: valid 0.00  demands 0.556  episodes tried 1.8  over 30 instances
+    fill70-a2.0 0.00/4  fill70-a3.0 0.00/1  fill80-a2.0 0.00/3  fill80-a3.0 0.00/2  fill85-a2.0 0.00/2  fill85-a3.0 0.00/5  fill90-a2.0 0.00/3  fill90-a3.0 0.00/3  fill95-a2.0 0.00/5  fill95-a3.0 0.00/2
+  iter   10  train valid 0.00  demands 0.565  secs/episode 23.9
+  iter   11  train valid 0.00  demands 0.526  secs/episode 24.9
+  iter   12  train valid 0.00  demands 0.562  secs/episode 24.5
+  iter   13  train valid 0.00  demands 0.509  secs/episode 26.7
+  iter   14  train valid 0.00  demands 0.499  secs/episode 27.5
+  iter   15  train valid 0.00  demands 0.518  secs/episode 29.5
+  iter   16  train valid 0.00  demands 0.578  secs/episode 27.7
+  iter   17  train valid 0.00  demands 0.518  secs/episode 28.3
+  iter   18  train valid 0.00  demands 0.506  secs/episode 25.6
+  iter   19  train valid 0.00  demands 0.435  secs/episode 29.3
+  iter 19 held-out within 30s: valid 0.00  demands 0.528  episodes tried 1.2  over 30 instances
+    fill70-a2.0 0.00/4  fill70-a3.0 0.00/1  fill80-a2.0 0.00/3  fill80-a3.0 0.00/2  fill85-a2.0 0.00/2  fill85-a3.0 0.00/5  fill90-a2.0 0.00/3  fill90-a3.0 0.00/3  fill95-a2.0 0.00/5  fill95-a3.0 0.00/2
+  iter   20  train valid 0.00  demands 0.637  secs/episode 28.8
+  iter   21  train valid 0.00  demands 0.520  secs/episode 29.4
+  iter   22  train valid 0.00  demands 0.500  secs/episode 30.1
+  iter   23  train valid 0.00  demands 0.487  secs/episode 30.1
+  iter   24  train valid 0.00  demands 0.528  secs/episode 30.2
+  iter   25  train valid 0.00  demands 0.506  secs/episode 30.2
+  iter   26  train valid 0.00  demands 0.544  secs/episode 29.7
+  iter   27  train valid 0.00  demands 0.490  secs/episode 30.2
+  iter   28  train valid 0.00  demands 0.515  secs/episode 30.3
+  iter   29  train valid 0.00  demands 0.498  secs/episode 30.1
+  iter 29 held-out within 30s: valid 0.00  demands 0.435  episodes tried 1.0  over 30 instances
+    fill70-a2.0 0.00/4  fill70-a3.0 0.00/1  fill80-a2.0 0.00/3  fill80-a3.0 0.00/2  fill85-a2.0 0.00/2  fill85-a3.0 0.00/5  fill90-a2.0 0.00/3  fill90-a3.0 0.00/3  fill95-a2.0 0.00/5  fill95-a3.0 0.00/2
+  iter   30  train valid 0.00  demands 0.504  secs/episode 30.2
+  iter   31  train valid 0.00  demands 0.374  secs/episode 30.3
+  iter   32  train valid 0.00  demands 0.424  secs/episode 30.3
+  iter   33  train valid 0.00  demands 0.332  secs/episode 30.3
+  iter   34  train valid 0.00  demands 0.357  secs/episode 30.3
+  iter   35  train valid 0.00  demands 0.377  secs/episode 30.3
+  iter   36  train valid 0.00  demands 0.536  secs/episode 29.8
+  iter   37  train valid 0.00  demands 0.419  secs/episode 30.2
+  iter   38  train valid 0.00  demands 0.465  secs/episode 30.1
+  iter   39  train valid 0.00  demands 0.510  secs/episode 30.0
+  iter 39 held-out within 30s: valid 0.00  demands 0.497  episodes tried 1.0  over 30 instances
+    fill70-a2.0 0.00/4  fill70-a3.0 0.00/1  fill80-a2.0 0.00/3  fill80-a3.0 0.00/2  fill85-a2.0 0.00/2  fill85-a3.0 0.00/5  fill90-a2.0 0.00/3  fill90-a3.0 0.00/3  fill95-a2.0 0.00/5  fill95-a3.0 0.00/2
+  iter   40  train valid 0.00  demands 0.532  secs/episode 30.1
+  iter   41  train valid 0.00  demands 0.458  secs/episode 30.0
+  iter   42  train valid 0.00  demands 0.376  secs/episode 30.2
+  iter   43  train valid 0.00  demands 0.500  secs/episode 29.6
+  iter   44  train valid 0.00  demands 0.520  secs/episode 29.1
+  iter   45  train valid 0.00  demands 0.449  secs/episode 29.5
+  iter   46  train valid 0.00  demands 0.436  secs/episode 30.2
+  iter   47  train valid 0.00  demands 0.502  secs/episode 30.1
+  iter   48  train valid 0.00  demands 0.498  secs/episode 30.2
+  iter   49  train valid 0.00  demands 0.561  secs/episode 25.7
+  iter 49 held-out within 30s: valid 0.00  demands 0.496  episodes tried 1.2  over 30 instances
+    fill70-a2.0 0.00/4  fill70-a3.0 0.00/1  fill80-a2.0 0.00/3  fill80-a3.0 0.00/2  fill85-a2.0 0.00/2  fill85-a3.0 0.00/5  fill90-a2.0 0.00/3  fill90-a3.0 0.00/3  fill95-a2.0 0.00/5  fill95-a3.0 0.00/2
+  iter   50  train valid 0.00  demands 0.514  secs/episode 28.9
+  iter   51  train valid 0.00  demands 0.505  secs/episode 29.7
+  iter   52  train valid 0.00  demands 0.551  secs/episode 25.3
+  iter   53  train valid 0.00  demands 0.545  secs/episode 27.7
+  iter   54  train valid 0.00  demands 0.521  secs/episode 27.8
+  iter   55  train valid 0.00  demands 0.494  secs/episode 28.2
+  iter   56  train valid 0.00  demands 0.536  secs/episode 26.7
+  iter   57  train valid 0.00  demands 0.498  secs/episode 27.9
+  iter   58  train valid 0.00  demands 0.497  secs/episode 27.9
+  iter   59  train valid 0.00  demands 0.483  secs/episode 29.1
+  iter 59 held-out within 30s: valid 0.00  demands 0.525  episodes tried 1.5  over 30 instances
+    fill70-a2.0 0.00/4  fill70-a3.0 0.00/1  fill80-a2.0 0.00/3  fill80-a3.0 0.00/2  fill85-a2.0 0.00/2  fill85-a3.0 0.00/5  fill90-a2.0 0.00/3  fill90-a3.0 0.00/3  fill95-a2.0 0.00/5  fill95-a3.0 0.00/2
+  iter   60  train valid 0.00  demands 0.544  secs/episode 25.5
+  iter   61  train valid 0.00  demands 0.498  secs/episode 27.0
+  iter   62  train valid 0.00  demands 0.538  secs/episode 25.5
+  iter   63  train valid 0.00  demands 0.456  secs/episode 29.6
+  iter   64  train valid 0.00  demands 0.491  secs/episode 27.9
+  iter   65  train valid 0.00  demands 0.533  secs/episode 23.7
+  iter   66  train valid 0.00  demands 0.572  secs/episode 23.0
+  iter   67  train valid 0.00  demands 0.503  secs/episode 21.8
+  iter   68  train valid 0.00  demands 0.527  secs/episode 25.3
+  iter   69  train valid 0.00  demands 0.542  secs/episode 24.9
+  iter 69 held-out within 30s: valid 0.00  demands 0.538  episodes tried 1.9  over 30 instances
+    fill70-a2.0 0.00/4  fill70-a3.0 0.00/1  fill80-a2.0 0.00/3  fill80-a3.0 0.00/2  fill85-a2.0 0.00/2  fill85-a3.0 0.00/5  fill90-a2.0 0.00/3  fill90-a3.0 0.00/3  fill95-a2.0 0.00/5  fill95-a3.0 0.00/2
+  iter   70  train valid 0.00  demands 0.548  secs/episode 26.2
+  iter   71  train valid 0.00  demands 0.520  secs/episode 26.3
+  iter   72  train valid 0.00  demands 0.519  secs/episode 26.4
+  iter   73  train valid 0.00  demands 0.489  secs/episode 26.6
+  iter   74  train valid 0.00  demands 0.541  secs/episode 26.8
+  iter   75  train valid 0.00  demands 0.468  secs/episode 29.3
+  iter   76  train valid 0.00  demands 0.521  secs/episode 29.7
+  iter   77  train valid 0.00  demands 0.520  secs/episode 29.6
+  iter   78  train valid 0.00  demands 0.516  secs/episode 28.1
+  iter   79  train valid 0.00  demands 0.554  secs/episode 29.8
+  iter 79 held-out within 30s: valid 0.00  demands 0.493  episodes tried 1.1  over 30 instances
+    fill70-a2.0 0.00/4  fill70-a3.0 0.00/1  fill80-a2.0 0.00/3  fill80-a3.0 0.00/2  fill85-a2.0 0.00/2  fill85-a3.0 0.00/5  fill90-a2.0 0.00/3  fill90-a3.0 0.00/3  fill95-a2.0 0.00/5  fill95-a3.0 0.00/2
+  iter   80  train valid 0.00  demands 0.466  secs/episode 29.6
+  iter   81  train valid 0.00  demands 0.461  secs/episode 30.1
+  iter   82  train valid 0.00  demands 0.477  secs/episode 29.1
+  iter   83  train valid 0.00  demands 0.512  secs/episode 26.1
+  iter   84  train valid 0.00  demands 0.510  secs/episode 25.2
+  iter   85  train valid 0.00  demands 0.469  secs/episode 26.6
+  iter   86  train valid 0.00  demands 0.512  secs/episode 27.3
+  iter   87  train valid 0.00  demands 0.493  secs/episode 29.5
+  iter   88  train valid 0.00  demands 0.449  secs/episode 26.6
+  iter   89  train valid 0.00  demands 0.475  secs/episode 25.8
+  iter 89 held-out within 30s: valid 0.00  demands 0.510  episodes tried 1.6  over 30 instances
+    fill70-a2.0 0.00/4  fill70-a3.0 0.00/1  fill80-a2.0 0.00/3  fill80-a3.0 0.00/2  fill85-a2.0 0.00/2  fill85-a3.0 0.00/5  fill90-a2.0 0.00/3  fill90-a3.0 0.00/3  fill95-a2.0 0.00/5  fill95-a3.0 0.00/2
+  iter   90  train valid 0.00  demands 0.424  secs/episode 30.1
+  iter   91  train valid 0.00  demands 0.455  secs/episode 29.2
+  iter   92  train valid 0.00  demands 0.457  secs/episode 29.9
+  iter   93  train valid 0.00  demands 0.503  secs/episode 24.6
+  iter   94  train valid 0.00  demands 0.550  secs/episode 23.7
+  iter   95  train valid 0.00  demands 0.527  secs/episode 25.0
+  iter   96  train valid 0.00  demands 0.530  secs/episode 23.9
+  iter   97  train valid 0.00  demands 0.522  secs/episode 23.8
+  iter   98  train valid 0.00  demands 0.522  secs/episode 25.2
+  iter   99  train valid 0.00  demands 0.515  secs/episode 22.5
+  iter 99 held-out within 30s: valid 0.00  demands 0.528  episodes tried 2.0  over 30 instances
+    fill70-a2.0 0.00/4  fill70-a3.0 0.00/1  fill80-a2.0 0.00/3  fill80-a3.0 0.00/2  fill85-a2.0 0.00/2  fill85-a3.0 0.00/5  fill90-a2.0 0.00/3  fill90-a3.0 0.00/3  fill95-a2.0 0.00/5  fill95-a3.0 0.00/2
+  iter  100  train valid 0.00  demands 0.503  secs/episode 23.9
+  iter  101  train valid 0.00  demands 0.557  secs/episode 20.3
+  iter  102  train valid 0.00  demands 0.533  secs/episode 23.7
+  iter  103  train valid 0.00  demands 0.588  secs/episode 21.2
+  iter  104  train valid 0.00  demands 0.478  secs/episode 23.7
+  iter  105  train valid 0.00  demands 0.535  secs/episode 22.6
+  iter  106  train valid 0.00  demands 0.476  secs/episode 27.0
+  iter  107  train valid 0.00  demands 0.562  secs/episode 29.1
+  iter  108  train valid 0.00  demands 0.525  secs/episode 30.1
+  iter  109  train valid 0.00  demands 0.486  secs/episode 27.1
+  iter 109 held-out within 30s: valid 0.00  demands 0.522  episodes tried 1.8  over 30 instances
+    fill70-a2.0 0.00/4  fill70-a3.0 0.00/1  fill80-a2.0 0.00/3  fill80-a3.0 0.00/2  fill85-a2.0 0.00/2  fill85-a3.0 0.00/5  fill90-a2.0 0.00/3  fill90-a3.0 0.00/3  fill95-a2.0 0.00/5  fill95-a3.0 0.00/2
+  iter  110  train valid 0.00  demands 0.520  secs/episode 21.2
+  iter  111  train valid 0.00  demands 0.560  secs/episode 23.0
+  iter  112  train valid 0.00  demands 0.510  secs/episode 23.4
+  iter  113  train valid 0.00  demands 0.515  secs/episode 27.2
+  iter  114  train valid 0.00  demands 0.541  secs/episode 24.7
+  iter  115  train valid 0.00  demands 0.495  secs/episode 24.5
+  iter  116  train valid 0.00  demands 0.486  secs/episode 24.8
+  iter  117  train valid 0.00  demands 0.509  secs/episode 23.5
+  iter  118  train valid 0.00  demands 0.535  secs/episode 23.8
+  iter  119  train valid 0.00  demands 0.483  secs/episode 25.4
+  iter 119 held-out within 30s: valid 0.00  demands 0.507  episodes tried 1.4  over 30 instances
+    fill70-a2.0 0.00/4  fill70-a3.0 0.00/1  fill80-a2.0 0.00/3  fill80-a3.0 0.00/2  fill85-a2.0 0.00/2  fill85-a3.0 0.00/5  fill90-a2.0 0.00/3  fill90-a3.0 0.00/3  fill95-a2.0 0.00/5  fill95-a3.0 0.00/2
+  iter  120  train valid 0.00  demands 0.535  secs/episode 22.2
+  iter  121  train valid 0.00  demands 0.488  secs/episode 26.3
+  iter  122  train valid 0.00  demands 0.560  secs/episode 22.6
+  iter  123  train valid 0.00  demands 0.535  secs/episode 22.4
+  iter  124  train valid 0.00  demands 0.532  secs/episode 19.9
+  iter  125  train valid 0.00  demands 0.476  secs/episode 26.5
+  iter  126  train valid 0.00  demands 0.510  secs/episode 24.4
+  iter  127  train valid 0.00  demands 0.505  secs/episode 24.1
+  iter  128  train valid 0.00  demands 0.484  secs/episode 26.0
+  iter  129  train valid 0.00  demands 0.544  secs/episode 22.1
