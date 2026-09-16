@@ -19,9 +19,9 @@ never depends on memory.
 | direction 3 | adaptive allocation of reads vs uniform, real evaluator, disjoint assessment | `results/adaptive/*.log` | **done, replicated**: successive halving matches uniform at half the reads on both hosts, -0.002 [-0.008, +0.004] Zephyr and +0.002 [-0.004, +0.009] Pegasus; UCB slightly worse; random -0.11 to -0.12 |
 | curriculum baseline | anytime minorminer on Pegasus 3 and Zephyr 2 fill corpora, 12 a cell, deadlines 10 to 120 s | `results/small/*_anytime.log` | **done**: short chains from 80 percent 0 to 0.17 at 120 s with 20 to 40 attempts; medium chains 0.42 / 0.17 (Pegasus 3) and 0.75 / 0.08 (Zephyr 2) at 90 / 95 percent |
 | hybrid | policy roots then minorminer; seeded-minorminer tolerance arms | apollo `runs/seeded/*.log`, `runs/hybrid/*.log` | witness roots turn 0 into 12/12 at 80 percent short chains on both small hosts and 2/2 so far on both big hosts; policy roots and tolerance running |
-| hybrid v3, validity | fair protocol after the merge: both arms search until 60 s and select by measurement, full-host budget, curriculum hosts | apollo `runs/hybrid/v3_valid_*.log` | init (imitation policy): policy+search 0.50 vs router+search 0.47 (Pegasus 3), 0.40 vs 0.40 (Zephyr 2); short chains 0 on both; training running |
-| hybrid v3, quality | same, paired residual on a fresh block where both valid | apollo `runs/hybrid/v3_quality_*.log` | init: +0.0043 [-0.0117, +0.0186] over 14 (Pegasus 3), +0.0112 [-0.0013, +0.0229] over 12 (Zephyr 2), positive is worse; no difference at init; training running |
-| contact policy, low fill | which contacts to add: policy over contact-growth moves, reward = measured utility gain over the router's start, registered schedule; eval: policy best-of-4 vs random contact growth best-of-4 vs start, fresh block | goose `runs/contact/pegasus6.log`, `zephyr4.log` | running (post-merge) |
+| hybrid v3, validity | fair protocol: both arms search until 60 s and select by measurement, full-host budget, curriculum hosts | apollo `runs/hybrid/v3_valid_*.log` | iter 19: policy+search 0.53 vs router+search 0.47 (Pegasus 3, init), 0.50 vs 0.47 (scratch), 0.40 vs 0.40 (Zephyr 2); short chains 0 on both; no learned gain yet |
+| hybrid v3, quality | same, paired residual on a fresh block where both valid | apollo `runs/hybrid/v3_quality_*.log` | iter 19: +0.0071 [-0.0112, +0.0253] over 14 (Pegasus 3), +0.0089 [-0.0016, +0.0198] over 12 (Zephyr 2), positive is worse; no learned gain |
+| contact policy, low fill | contact growth vs random growth vs the start vs four fresh router draws, all with measured selection | goose `runs/contact/pegasus6.log`, `zephyr4.log` | Pegasus 6 control: restart minus start +0.141; random growth -0.075 and policy -0.104 below the restart control; Zephyr pending |
 | contact policy, high fill | same, starting from the planted witness at 80 to 95 percent occupancy, budget = the space left, objective = energy residual, frontier features, occupancy traced | goose `runs/contact/*_fill.log` | running (post-merge) |
 | direction 4, RL | REINFORCE on the constructive policy (policy = prioritiser), dense progress reward, STOP and RESTART masked, evaluation samples until the deadline; from scratch and initialised from the imitation prioritiser; Pegasus 3 and Zephyr 2 | apollo `runs/rl/*_scratch.log`, `runs/rl/*_init.log` | running; before the mask the imitation-initialised policy reached demand fraction 0.70 / 0.63 and validity 0, ending episodes by sampling STOP |
 | anytime 600 s | minorminer restarted until 300 and 600 s on the big fill corpora | `results/fill/*_anytime600.log` | **done**: at 600 s nothing changes but Pegasus 85 percent medium chains 0 -> 0.17; short chains stay 0 in every cell on both hosts |
@@ -382,7 +382,7 @@ intervals include zero; the large scorer is validation evidence against random, 
 over halving; the selection reference is finite-read. Every run in flight was restarted on
 the merged code; numbers from before the merge are history.
 
-## First positive number on the objective: contact growth with measured selection (partial)
+## Contact growth with measured selection: the gain was the selection, withdrawn by its control
 
 Contact policy, low fill, post-merge code (`results/contact/pegasus6.log`, `zephyr4.log`),
 p_solve under the registered schedule, 30 validation instances, best of four samples chosen
@@ -397,11 +397,14 @@ High fill, from the planted witness at 96 percent occupancy, energy residual (si
 higher is better), 16 instances: policy minus start +0.0057 [+0.0034, +0.0078] and random
 minus start +0.0061 on Pegasus 6; +0.0077 and +0.0066 on Zephyr 4.
 
-Proposing by contact growth and selecting by measurement beats the resource-first start on
-the objective on both hosts. The learned policy adds nothing over random proposals so far.
-The comparison is not yet the paper's: the start is one draw while the arms search four,
-so the control that decides the claim is four fresh router draws with the same selection
-(arm A of the A/B/C/D table), being added now.
+The control decides it (`results/contact/pegasus6_control.log`, Pegasus 6, same protocol):
+four fresh router draws selected by measurement beat the single start by +0.141 [+0.068,
++0.213]; random contact growth is -0.075 [-0.139, -0.009] below that control and the policy
+-0.104 [-0.181, -0.026] below it. The apparent gain of contact growth was the measured
+selection over four candidates, and growing one draw is worth less than drawing again,
+which the pool-ceiling result had already said. This is the twelfth withdrawn number, caught
+by the control before it was reported as a claim. The learned policy adds nothing over
+random proposals and both are below the router with restarts.
 
 ## The objective is quality; validity is the gate
 
@@ -677,6 +680,9 @@ rather than by me.
   interval containing zero. Neither measurement tests the premise: the cheaper and dearer halves
   are 43.5 and 48.9 qubits apart, a twelve percent range rather than a budget sweep. The honest
   statement is that nobody has tested it.
+- Contact growth with measured selection at +0.066 and +0.079 over the start, which was the
+  selection over four candidates: four fresh router draws with the same selection give +0.141,
+  and contact growth sits 0.08 to 0.10 below that. Withdrawn by its own control.
 - A mixed proposal pool at +0.011 and +0.021, which was sixteen measured candidates against
   eight. Withdrawn from the log before it was reported.
 - Contact growth at +0.0996 and +0.0636, which was a maximum over two draws against a start
