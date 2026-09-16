@@ -28,7 +28,7 @@ from isingfold.rl.contracts import DecisionState, Opcode
 from isingfold.rl.data.generate import load_instances
 from isingfold.rl.env import EmbeddingEnv, Mode, fixed_strength_selector
 
-from _context import construction_context
+from _context import construction_context, qubit_budget
 from candidate_features import FeatureContext
 from train_prioritiser import Prioritiser
 
@@ -51,9 +51,15 @@ def demands_realised(task, chains):
     return met / len(edges)
 
 
-def episode(task, model, fc, temperature, max_steps, rng, deadline, train=True):
-    """One construction episode with the policy as preference and as actor."""
-    ctx = construction_context(task.host.number_of_nodes(), task.logical.number_of_nodes(),
+def episode(task, model, fc, temperature, max_steps, rng, deadline, train=True,
+            qubit_cost=0.25):
+    """One construction episode with the policy as preference and as actor.
+
+    The qubit cap is the instance's budget (witness qubits with a margin), so the environment
+    refuses waste; and each sampled step pays ``qubit_cost`` per variable's share of the
+    qubits it spends, so frugality has a gradient too."""
+    witness = {v: frozenset(c) for v, c in task.witness.items()}
+    ctx = construction_context(qubit_budget(witness), task.logical.number_of_nodes(),
                                task.logical.number_of_edges())
     env = EmbeddingEnv(task, ctx, mode=Mode.CONSTRUCTION, initializer=None,
                        selector=fixed_strength_selector(), reward_reads=8)
@@ -68,6 +74,7 @@ def episode(task, model, fc, temperature, max_steps, rng, deadline, train=True):
     n_vars = max(1, task.logical.number_of_nodes())
     placed_before = sum(1 for c in env.state.chains.values() if c)
     met_before = demands_realised(task, env.state.chains)
+    used_before = sum(len(c) for c in env.state.chains.values())
     while isinstance(dec, DecisionState) and steps < max_steps and time.time() - t0 < deadline:
         chains = env.state.chains
         legal = np.asarray(dec.legal_mask, dtype=bool)
@@ -101,9 +108,11 @@ def episode(task, model, fc, temperature, max_steps, rng, deadline, train=True):
         # the end. The terminal reward for a valid COMMIT is added on top.
         placed_now = sum(1 for c in env.state.chains.values() if c)
         met_now = demands_realised(task, env.state.chains)
+        used_now = sum(len(c) for c in env.state.chains.values())
         if sampled:
-            rewards.append((placed_now - placed_before) / n_vars + (met_now - met_before))
-        placed_before, met_before = placed_now, met_now
+            rewards.append((placed_now - placed_before) / n_vars + (met_now - met_before)
+                           - qubit_cost * (used_now - used_before) / n_vars)
+        placed_before, met_before, used_before = placed_now, met_now, used_now
     valid = bool(getattr(dec, "returned_valid", False)) and not isinstance(dec, DecisionState)
     if rewards:
         rewards[-1] += 1.0 if valid else 0.0
@@ -154,7 +163,8 @@ def main() -> int:
 
     def fc_for(task):
         if task.name not in fcs:
-            fcs[task.name] = FeatureContext(task)
+            fcs[task.name] = FeatureContext(
+                task, qubit_budget({v: frozenset(c) for v, c in task.witness.items()}))
         return fcs[task.name]
 
     def evaluate(tag):

@@ -329,7 +329,7 @@ class Context:
             raise ValueError("group sizes must be distinct members of {2, 3, 4, 8}")
         allowed_quotas = {
             "quotas": {"single", "group2", "group3", "group4", "group8", "repair", "restart"},
-            "construction_quotas": {"place", "route", "grow", "rewrite", "repair", "restart"},
+            "construction_quotas": {"place", "route", "grow", "shrink", "rewrite", "repair", "restart"},
         }
         for attribute in ("quotas", "construction_quotas"):
             quota_copy = dict(getattr(self, attribute))

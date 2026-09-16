@@ -22,7 +22,7 @@ from isingfold.rl.contracts import DecisionState, Opcode
 from isingfold.rl.data.generate import load_instances
 from isingfold.rl.env import EmbeddingEnv, Mode, fixed_strength_selector
 
-from _context import construction_context
+from _context import construction_context, qubit_budget
 
 
 def consistent(cand, witness, current):
@@ -37,7 +37,7 @@ def consistent(cand, witness, current):
 
 
 def replay(task, witness, max_steps, hint, dump=None, scorer=None):
-    ctx = construction_context(task.host.number_of_nodes(), task.logical.number_of_nodes(),
+    ctx = construction_context(qubit_budget(witness), task.logical.number_of_nodes(),
                                task.logical.number_of_edges())
     first = max(witness, key=lambda v: (task.logical.degree(v), str(v)))
     seed_root = frozenset(witness[first])
@@ -119,7 +119,7 @@ def main() -> int:
         model = Prioritiser(blob["width"]); model.load_state_dict(blob["state"]); model.eval()
 
         def scorer(task, env):
-            fc = FeatureContext(task)
+            fc = FeatureContext(task, qubit_budget({v: frozenset(c) for v, c in task.witness.items()}))
 
             def prefer(v, q):
                 with torch.no_grad():

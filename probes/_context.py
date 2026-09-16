@@ -43,5 +43,14 @@ def construction_context(qubit_cap: int, n_vars: int, n_edges: int, **kw) -> Con
                    compiler_calls=int(DEFAULT_CAPS.compiler_calls * factor),
                    validator_calls=int(DEFAULT_CAPS.validator_calls * factor),
                    feature_work=int(DEFAULT_CAPS.feature_work * factor))
-    quotas = {"place": 32, "route": 16, "grow": 16}
+    quotas = {"place": 32, "route": 16, "grow": 12, "shrink": 4}
     return host_context(qubit_cap, caps=caps, construction_quotas=quotas, **kw)
+
+
+def qubit_budget(witness, slack: float = 1.10) -> int:
+    """The qubit cap for building an instance whose witness is known: the witness's qubits
+    with a margin for the router's detours. The environment refuses any action beyond it, so
+    a policy cannot fill the host and dead-end, and the budget is a control variable as the
+    advisor's section 5 asks."""
+    import math
+    return int(math.ceil(slack * sum(len(c) for c in witness.values())))

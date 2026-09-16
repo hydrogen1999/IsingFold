@@ -20,6 +20,7 @@ import torch
 import torch.nn as nn
 from isingfold.rl.data.generate import load_instances
 
+from _context import qubit_budget
 from candidate_features import WIDTH, FeatureContext
 
 
@@ -43,7 +44,8 @@ def featurise(records, tasks_by_name, limit_per_task=0):
             continue
         counts[name] = counts.get(name, 0) + 1
         if name not in ctxs:
-            ctxs[name] = FeatureContext(tasks_by_name[name])
+            t = tasks_by_name[name]
+            ctxs[name] = FeatureContext(t, qubit_budget({v: frozenset(c) for v, c in t.witness.items()}))
         fc = ctxs[name]
         chains = {v: frozenset(c) for v, c in r["chains"].items()}
         feats = np.stack([fc.candidate(c, chains) for c in r["candidates"]])

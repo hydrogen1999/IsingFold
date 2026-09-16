@@ -453,6 +453,59 @@ class ProposalGenerator:
                 )
         return out
 
+    def _shrink(
+        self,
+        chains: Mapping[Node, frozenset[Qubit]],
+        budget: int,
+        meter: WorkMeter,
+    ) -> list[tuple[Candidate, int]]:
+        """Bind one placed chain with one qubit removed, as a REWRITE_ONE.
+
+        The only action that returns a qubit to the host. A qubit may go if the chain stays
+        connected and every demand the chain realises now is still realised without it.
+        Without this, every route and growth is irreversible, and a policy that misplaces
+        fills the host and ends with nothing legal but STOP, which is how the first
+        imitation-initialised episodes ended: zero free qubits at 83 percent of demands.
+        """
+        out: list[tuple[Candidate, int]] = []
+        placed = sorted((v for v, c in chains.items() if len(c) >= 2), key=str)
+        if not placed:
+            return out
+        start = sum(len(c) for c in chains.values()) % len(placed)
+        placed = placed[start:] + placed[:start]
+        for v in placed:
+            chain = chains[v]
+            others = [(u, chains[u]) for u in self.logical.neighbors(v) if chains.get(u)]
+            met_now = [
+                u for u, oc in others
+                if any(self.host.has_edge(q, r) for q in chain for r in oc)
+            ]
+            for q in sorted(chain, key=str):
+                rest = chain - {q}
+                if not nx.is_connected(self.host.subgraph(rest)):
+                    continue
+                if any(
+                    not any(self.host.has_edge(a, r) for a in rest for r in chains[u])
+                    for u in met_now
+                ):
+                    continue
+                if len(out) >= budget or not meter.can_charge(1):
+                    return out
+                proposal_work = meter.charge(1)
+                out.append(
+                    (
+                        self._make(
+                            Opcode.REWRITE_ONE,
+                            chains,
+                            {v: frozenset(rest)},
+                            proposal_work=proposal_work,
+                            provenance=f"shrink:{v}:{q}",
+                        ),
+                        1,
+                    )
+                )
+        return out
+
     def _route_demands(
         self,
         chains: Mapping[Node, frozenset[Qubit]],
@@ -1089,6 +1142,7 @@ class ProposalGenerator:
             families.append(("place", lambda budget: self._place(chains, budget, meter)))
             families.append(("route", lambda budget: self._route_demands(chains, budget, meter)))
             families.append(("grow", lambda budget: self._grow(chains, budget, meter)))
+            families.append(("shrink", lambda budget: self._shrink(chains, budget, meter)))
             # Ordinary rewrites cannot empty a chain, so defer them until every variable
             # has been placed.  Repair remains useful once a selected defect is bound.
             if not empty:

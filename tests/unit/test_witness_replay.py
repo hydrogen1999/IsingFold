@@ -61,11 +61,11 @@ def _consistent(cand, witness, current):
 
 
 def replay(task, witness, max_steps=400, hint=False):
-    from _context import construction_context
+    from _context import construction_context, qubit_budget
     from isingfold.rl.contracts import DecisionState, Opcode
     from isingfold.rl.env import EmbeddingEnv, Mode, fixed_strength_selector
 
-    ctx = construction_context(task.host.number_of_nodes(), task.logical.number_of_nodes(),
+    ctx = construction_context(qubit_budget(witness), task.logical.number_of_nodes(),
                                task.logical.number_of_edges())
     first = max(witness, key=lambda v: (task.logical.degree(v), str(v)))
     seed_root = frozenset(witness[first])

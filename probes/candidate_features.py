@@ -11,14 +11,15 @@ from space_features import residual_graph
 from successor_scorer import native_coordinates, parse_host_name
 
 OPCODES = ("PLACE", "ROUTE", "REWRITE_ONE", "COMMIT", "OTHER")
-WIDTH = 5 + 4 + 5 + 5 + 5 + 6
+WIDTH = 5 + 4 + 5 + 5 + 5 + 6 + 2
 
 
 class FeatureContext:
     """Per-instance constants and a per-state cache, so a step's candidates share work."""
 
-    def __init__(self, task):
+    def __init__(self, task, budget=None):
         self.task = task
+        self.budget = float(budget) if budget else float(task.host.number_of_nodes())
         self.host = task.host
         self.logical = task.logical
         try:
@@ -96,6 +97,10 @@ class FeatureContext:
         else:
             off = 0.0
         f += c0[:5] + [off / 4.0]
+        # budget: what this candidate spends against what is left
+        used = sum(len(c) for c in placed.values())
+        n_vars = max(1, self.logical.number_of_nodes())
+        f += [(used + len(qubits)) / self.budget, (self.budget - used - len(qubits)) / n_vars]
         f = f[:WIDTH] + [0.0] * (WIDTH - len(f))
         return np.asarray(f, dtype=np.float32)
 
