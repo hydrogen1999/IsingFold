@@ -1,0 +1,135 @@
+{"corpus": "runs/small/zephyr2/corpus", "instances": 120, "deadline": 60.0, "tries": 10}
+    1/120 zephyr2-fill70-a3.0-0      none valid    5s | half valid    0s | quarter valid    0s | noisy valid    0s
+    2/120 zephyr2-fill70-a3.0-1      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+    3/120 zephyr2-fill70-a3.0-2      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+    4/120 zephyr2-fill70-a3.0-3      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+    5/120 zephyr2-fill70-a3.0-4      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+    6/120 zephyr2-fill70-a3.0-5      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+    7/120 zephyr2-fill70-a3.0-6      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+    8/120 zephyr2-fill70-a3.0-7      none valid    2s | half valid    0s | quarter valid    0s | noisy valid    0s
+    9/120 zephyr2-fill70-a3.0-8      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   10/120 zephyr2-fill70-a3.0-9      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   11/120 zephyr2-fill70-a3.0-10     none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   12/120 zephyr2-fill70-a3.0-11     none valid    1s | half valid    0s | quarter valid    0s | noisy valid    0s
+   13/120 zephyr2-fill70-a2.0-0      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   14/120 zephyr2-fill70-a2.0-1      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   15/120 zephyr2-fill70-a2.0-2      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   16/120 zephyr2-fill70-a2.0-3      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   17/120 zephyr2-fill70-a2.0-4      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   18/120 zephyr2-fill70-a2.0-5      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   19/120 zephyr2-fill70-a2.0-6      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   20/120 zephyr2-fill70-a2.0-7      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   21/120 zephyr2-fill70-a2.0-8      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   22/120 zephyr2-fill70-a2.0-9      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   23/120 zephyr2-fill70-a2.0-10     none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   24/120 zephyr2-fill70-a2.0-11     none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   25/120 zephyr2-fill80-a3.0-0      none no      60s | half valid    0s | quarter no      60s | noisy valid   10s
+   26/120 zephyr2-fill80-a3.0-1      none no      60s | half valid    3s | quarter no      60s | noisy no      60s
+   27/120 zephyr2-fill80-a3.0-2      none no      60s | half valid    0s | quarter valid   12s | noisy no      60s
+   28/120 zephyr2-fill80-a3.0-3      none no      60s | half no      61s | quarter no      60s | noisy no      61s
+   29/120 zephyr2-fill80-a3.0-4      none no      61s | half valid    1s | quarter no      60s | noisy no      61s
+   30/120 zephyr2-fill80-a3.0-5      none no      60s | half valid    0s | quarter no      60s | noisy no      61s
+   31/120 zephyr2-fill80-a3.0-6      none valid   54s | half valid    2s | quarter valid   17s | noisy valid   20s
+   32/120 zephyr2-fill80-a3.0-7      none no      60s | half valid    2s | quarter no      61s | noisy no      60s
+   33/120 zephyr2-fill80-a3.0-8      none no      61s | half valid    2s | quarter no      61s | noisy no      61s
+   34/120 zephyr2-fill80-a3.0-9      none no      60s | half valid    1s | quarter valid   39s | noisy no      61s
+   35/120 zephyr2-fill80-a3.0-10     none no      61s | half valid    2s | quarter no      61s | noisy no      61s
+   36/120 zephyr2-fill80-a3.0-11     none no      61s | half valid   19s | quarter no      60s | noisy no      61s
+   37/120 zephyr2-fill80-a2.0-0      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   38/120 zephyr2-fill80-a2.0-1      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   39/120 zephyr2-fill80-a2.0-2      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   40/120 zephyr2-fill80-a2.0-3      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   41/120 zephyr2-fill80-a2.0-4      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   42/120 zephyr2-fill80-a2.0-5      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   43/120 zephyr2-fill80-a2.0-6      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   44/120 zephyr2-fill80-a2.0-7      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   45/120 zephyr2-fill80-a2.0-8      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   46/120 zephyr2-fill80-a2.0-9      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   47/120 zephyr2-fill80-a2.0-10     none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   48/120 zephyr2-fill80-a2.0-11     none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   49/120 zephyr2-fill85-a3.0-0      none no      61s | half no      60s | quarter no      61s | noisy no      61s
+   50/120 zephyr2-fill85-a3.0-1      none no      61s | half no      61s | quarter no      60s | noisy no      61s
+   51/120 zephyr2-fill85-a3.0-2      none no      61s | half no      60s | quarter no      60s | noisy no      61s
+   52/120 zephyr2-fill85-a3.0-3      none no      61s | half no      60s | quarter no      60s | noisy no      61s
+   53/120 zephyr2-fill85-a3.0-4      none no      60s | half no      60s | quarter no      61s | noisy no      60s
+   54/120 zephyr2-fill85-a3.0-5      none no      60s | half valid    1s | quarter valid   13s | noisy valid   32s
+   55/120 zephyr2-fill85-a3.0-6      none no      61s | half no      60s | quarter no      61s | noisy no      60s
+   56/120 zephyr2-fill85-a3.0-7      none no      61s | half no      60s | quarter no      60s | noisy no      60s
+   57/120 zephyr2-fill85-a3.0-8      none no      60s | half no      61s | quarter no      61s | noisy no      60s
+   58/120 zephyr2-fill85-a3.0-9      none no      60s | half valid   16s | quarter no      60s | noisy no      60s
+   59/120 zephyr2-fill85-a3.0-10     none no      60s | half no      60s | quarter no      60s | noisy no      60s
+   60/120 zephyr2-fill85-a3.0-11     none no      60s | half no      60s | quarter no      60s | noisy no      61s
+   61/120 zephyr2-fill85-a2.0-0      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   62/120 zephyr2-fill85-a2.0-1      none valid    2s | half valid    0s | quarter valid    0s | noisy valid    0s
+   63/120 zephyr2-fill85-a2.0-2      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   64/120 zephyr2-fill85-a2.0-3      none valid    1s | half valid    0s | quarter valid    0s | noisy valid    1s
+   65/120 zephyr2-fill85-a2.0-4      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   66/120 zephyr2-fill85-a2.0-5      none valid   37s | half valid    6s | quarter valid   35s | noisy valid    6s
+   67/120 zephyr2-fill85-a2.0-6      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   68/120 zephyr2-fill85-a2.0-7      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   69/120 zephyr2-fill85-a2.0-8      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   70/120 zephyr2-fill85-a2.0-9      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   71/120 zephyr2-fill85-a2.0-10     none valid    1s | half valid    0s | quarter valid    0s | noisy valid    0s
+   72/120 zephyr2-fill85-a2.0-11     none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   73/120 zephyr2-fill90-a3.0-0      none no      61s | half no      60s | quarter no      61s | noisy no      61s
+   74/120 zephyr2-fill90-a3.0-1      none no      60s | half no      61s | quarter no      61s | noisy no      61s
+   75/120 zephyr2-fill90-a3.0-2      none no      61s | half no      60s | quarter no      60s | noisy no      61s
+   76/120 zephyr2-fill90-a3.0-3      none no      60s | half no      60s | quarter no      60s | noisy no      61s
+   77/120 zephyr2-fill90-a3.0-4      none no      60s | half no      60s | quarter no      61s | noisy no      60s
+   78/120 zephyr2-fill90-a3.0-5      none no      60s | half no      61s | quarter no      61s | noisy no      61s
+   79/120 zephyr2-fill90-a3.0-6      none no      61s | half no      61s | quarter no      60s | noisy no      60s
+   80/120 zephyr2-fill90-a3.0-7      none no      60s | half no      60s | quarter no      60s | noisy no      60s
+   81/120 zephyr2-fill90-a3.0-8      none no      60s | half no      60s | quarter no      60s | noisy no      61s
+   82/120 zephyr2-fill90-a3.0-9      none no      60s | half no      60s | quarter no      61s | noisy no      61s
+   83/120 zephyr2-fill90-a3.0-10     none no      61s | half no      61s | quarter no      60s | noisy no      60s
+   84/120 zephyr2-fill90-a3.0-11     none no      61s | half no      60s | quarter no      61s | noisy no      61s
+   85/120 zephyr2-fill90-a2.0-0      none valid    1s | half valid    0s | quarter valid    0s | noisy valid    1s
+   86/120 zephyr2-fill90-a2.0-1      none no      60s | half valid    2s | quarter no      60s | noisy no      61s
+   87/120 zephyr2-fill90-a2.0-2      none valid    1s | half valid    0s | quarter valid    0s | noisy valid    0s
+   88/120 zephyr2-fill90-a2.0-3      none no      61s | half valid    2s | quarter valid    2s | noisy valid   56s
+   89/120 zephyr2-fill90-a2.0-4      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   90/120 zephyr2-fill90-a2.0-5      none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   91/120 zephyr2-fill90-a2.0-6      none no      60s | half valid    1s | quarter valid    9s | noisy valid    7s
+   92/120 zephyr2-fill90-a2.0-7      none no      60s | half valid   16s | quarter no      61s | noisy no      61s
+   93/120 zephyr2-fill90-a2.0-8      none valid    2s | half valid    1s | quarter valid    1s | noisy valid    6s
+   94/120 zephyr2-fill90-a2.0-9      none valid    4s | half valid    0s | quarter valid    1s | noisy valid    1s
+   95/120 zephyr2-fill90-a2.0-10     none valid    0s | half valid    0s | quarter valid    0s | noisy valid    0s
+   96/120 zephyr2-fill90-a2.0-11     none valid    5s | half valid    0s | quarter valid    2s | noisy valid    3s
+   97/120 zephyr2-fill95-a3.0-0      none no      60s | half no      60s | quarter no      61s | noisy no      61s
+   98/120 zephyr2-fill95-a3.0-1      none no      61s | half no      60s | quarter no      60s | noisy no      60s
+   99/120 zephyr2-fill95-a3.0-2      none no      61s | half no      60s | quarter no      60s | noisy no      61s
+  100/120 zephyr2-fill95-a3.0-3      none no      61s | half no      61s | quarter no      60s | noisy no      61s
+  101/120 zephyr2-fill95-a3.0-4      none no      61s | half no      60s | quarter no      61s | noisy no      61s
+  102/120 zephyr2-fill95-a3.0-5      none no      61s | half no      60s | quarter no      61s | noisy no      61s
+  103/120 zephyr2-fill95-a3.0-6      none no      60s | half no      60s | quarter no      60s | noisy no      61s
+  104/120 zephyr2-fill95-a3.0-7      none no      60s | half no      60s | quarter no      60s | noisy no      60s
+  105/120 zephyr2-fill95-a3.0-8      none no      60s | half no      60s | quarter no      61s | noisy no      61s
+  106/120 zephyr2-fill95-a3.0-9      none no      60s | half no      60s | quarter no      61s | noisy no      61s
+  107/120 zephyr2-fill95-a3.0-10     none no      61s | half no      60s | quarter no      61s | noisy no      61s
+  108/120 zephyr2-fill95-a3.0-11     none no      61s | half no      61s | quarter no      60s | noisy no      61s
+  109/120 zephyr2-fill95-a2.0-0      none no      60s | half valid    2s | quarter no      61s | noisy no      61s
+  110/120 zephyr2-fill95-a2.0-1      none no      60s | half no      60s | quarter no      61s | noisy no      60s
+  111/120 zephyr2-fill95-a2.0-2      none valid   54s | half valid    2s | quarter valid    6s | noisy valid    3s
+  112/120 zephyr2-fill95-a2.0-3      none no      60s | half no      60s | quarter no      61s | noisy no      61s
+  113/120 zephyr2-fill95-a2.0-4      none no      60s | half no      60s | quarter no      61s | noisy no      61s
+  114/120 zephyr2-fill95-a2.0-5      none no      60s | half no      61s | quarter no      61s | noisy no      61s
+  115/120 zephyr2-fill95-a2.0-6      none no      60s | half no      60s | quarter no      61s | noisy no      60s
+  116/120 zephyr2-fill95-a2.0-7      none no      60s | half no      60s | quarter no      60s | noisy no      60s
+  117/120 zephyr2-fill95-a2.0-8      none no      60s | half no      60s | quarter no      60s | noisy no      61s
+  118/120 zephyr2-fill95-a2.0-9      none no      60s | half no      60s | quarter no      61s | noisy no      61s
+  119/120 zephyr2-fill95-a2.0-10     none valid   21s | half valid    1s | quarter valid    2s | noisy valid    4s
+  120/120 zephyr2-fill95-a2.0-11     none no      60s | half no      60s | quarter no      60s | noisy no      60s
+
+  cell               n      none      half   quarter     noisy    s:none  s:half s:quart s:noisy
+  fill70-a2.0       12      1.00      1.00      1.00      1.00         0       0       0       0
+  fill70-a3.0       12      1.00      1.00      1.00      1.00         1       0       0       0
+  fill80-a2.0       12      1.00      1.00      1.00      1.00         0       0       0       0
+  fill80-a3.0       12      0.08      0.92      0.25      0.17        60       8      51      53
+  fill85-a2.0       12      1.00      1.00      1.00      1.00         3       1       3       1
+  fill85-a3.0       12      0.00      0.17      0.08      0.08        61      52      56      58
+  fill90-a2.0       12      0.67      1.00      0.83      0.83        21       2      11      16
+  fill90-a3.0       12      0.00      0.00      0.00      0.00        60      60      60      61
+  fill95-a2.0       12      0.17      0.25      0.17      0.17        56      46      51      51
+  fill95-a3.0       12      0.00      0.00      0.00      0.00        61      60      61      61
+
+SEEDED MINORMINER DONE

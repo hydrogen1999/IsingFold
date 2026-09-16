@@ -351,10 +351,17 @@ quarter, one-step-noisy witness roots) and what the current PLACE-only policy's 
 worth (`runs/hybrid/*.log`); its first lines show it placing every variable in seconds and
 agreeing with the witness on almost none.
 
-Tolerance of the completion (`runs/seeded/*_tolerance.log`, 80 percent short chains): with
-the witness roots of a random half of the variables, 10/10 on Pegasus 3 and 7/8 on Zephyr 2;
-with a quarter, 5/10 and 2/8; with every root moved one step, 5/10 and 2/8; unseeded 2/10 and
-1/8. Half of the roots right is enough. The imitation prioritiser's PLACE-only roots, one greedy layout, are
+Tolerance of the completion (`results/seeded/*_tolerance.log`, short chains, 12 a cell, 60 s):
+
+    fill        none    half   quarter   noisy      none    half   quarter   noisy
+                ---- Pegasus 3 ----                        ---- Zephyr 2 ----
+    80 percent  0.25    1.00    0.50     0.58       0.08    0.92    0.25     0.17
+    85 percent  0.00    0.67    0.08     0.00       0.00    0.17    0.08     0.08
+    90 percent  0.00    0.25    0.08     0.00       0.00    0.00    0.00     0.00
+    95 percent  0.00    0.00    0.00     0.00       0.00    0.00    0.00     0.00
+
+Half of the roots right is enough at 80 percent and the requirement tightens with fill: at
+90 to 95 percent nearly all roots must be right. The imitation prioritiser's PLACE-only roots, one greedy layout, are
 worth nothing (`results/hybrid/pegasus3.log`, `zephyr2.log`: per cell equal to the unseeded router, with the witness roots at 1.00 in every cell), and agreement with one
 witness is the wrong measure since the witness is one of many symmetric layouts: minorminer
 needs a globally consistent layout, which a locally trained scorer does not give. So the
