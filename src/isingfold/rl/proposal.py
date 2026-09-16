@@ -356,6 +356,62 @@ class ProposalGenerator:
                 )
         return out
 
+    def _grow(
+        self,
+        chains: Mapping[Node, frozenset[Qubit]],
+        budget: int,
+        meter: WorkMeter,
+    ) -> list[tuple[Candidate, int]]:
+        """Bind one placed chain grown by one adjacent free qubit, as a REWRITE_ONE.
+
+        Construction needs it: a ROUTE may only add qubits that realise a demand between two
+        placed chains, so a chain's further qubits, which unplaced neighbours will need to
+        touch, could otherwise never appear before those neighbours are placed, and they
+        cannot be placed before the qubits exist. Chains with the most unplaced logical
+        neighbours come first, rotated with the state so no chain holds the budget.
+        """
+        out: list[tuple[Candidate, int]] = []
+        occupied = _occupancy_excluding(chains, set())
+        placed = [v for v, c in chains.items() if c]
+        if not placed:
+            return out
+
+        def unplaced_neighbours(v):
+            return sum(1 for u in self.logical.neighbors(v) if not chains.get(u))
+
+        placed = [v for v in placed if unplaced_neighbours(v) > 0]
+        if not placed:
+            return out
+        placed.sort(key=lambda v: (-unplaced_neighbours(v), str(v)))
+        start = sum(len(c) for c in chains.values()) % len(placed)
+        placed = placed[start:] + placed[:start]
+        for v in placed:
+            chain = chains[v]
+            free = sorted(
+                {r for q in chain for r in self.host.neighbors(q) if occupied.get(r, 0) == 0},
+                key=str,
+            )
+            scan = sum(self.host.degree(q) for q in chain)
+            for r in free:
+                if len(out) >= budget or not meter.can_charge(scan):
+                    return out
+                anchor = next(q for q in sorted(chain, key=str) if self.host.has_edge(q, r))
+                proposal_work = meter.charge(scan)
+                out.append(
+                    (
+                        self._make(
+                            Opcode.REWRITE_ONE,
+                            chains,
+                            {v: frozenset(set(chain) | {r})},
+                            routes=(((anchor, r), v),),
+                            proposal_work=proposal_work,
+                            provenance=f"grow:{v}:{r}",
+                        ),
+                        scan,
+                    )
+                )
+        return out
+
     def _route_demands(
         self,
         chains: Mapping[Node, frozenset[Qubit]],
@@ -971,6 +1027,7 @@ class ProposalGenerator:
             empty = any(not chain for chain in chains.values())
             families.append(("place", lambda budget: self._place(chains, budget, meter)))
             families.append(("route", lambda budget: self._route_demands(chains, budget, meter)))
+            families.append(("grow", lambda budget: self._grow(chains, budget, meter)))
             # Ordinary rewrites cannot empty a chain, so defer them until every variable
             # has been placed.  Repair remains useful once a selected defect is bound.
             if not empty:

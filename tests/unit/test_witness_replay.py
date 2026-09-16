@@ -51,7 +51,7 @@ def _consistent(cand, witness, current):
     if cand.opcode is Opcode.PLACE:
         (v, chain), = cand.new_chains.items()
         return chain <= witness[v]
-    if cand.opcode is Opcode.ROUTE:
+    if cand.opcode in (Opcode.ROUTE, Opcode.REWRITE_ONE):
         return all(chain <= witness[v] for v, chain in cand.new_chains.items())
     if cand.opcode is Opcode.COMMIT:
         # Every chain placed and inside its witness chain; the environment only offers
@@ -68,7 +68,7 @@ def replay(task, witness, max_steps=400):
     ctx = construction_context(task.host.number_of_nodes(), task.logical.number_of_nodes(),
                                task.logical.number_of_edges())
     first = max(witness, key=lambda v: (task.logical.degree(v), str(v)))
-    seed_root = frozenset({min(witness[first], key=str)})
+    seed_root = frozenset(witness[first])
 
     def start(logical, host, seed):
         return {first: seed_root}
