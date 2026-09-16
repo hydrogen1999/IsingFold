@@ -16,7 +16,7 @@ never depends on memory.
 | Task 10 | anytime minorminer with a wall-time deadline, 30 to 300 s | `results/fill/*_anytime.log` | **done** both hosts: Zephyr at 300 s medium chains 1.00 / 0.83 / 0.33 / 0 at 80 / 85 / 90 / 95 percent, short chains 0; Pegasus only 80 percent medium reaches 1.00, every other cell 0 at every deadline. ADR-003's three gates are passed on both hosts |
 | budget x20 | minorminer at 200 tries on the fill corpora | `results/fill/*_budget.log` | **done** both hosts: Pegasus 80 percent medium 0.33 -> 0.83 -> 1.00 at 10, 50, 200 tries, 85 percent 0 -> 0.17 -> 0.17, everything else 0 at 300 to 480 s a draw; Zephyr done: 85 percent medium chains 0.50 -> 0.67 -> 0.83 at 10, 50, 200 tries; 90 percent stays 0.33; short chains stay 0 at 260 to 350 s a draw |
 | Task 12 | witness replay through the construction API | `tests/unit/test_witness_replay.py`, apollo `runs/fill/*_replay_{nohint,hint}.log` | grammar sufficient at scale with the witness as prioritiser (first Zephyr instance, 366 variables: valid in 445 decisions, 267 s); unhinted heuristic order covers almost nothing; full corpus replay running |
-| direction 3 | adaptive allocation of reads vs uniform, real evaluator, disjoint assessment | `results/adaptive/zephyr4.log`; Pegasus running on goose | Zephyr **done**: successive halving matches uniform at half the reads, -0.002 [-0.008, +0.004]; UCB -0.007; random -0.123 |
+| direction 3 | adaptive allocation of reads vs uniform, real evaluator, disjoint assessment | `results/adaptive/*.log` | **done, replicated**: successive halving matches uniform at half the reads on both hosts, -0.002 [-0.008, +0.004] Zephyr and +0.002 [-0.004, +0.009] Pegasus; UCB slightly worse; random -0.11 to -0.12 |
 | direction 4, RL | REINFORCE on the constructive policy (policy = prioritiser), from scratch, Pegasus 3 and Zephyr 2 fill corpora, deadline 60 s an episode; anytime baseline on the same corpora at 10 to 120 s | apollo `runs/rl/*_scratch.log`, goose `runs/small/*_anytime.log` | running |
 | direction 5 | labels on the 2400-instance Pegasus 6 corpus for the data-scale test | goose corpus `runs/large/`, apollo `runs/large/labels.log` | corpus done in 5 minutes; labelling running |
 
@@ -284,7 +284,12 @@ candidate assessed on 512 independent reads (`results/adaptive/zephyr4.log`):
     UCB, blocks of 32         772       0.4972          -0.0071 [-0.0148, -0.0002]
     random, no reads            0       0.3809          -0.1234 [-0.1617, -0.0856]
 
-Successive halving reaches the quality of uniform selection with half the measurement. This
+Pegasus 6, 61 states in 32 lineages (`results/adaptive/pegasus6.log`): uniform 1574 reads
+0.4456; halving 775 reads 0.4477, +0.0021 [-0.0042, +0.0088]; UCB 787 reads -0.0048
+[-0.0133, +0.0047]; random 0.3338, -0.1118.
+
+Successive halving reaches the quality of uniform selection with half the measurement, on
+both current topologies. This
 is the first positive result of the relaunch, and it is the measured-selection finding made
 into a mechanism: the reads that decide are the ones spent on the contenders. A learned
 prior over candidates can only be judged against this, not against uniform.

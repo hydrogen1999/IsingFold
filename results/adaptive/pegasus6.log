@@ -1,0 +1,16 @@
+{"cache": "runs/relabel/pegasus6_registered.pkl", "split": "eval", "lineages": 32, "states": 61, "reads": 256, "block": 32, "beta_range": [0.1, 2.0]}
+  10/61 states, 466 evaluator calls, 505s
+  20/61 states, 919 evaluator calls, 1003s
+  30/61 states, 1354 evaluator calls, 1744s
+  40/61 states, 1781 evaluator calls, 2437s
+  50/61 states, 2199 evaluator calls, 3114s
+  60/61 states, 2625 evaluator calls, 3786s
+
+  61 states in 32 lineages, assessed on 512 independent reads
+  arm             reads    quality  minus uniform, 95% over lineages
+  uniform          1574     0.4456  +0.0000 [+0.0000, +0.0000]
+  halving           775     0.4477  +0.0021 [-0.0042, +0.0088]
+  ucb               787     0.4408  -0.0048 [-0.0133, +0.0047]
+  random              0     0.3338  -0.1118 [-0.1517, -0.0748]
+
+ADAPTIVE ALLOCATION DONE
