@@ -159,11 +159,13 @@ def test_main_smoke_records_occupancy_and_validation_checkpoint(monkeypatch, tmp
     # A fresh assessment stream cannot accidentally reuse a selection stream.
     assert not ({seed for seed, reads, _ in calls if reads == 2} &
                 {seed for seed, reads, _ in calls if reads == 3})
-    # Each of two validation calls has K=2 grown candidates for each of two arms.
+    # Each of two validation calls has K=2 candidates for each of three arms: policy and
+    # random grow the start by one qubit, the restart control draws the router afresh
+    # (the smoke router returns nothing, so its candidates are the two-qubit start).
     # The supplied start is evaluated only as a separate assessment reference.
     for t in tasks:
         for candidate in range(2):
             seed = probe.block_seed(0, "validation-selection", t.name, candidate)
             matching = [used for observed, reads, used in calls if observed == seed]
             if matching:  # Only the held-out representative is evaluated.
-                assert len(matching) == 4 and matching == [3, 3, 3, 3]
+                assert len(matching) == 6 and matching == [3, 3, 2, 3, 3, 2]
