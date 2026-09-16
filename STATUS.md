@@ -8,6 +8,14 @@ never depends on memory.
 
 ## Board, 2026-09-15
 
+Update from the `cf31efc` source audit: the contact restart numbers below are **initial,
+pre-training evaluations**. They withdraw the weak single-start comparison; they do not
+establish the outcome of converged training. The opt-in layout-v4 implementation removes
+demonstrated support/feature barriers and adds isolated ablations, a value baseline and a
+training-only feasible-root-set teacher. Verification is in
+`results/audit/layout_v4_unit.log`; design and commands are in
+`docs/review/2026-09-16-layout-v4.md`. No new downstream benchmark gain is claimed.
+
 | task | what it decides | host, log | state |
 |---|---|---|---|
 | Task 7 | old vs corrected encoding on identical labels, 3 seeds each, both hosts | `results/corrected/*_seed*.log` | **done, Checkpoint 2 failed**: corrected +0.003 Pegasus, +0.035 Zephyr; legacy +0.012, +0.041; no corrected interval above zero; the improvement surrogate is retired as a method |
@@ -397,16 +405,18 @@ High fill, from the planted witness at 96 percent occupancy, energy residual (si
 higher is better), 16 instances: policy minus start +0.0057 [+0.0034, +0.0078] and random
 minus start +0.0061 on Pegasus 6; +0.0077 and +0.0066 on Zephyr 4.
 
-The control decides it (`results/contact/pegasus6_control.log`, Pegasus 6, same protocol):
+The initial control (`results/contact/pegasus6_control.log`, Pegasus 6, same protocol):
 four fresh router draws selected by measurement beat the single start by +0.141 [+0.068,
 +0.213]; random contact growth is -0.075 [-0.139, -0.009] below that control and the policy
 -0.104 [-0.181, -0.026] below it. Zephyr 4 (`results/contact/zephyr4_control.log`) says the
 same: restart minus start +0.139 [+0.084, +0.192], random -0.060 [-0.102, -0.019] and policy
--0.063 [-0.111, -0.016] below the restart control. The apparent gain of contact growth was the measured
-selection over four candidates, and growing one draw is worth less than drawing again,
-which the pool-ceiling result had already said. This is the twelfth withdrawn number, caught
-by the control before it was reported as a claim. The learned policy adds nothing over
-random proposals and both are below the router with restarts.
+-0.063 [-0.111, -0.016] below the restart control. At this initial checkpoint, growth of
+one supplied draw loses to fresh draws plus selection. This withdraws the interpretation
+of growth-versus-start as learned superiority. The control files then record only 3 and
+12 training iterations, with no later validation: converged-policy performance remains
+open. The restart implementation also substituted the supplied start on router failure;
+layout-v4 removes that fallback and records coverage. These historical logs are unchanged
+and require a rerun before serving as evidence for the corrected control.
 
 ## The objective is quality; validity is the gate
 

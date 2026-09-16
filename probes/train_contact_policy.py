@@ -8,19 +8,23 @@ candidate (variable, qubit) pairs; the reward is the measured utility of the gro
 embedding minus the start's, under the registered schedule, on an independent block.
 REINFORCE uses a leave-one-out instance baseline and the sum of trajectory log probabilities.
 
-Validation on disjoint lineages, matched reads: policy best of K candidates selected by a
+Validation on disjoint lineages, matched read caps: policy best of K candidates selected by a
 measurement block, random contact growth best of K the same way, and the start, all
 assessed on a fresh block. Policy minus random is the learned contribution; both minus the
 start is what the spend is worth at all. Both candidate pools contain K growth proposals;
 the unchanged start is assessed separately as a reference and is never added as a fallback
 candidate. Failed arm evaluations receive the declared failure penalty rather than being
-dropped. This is a training/continuation diagnostic from a supplied valid state, not an
+dropped. A failed restart remains a failed proposal, never the supplied start, and consumes
+one of the K attempts without receiving replacement draws or recycled measurement reads.
+The protocol records actual read calls and timings; it does not match wall time.
+This is a training/continuation diagnostic from a supplied valid state, not an
 end-to-end embedder evaluation: deployed embedding construction must begin from empty.
 Witness starts are allowed only for learning or controlled diagnostics. Checkpoint selection
 uses validation, not an untouched final test. Witness fill describes actual starting occupancy
 only when --start=witness; requested generator fill alone is not an occupancy measurement.
 """
 import argparse, hashlib, json, os, sys
+import time
 from collections import defaultdict
 from pathlib import Path
 
@@ -82,21 +86,40 @@ def reinforce_loss(episodes):
     return torch.stack(losses).mean() if losses else None
 
 
-def select_and_assess(candidates, measure, select_seed, assess_seed, baseline, penalty, cap):
-    """Keep failed candidates in the attempted count; score an all-failed arm explicitly."""
+def select_and_assess(candidates, measure, select_seed, assess_seed, baseline, penalty, cap,
+                      *, accounting=None):
+    """Keep failed attempts and their seed slots; never measure or replace a missing proposal.
+
+    Optional accounting counts measurement *calls*, including unsuccessful measurements.
+    Skipped candidates consume an attempt but no read calls, with no budget reallocation.
+    """
+    counts = {"candidate_attempts": len(candidates), "unavailable_candidates": 0,
+              "over_cap_candidates": 0, "selection_calls": 0,
+              "selection_successes": 0, "assessment_calls": 0, "assessment_failures": 0}
+    if accounting is not None:
+        accounting.update(counts)
+        counts = accounting
     measured = []
     for index, chains in enumerate(candidates):
-        if sum(len(c) for c in chains.values()) > cap:
+        if not chains:
+            counts["unavailable_candidates"] += 1
             continue
+        if sum(len(c) for c in chains.values()) > cap:
+            counts["over_cap_candidates"] += 1
+            continue
+        counts["selection_calls"] += 1
         score = measure(chains, select_seed(index), False)
         if score is not None and np.isfinite(score):
+            counts["selection_successes"] += 1
             measured.append((float(score), chains))
     failures = len(candidates) - len(measured)
     if not measured:
         return baseline - penalty, failures, True
     chosen = max(measured, key=lambda item: item[0])[1]
+    counts["assessment_calls"] += 1
     assessed = measure(chosen, assess_seed, True)
     if assessed is None or not np.isfinite(assessed):
+        counts["assessment_failures"] += 1
         return baseline - penalty, failures, True
     return float(assessed), failures, False
 
@@ -234,6 +257,8 @@ def main() -> int:
                       "selection_candidates": a.eval_k,
                       "evaluation_scope": "continuation_diagnostic_not_end_to_end_embedding",
                       "selection_read_budget_per_arm": a.eval_k * a.reads,
+                      "selection_read_budget_type": "cap_no_refill_on_failed_proposal",
+                      "matched_wall_time": False,
                       "assessment_reads_per_arm": a.assess_reads,
                       "failure_penalty": a.fail_penalty,
                       "train_lineages": [t.lineage for t in train_tasks],
@@ -281,6 +306,9 @@ def main() -> int:
         unavailable_starts = 0
         candidate_failures = {"policy": 0, "random": 0, "restart": 0}
         arm_failures = {"policy": 0, "random": 0, "restart": 0}
+        arm_costs = {name: defaultdict(int, proposal_seconds=0.0,
+                                      selection_seconds=0.0, assessment_seconds=0.0)
+                     for name in candidate_failures}
         initial_occupancy = []
         for k, t in enumerate(eval_tasks):
             start, fc = start_of(t)
@@ -296,6 +324,7 @@ def main() -> int:
             arms = {}
             for name in ("policy", "random", "restart"):
                 cands = []
+                proposal_begin = time.perf_counter()
                 for e in range(a.eval_k):
                     # Fixed validation seeds at every checkpoint; no mutation of training RNG.
                     eval_rng = np.random.default_rng(block_seed(a.seed, "validation-proposal", t.name, name, e))
@@ -310,18 +339,26 @@ def main() -> int:
                         # assessed the same way. Without it the start is one draw against a
                         # search of K and the comparison is not the paper's.
                         ch = mm(t.logical, t.host, int(block_seed(a.seed, "validation-restart", t.name, e)) % (2 ** 31))
-                        if ch is None:
-                            ch = start
                     cands.append(ch)
+                arm_costs[name]["proposal_seconds"] += time.perf_counter() - proposal_begin
                 def arm_measure(chains, seed, assess):
-                    return measure(t, chains, seed, a.assess_reads if assess else a.reads)
+                    begin = time.perf_counter()
+                    result = measure(t, chains, seed, a.assess_reads if assess else a.reads)
+                    field = "assessment_seconds" if assess else "selection_seconds"
+                    arm_costs[name][field] += time.perf_counter() - begin
+                    return result
                 # Matching block seeds across arms permits common random numbers;
                 # assessment remains domain-disjoint from all selection measurements.
+                accounting = {}
                 score, failed_candidates, failed_arm = select_and_assess(
                     cands, arm_measure,
                     lambda index: block_seed(a.seed, "validation-selection", t.name, index),
                     block_seed(a.seed, "validation-assessment", t.name),
-                    start_score, a.fail_penalty, a.qubit_cap)
+                    start_score, a.fail_penalty, a.qubit_cap, accounting=accounting)
+                for field, count in accounting.items():
+                    arm_costs[name][field] += count
+                arm_costs[name]["selection_reads_requested"] += accounting["selection_calls"] * a.reads
+                arm_costs[name]["assessment_reads_requested"] += accounting["assessment_calls"] * a.assess_reads
                 arms[name] = score
                 candidate_failures[name] += failed_candidates
                 arm_failures[name] += int(failed_arm)
@@ -331,6 +368,13 @@ def main() -> int:
         print(json.dumps({"validation_tag": tag, "requested_instances": len(eval_tasks),
                           "measurable_starts": len(rows), "unavailable_starts": unavailable_starts,
                           "failed_candidates": candidate_failures, "failed_arms": arm_failures,
+                          "successful_arms": {name: len(rows) - count
+                                              for name, count in arm_failures.items()},
+                          "candidate_measurement_coverage": {
+                              name: (cost["selection_successes"] / cost["candidate_attempts"]
+                                     if cost["candidate_attempts"] else None)
+                              for name, cost in arm_costs.items()},
+                          "arm_costs": arm_costs,
                           "mean_actual_start_occupancy": float(np.mean(initial_occupancy)) if initial_occupancy else None,
                           "score": "downstream objective with declared failure penalty"}), flush=True)
         if not rows:

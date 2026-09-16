@@ -216,7 +216,7 @@ def test_initial_quality_checkpoint_saved_without_training(monkeypatch, tmp_path
                      witness=ForbiddenWitness()) for i in range(2)]
     monkeypatch.setattr(hybrid, "load_instances", lambda _: tasks)
     # The mock constructor returns its own output; deployment must not inspect the witness.
-    monkeypatch.setattr(hybrid, "sample_layout", lambda t, *args, **kw: (witness, []))
+    monkeypatch.setattr(hybrid, "sample_layout_v2", lambda t, *args, **kw: (witness, []))
     def complete(t, roots, deadline, tries, seed, budget=None):
         assert budget == t.host.number_of_nodes()  # no privileged witness budget by default
         complete.last = witness
