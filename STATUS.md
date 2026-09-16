@@ -291,6 +291,25 @@ valid embedding, and that is measured by the RL evaluation protocol: running on 
 curriculum hosts with the prioritiser as initialisation, and on the full fill corpora at
 300 s (`runs/rl/*_imitation_deploy.log`).
 
+## Search inside the environment does not reach a valid embedding (negative)
+
+Limited discrepancy search over the construction environment, 60 s a instance on the
+curriculum hosts, learned prioritiser and the generator's own order
+(`results/search/*.log`): zero valid embeddings in every cell, one to three passes within
+the deadline, demand fraction 0.55 to 0.74. A pass costs about twenty seconds at 144 qubits
+whatever the quotas, because proposal generation and validation of every candidate is the
+cost, not the model; stubbing the observation saves a third. The prioritiser at argmax
+orders candidates worse than the generator's own order. Backtracking search has to run
+outside this environment, on plain chain dictionaries.
+
+Our own completion search, run that way (`probes/route_search.py`, `results/ours/`): a
+chronological-backtracking router fails from witness roots at corpus scale; a negotiated-
+congestion router with per-demand rip-up, randomised restarts and chain-connectivity
+invariants reaches 9 of 24 hard small-host instances from witness roots in 13 s where
+minorminer's router reaches 24 of 24 in under a second. Matching the standard router is an
+engineering project on its own; until it does, the learned layout is measured with the
+standard router as the completion and the standard router alone as the baseline.
+
 ## The roots are the missing information: minorminer seeded with witness roots (partial)
 
 minorminer accepts initial chains. Seeded with one qubit per variable taken from the

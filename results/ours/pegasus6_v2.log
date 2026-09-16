@@ -1,0 +1,6 @@
+{"corpus": "runs/fill/pegasus6/corpus", "instances": 48, "deadline": 120.0}
+    1/48 pegasus6-fill80-a3.0-0     witness: ours no   0.0s mm ok   0.2s | half: ours no   4.4s mm no 127.0s
+    2/48 pegasus6-fill80-a3.0-1     witness: ours no   0.2s mm ok   0.5s | half: ours no   0.1s mm no 141.0s
+    3/48 pegasus6-fill80-a3.0-2     witness: ours no   0.1s mm ok   0.6s | half: ours no   0.5s mm no 126.9s
+    4/48 pegasus6-fill80-a3.0-3     witness: ours no   0.2s mm ok   0.4s | half: ours no   3.7s mm no 124.5s
+    5/48 pegasus6-fill80-a3.0-4     witness: ours no   0.0s mm ok   2.5s | half: ours no   4.2s mm no 120.7s

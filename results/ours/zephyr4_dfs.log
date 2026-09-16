@@ -1,0 +1,4 @@
+{"corpus": "runs/fill/zephyr4/corpus", "instances": 48, "deadline": 120.0}
+    1/48 zephyr4-fill80-a3.0-0      witness: ours no  12.2s mm ok   0.2s | half: ours no   0.3s mm no 120.9s
+    2/48 zephyr4-fill80-a3.0-1      witness: ours no   8.4s mm ok   0.2s | half: ours no   0.0s mm no 129.7s
+    3/48 zephyr4-fill80-a3.0-2      witness: ours no  13.0s mm ok   0.2s | half: ours no   0.0s mm no 121.2s

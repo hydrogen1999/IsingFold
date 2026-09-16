@@ -1,0 +1,135 @@
+{"corpus": "runs/small/pegasus3/corpus", "instances": 120, "scorer": null, "deadline": 60.0}
+    1/120 pegasus3-fill70-a3.0-0     no     attempts   4     60s  demands 0.706
+    2/120 pegasus3-fill70-a3.0-1     no     attempts   3     60s  demands 0.770
+    3/120 pegasus3-fill70-a3.0-2     no     attempts   3     60s  demands 0.682
+    4/120 pegasus3-fill70-a3.0-3     no     attempts   3     60s  demands 0.726
+    5/120 pegasus3-fill70-a3.0-4     no     attempts   8     60s  demands 0.768
+    6/120 pegasus3-fill70-a3.0-5     no     attempts   6     60s  demands 0.700
+    7/120 pegasus3-fill70-a3.0-6     no     attempts   3     60s  demands 0.672
+    8/120 pegasus3-fill70-a3.0-7     no     attempts   3     60s  demands 0.718
+    9/120 pegasus3-fill70-a3.0-8     no     attempts   3     60s  demands 0.676
+   10/120 pegasus3-fill70-a3.0-9     no     attempts   3     60s  demands 0.691
+   11/120 pegasus3-fill70-a3.0-10    no     attempts   3     60s  demands 0.685
+   12/120 pegasus3-fill70-a3.0-11    no     attempts   3     60s  demands 0.735
+   13/120 pegasus3-fill70-a2.0-0     no     attempts   3     60s  demands 0.752
+   14/120 pegasus3-fill70-a2.0-1     no     attempts   3     60s  demands 0.744
+   15/120 pegasus3-fill70-a2.0-2     no     attempts   3     60s  demands 0.775
+   16/120 pegasus3-fill70-a2.0-3     no     attempts   3     60s  demands 0.671
+   17/120 pegasus3-fill70-a2.0-4     no     attempts   3     60s  demands 0.781
+   18/120 pegasus3-fill70-a2.0-5     no     attempts   3     60s  demands 0.736
+   19/120 pegasus3-fill70-a2.0-6     no     attempts   3     60s  demands 0.716
+   20/120 pegasus3-fill70-a2.0-7     no     attempts   3     60s  demands 0.729
+   21/120 pegasus3-fill70-a2.0-8     no     attempts   3     60s  demands 0.662
+   22/120 pegasus3-fill70-a2.0-9     no     attempts   3     60s  demands 0.758
+   23/120 pegasus3-fill70-a2.0-10    no     attempts   3     60s  demands 0.752
+   24/120 pegasus3-fill70-a2.0-11    no     attempts   3     60s  demands 0.705
+   25/120 pegasus3-fill80-a3.0-0     no     attempts   3     60s  demands 0.555
+   26/120 pegasus3-fill80-a3.0-1     no     attempts   4     60s  demands 0.598
+   27/120 pegasus3-fill80-a3.0-2     no     attempts   3     60s  demands 0.692
+   28/120 pegasus3-fill80-a3.0-3     no     attempts   3     60s  demands 0.665
+   29/120 pegasus3-fill80-a3.0-4     no     attempts   3     60s  demands 0.663
+   30/120 pegasus3-fill80-a3.0-5     no     attempts   2     60s  demands 0.657
+   31/120 pegasus3-fill80-a3.0-6     no     attempts   3     60s  demands 0.693
+   32/120 pegasus3-fill80-a3.0-7     no     attempts   3     60s  demands 0.682
+   33/120 pegasus3-fill80-a3.0-8     no     attempts   3     60s  demands 0.708
+   34/120 pegasus3-fill80-a3.0-9     no     attempts   3     60s  demands 0.693
+   35/120 pegasus3-fill80-a3.0-10    no     attempts   3     60s  demands 0.652
+   36/120 pegasus3-fill80-a3.0-11    no     attempts   3     60s  demands 0.691
+   37/120 pegasus3-fill80-a2.0-0     no     attempts   3     60s  demands 0.735
+   38/120 pegasus3-fill80-a2.0-1     no     attempts   3     60s  demands 0.665
+   39/120 pegasus3-fill80-a2.0-2     no     attempts   3     60s  demands 0.637
+   40/120 pegasus3-fill80-a2.0-3     no     attempts   3     60s  demands 0.667
+   41/120 pegasus3-fill80-a2.0-4     no     attempts   3     60s  demands 0.721
+   42/120 pegasus3-fill80-a2.0-5     no     attempts   3     60s  demands 0.663
+   43/120 pegasus3-fill80-a2.0-6     no     attempts   3     60s  demands 0.756
+   44/120 pegasus3-fill80-a2.0-7     no     attempts   3     60s  demands 0.689
+   45/120 pegasus3-fill80-a2.0-8     no     attempts   3     60s  demands 0.626
+   46/120 pegasus3-fill80-a2.0-9     no     attempts   3     60s  demands 0.725
+   47/120 pegasus3-fill80-a2.0-10    no     attempts   3     60s  demands 0.726
+   48/120 pegasus3-fill80-a2.0-11    no     attempts   6     60s  demands 0.741
+   49/120 pegasus3-fill85-a3.0-0     no     attempts   3     60s  demands 0.574
+   50/120 pegasus3-fill85-a3.0-1     no     attempts   3     60s  demands 0.681
+   51/120 pegasus3-fill85-a3.0-2     no     attempts   2     60s  demands 0.675
+   52/120 pegasus3-fill85-a3.0-3     no     attempts   2     60s  demands 0.730
+   53/120 pegasus3-fill85-a3.0-4     no     attempts   2     60s  demands 0.626
+   54/120 pegasus3-fill85-a3.0-5     no     attempts   3     60s  demands 0.616
+   55/120 pegasus3-fill85-a3.0-6     no     attempts   2     60s  demands 0.691
+   56/120 pegasus3-fill85-a3.0-7     no     attempts   3     60s  demands 0.621
+   57/120 pegasus3-fill85-a3.0-8     no     attempts   3     60s  demands 0.624
+   58/120 pegasus3-fill85-a3.0-9     no     attempts   3     60s  demands 0.671
+   59/120 pegasus3-fill85-a3.0-10    no     attempts   2     60s  demands 0.616
+   60/120 pegasus3-fill85-a3.0-11    no     attempts   2     60s  demands 0.631
+   61/120 pegasus3-fill85-a2.0-0     no     attempts   2     60s  demands 0.739
+   62/120 pegasus3-fill85-a2.0-1     no     attempts   2     60s  demands 0.680
+   63/120 pegasus3-fill85-a2.0-2     no     attempts   2     60s  demands 0.663
+   64/120 pegasus3-fill85-a2.0-3     no     attempts   3     60s  demands 0.651
+   65/120 pegasus3-fill85-a2.0-4     no     attempts   2     60s  demands 0.683
+   66/120 pegasus3-fill85-a2.0-5     no     attempts   3     60s  demands 0.715
+   67/120 pegasus3-fill85-a2.0-6     no     attempts   3     60s  demands 0.703
+   68/120 pegasus3-fill85-a2.0-7     no     attempts   3     60s  demands 0.676
+   69/120 pegasus3-fill85-a2.0-8     no     attempts   3     60s  demands 0.719
+   70/120 pegasus3-fill85-a2.0-9     no     attempts   3     60s  demands 0.665
+   71/120 pegasus3-fill85-a2.0-10    no     attempts   3     60s  demands 0.679
+   72/120 pegasus3-fill85-a2.0-11    no     attempts   3     60s  demands 0.736
+   73/120 pegasus3-fill90-a3.0-0     no     attempts   2     60s  demands 0.586
+   74/120 pegasus3-fill90-a3.0-1     no     attempts   2     60s  demands 0.677
+   75/120 pegasus3-fill90-a3.0-2     no     attempts   3     60s  demands 0.635
+   76/120 pegasus3-fill90-a3.0-3     no     attempts   3     60s  demands 0.576
+   77/120 pegasus3-fill90-a3.0-4     no     attempts   2     60s  demands 0.687
+   78/120 pegasus3-fill90-a3.0-5     no     attempts   3     60s  demands 0.587
+   79/120 pegasus3-fill90-a3.0-6     no     attempts   2     60s  demands 0.598
+   80/120 pegasus3-fill90-a3.0-7     no     attempts   2     60s  demands 0.603
+   81/120 pegasus3-fill90-a3.0-8     no     attempts   2     60s  demands 0.623
+   82/120 pegasus3-fill90-a3.0-9     no     attempts   3     60s  demands 0.573
+   83/120 pegasus3-fill90-a3.0-10    no     attempts   2     60s  demands 0.675
+   84/120 pegasus3-fill90-a3.0-11    no     attempts   2     60s  demands 0.640
+   85/120 pegasus3-fill90-a2.0-0     no     attempts   3     60s  demands 0.653
+   86/120 pegasus3-fill90-a2.0-1     no     attempts   3     60s  demands 0.620
+   87/120 pegasus3-fill90-a2.0-2     no     attempts   3     60s  demands 0.695
+   88/120 pegasus3-fill90-a2.0-3     no     attempts   3     60s  demands 0.632
+   89/120 pegasus3-fill90-a2.0-4     no     attempts   3     60s  demands 0.652
+   90/120 pegasus3-fill90-a2.0-5     no     attempts   3     60s  demands 0.655
+   91/120 pegasus3-fill90-a2.0-6     no     attempts   3     60s  demands 0.634
+   92/120 pegasus3-fill90-a2.0-7     no     attempts   3     60s  demands 0.652
+   93/120 pegasus3-fill90-a2.0-8     no     attempts   3     60s  demands 0.667
+   94/120 pegasus3-fill90-a2.0-9     no     attempts   2     60s  demands 0.644
+   95/120 pegasus3-fill90-a2.0-10    no     attempts   2     60s  demands 0.731
+   96/120 pegasus3-fill90-a2.0-11    no     attempts   3     60s  demands 0.629
+   97/120 pegasus3-fill95-a3.0-0     no     attempts   2     60s  demands 0.571
+   98/120 pegasus3-fill95-a3.0-1     no     attempts   2     60s  demands 0.544
+   99/120 pegasus3-fill95-a3.0-2     no     attempts   2     60s  demands 0.641
+  100/120 pegasus3-fill95-a3.0-3     no     attempts   2     60s  demands 0.564
+  101/120 pegasus3-fill95-a3.0-4     no     attempts   2     60s  demands 0.628
+  102/120 pegasus3-fill95-a3.0-5     no     attempts   3     60s  demands 0.601
+  103/120 pegasus3-fill95-a3.0-6     no     attempts   2     60s  demands 0.638
+  104/120 pegasus3-fill95-a3.0-7     no     attempts   2     60s  demands 0.616
+  105/120 pegasus3-fill95-a3.0-8     no     attempts   3     60s  demands 0.610
+  106/120 pegasus3-fill95-a3.0-9     no     attempts   2     60s  demands 0.602
+  107/120 pegasus3-fill95-a3.0-10    no     attempts   2     60s  demands 0.559
+  108/120 pegasus3-fill95-a3.0-11    no     attempts   2     60s  demands 0.605
+  109/120 pegasus3-fill95-a2.0-0     no     attempts   2     60s  demands 0.597
+  110/120 pegasus3-fill95-a2.0-1     no     attempts   2     60s  demands 0.742
+  111/120 pegasus3-fill95-a2.0-2     no     attempts   3     60s  demands 0.628
+  112/120 pegasus3-fill95-a2.0-3     no     attempts   2     60s  demands 0.652
+  113/120 pegasus3-fill95-a2.0-4     no     attempts   2     60s  demands 0.701
+  114/120 pegasus3-fill95-a2.0-5     no     attempts   2     60s  demands 0.640
+  115/120 pegasus3-fill95-a2.0-6     no     attempts   2     60s  demands 0.635
+  116/120 pegasus3-fill95-a2.0-7     no     attempts   3     60s  demands 0.574
+  117/120 pegasus3-fill95-a2.0-8     no     attempts   2     60s  demands 0.705
+  118/120 pegasus3-fill95-a2.0-9     no     attempts   3     60s  demands 0.605
+  119/120 pegasus3-fill95-a2.0-10    no     attempts   2     60s  demands 0.564
+  120/120 pegasus3-fill95-a2.0-11    no     attempts   3     60s  demands 0.624
+
+  cell               n    valid  attempts  demands
+  fill70-a2.0       12     0.00       3.0    0.732
+  fill70-a3.0       12     0.00       3.8    0.711
+  fill80-a2.0       12     0.00       3.2    0.696
+  fill80-a3.0       12     0.00       3.0    0.662
+  fill85-a2.0       12     0.00       2.7    0.692
+  fill85-a3.0       12     0.00       2.5    0.646
+  fill90-a2.0       12     0.00       2.8    0.655
+  fill90-a3.0       12     0.00       2.3    0.622
+  fill95-a2.0       12     0.00       2.3    0.639
+  fill95-a3.0       12     0.00       2.2    0.598
+
+SEARCH CONSTRUCT DONE

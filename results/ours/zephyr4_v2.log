@@ -1,0 +1,13 @@
+{"corpus": "runs/fill/zephyr4/corpus", "instances": 48, "deadline": 120.0}
+    1/48 zephyr4-fill80-a3.0-0      witness: ours no   0.1s mm ok   0.2s | half: ours no   1.6s mm no 127.7s
+    2/48 zephyr4-fill80-a3.0-1      witness: ours no   0.0s mm ok   0.2s | half: ours no   6.2s mm no 129.0s
+    3/48 zephyr4-fill80-a3.0-2      witness: ours no   0.3s mm ok   0.2s | half: ours no   0.0s mm no 123.0s
+    4/48 zephyr4-fill80-a3.0-3      witness: ours no   0.5s mm ok   0.1s | half: ours no   0.8s mm no 126.7s
+    5/48 zephyr4-fill80-a3.0-4      witness: ours no   0.0s mm ok   0.2s | half: ours no   0.1s mm no 128.7s
+    6/48 zephyr4-fill80-a3.0-5      witness: ours no   0.0s mm ok   0.3s | half: ours no   0.0s mm no 123.6s
+    7/48 zephyr4-fill80-a2.0-0      witness: ours no   0.0s mm ok   0.2s | half: ours no   0.4s mm ok   0.4s
+    8/48 zephyr4-fill80-a2.0-1      witness: ours no   0.1s mm ok   0.2s | half: ours no   0.3s mm ok   0.3s
+    9/48 zephyr4-fill80-a2.0-2      witness: ours no   0.0s mm ok   0.2s | half: ours no   0.1s mm ok   1.0s
+   10/48 zephyr4-fill80-a2.0-3      witness: ours no   0.0s mm ok   0.2s | half: ours no   0.2s mm ok   0.4s
+   11/48 zephyr4-fill80-a2.0-4      witness: ours no   0.1s mm ok   0.3s | half: ours no   0.1s mm ok   0.4s
+   12/48 zephyr4-fill80-a2.0-5      witness: ours no   0.1s mm ok   0.1s | half: ours no   0.1s mm ok   0.5s

@@ -1,0 +1,135 @@
+{"corpus": "runs/small/zephyr2/corpus", "instances": 120, "scorer": "runs/imitation/pegasus6_budget.pt", "deadline": 60.0}
+    1/120 zephyr2-fill70-a3.0-0      no     attempts   3     60s  demands 0.592
+    2/120 zephyr2-fill70-a3.0-1      no     attempts   1     60s  demands 0.545
+    3/120 zephyr2-fill70-a3.0-2      no     attempts   1     60s  demands 0.678
+    4/120 zephyr2-fill70-a3.0-3      no     attempts   1     60s  demands 0.580
+    5/120 zephyr2-fill70-a3.0-4      no     attempts   1     60s  demands 0.632
+    6/120 zephyr2-fill70-a3.0-5      no     attempts   1     60s  demands 0.560
+    7/120 zephyr2-fill70-a3.0-6      no     attempts   1     60s  demands 0.587
+    8/120 zephyr2-fill70-a3.0-7      no     attempts   1     60s  demands 0.504
+    9/120 zephyr2-fill70-a3.0-8      no     attempts   2     60s  demands 0.648
+   10/120 zephyr2-fill70-a3.0-9      no     attempts   1     60s  demands 0.683
+   11/120 zephyr2-fill70-a3.0-10     no     attempts   1     60s  demands 0.665
+   12/120 zephyr2-fill70-a3.0-11     no     attempts   3     60s  demands 0.580
+   13/120 zephyr2-fill70-a2.0-0      no     attempts   2     60s  demands 0.471
+   14/120 zephyr2-fill70-a2.0-1      no     attempts   2     60s  demands 0.602
+   15/120 zephyr2-fill70-a2.0-2      no     attempts   2     60s  demands 0.523
+   16/120 zephyr2-fill70-a2.0-3      no     attempts   2     60s  demands 0.713
+   17/120 zephyr2-fill70-a2.0-4      no     attempts   1     60s  demands 0.677
+   18/120 zephyr2-fill70-a2.0-5      no     attempts   2     60s  demands 0.635
+   19/120 zephyr2-fill70-a2.0-6      no     attempts   2     60s  demands 0.554
+   20/120 zephyr2-fill70-a2.0-7      no     attempts   2     60s  demands 0.625
+   21/120 zephyr2-fill70-a2.0-8      no     attempts   2     60s  demands 0.565
+   22/120 zephyr2-fill70-a2.0-9      no     attempts   2     60s  demands 0.694
+   23/120 zephyr2-fill70-a2.0-10     no     attempts   2     60s  demands 0.644
+   24/120 zephyr2-fill70-a2.0-11     no     attempts   2     60s  demands 0.524
+   25/120 zephyr2-fill80-a3.0-0      no     attempts   1     60s  demands 0.522
+   26/120 zephyr2-fill80-a3.0-1      no     attempts   1     60s  demands 0.549
+   27/120 zephyr2-fill80-a3.0-2      no     attempts   1     60s  demands 0.610
+   28/120 zephyr2-fill80-a3.0-3      no     attempts   1     60s  demands 0.577
+   29/120 zephyr2-fill80-a3.0-4      no     attempts   1     60s  demands 0.534
+   30/120 zephyr2-fill80-a3.0-5      no     attempts   1     60s  demands 0.613
+   31/120 zephyr2-fill80-a3.0-6      no     attempts   1     60s  demands 0.542
+   32/120 zephyr2-fill80-a3.0-7      no     attempts   1     60s  demands 0.584
+   33/120 zephyr2-fill80-a3.0-8      no     attempts   1     60s  demands 0.494
+   34/120 zephyr2-fill80-a3.0-9      no     attempts   1     60s  demands 0.603
+   35/120 zephyr2-fill80-a3.0-10     no     attempts   1     60s  demands 0.585
+   36/120 zephyr2-fill80-a3.0-11     no     attempts   1     60s  demands 0.547
+   37/120 zephyr2-fill80-a2.0-0      no     attempts   1     60s  demands 0.653
+   38/120 zephyr2-fill80-a2.0-1      no     attempts   1     60s  demands 0.622
+   39/120 zephyr2-fill80-a2.0-2      no     attempts   1     60s  demands 0.620
+   40/120 zephyr2-fill80-a2.0-3      no     attempts   1     60s  demands 0.559
+   41/120 zephyr2-fill80-a2.0-4      no     attempts   1     60s  demands 0.483
+   42/120 zephyr2-fill80-a2.0-5      no     attempts   3     60s  demands 0.607
+   43/120 zephyr2-fill80-a2.0-6      no     attempts   1     60s  demands 0.586
+   44/120 zephyr2-fill80-a2.0-7      no     attempts   1     60s  demands 0.478
+   45/120 zephyr2-fill80-a2.0-8      no     attempts   1     60s  demands 0.545
+   46/120 zephyr2-fill80-a2.0-9      no     attempts   1     60s  demands 0.591
+   47/120 zephyr2-fill80-a2.0-10     no     attempts   1     60s  demands 0.617
+   48/120 zephyr2-fill80-a2.0-11     no     attempts   1     60s  demands 0.700
+   49/120 zephyr2-fill85-a3.0-0      no     attempts   1     60s  demands 0.538
+   50/120 zephyr2-fill85-a3.0-1      no     attempts   1     60s  demands 0.575
+   51/120 zephyr2-fill85-a3.0-2      no     attempts   1     60s  demands 0.508
+   52/120 zephyr2-fill85-a3.0-3      no     attempts   1     60s  demands 0.612
+   53/120 zephyr2-fill85-a3.0-4      no     attempts   1     60s  demands 0.617
+   54/120 zephyr2-fill85-a3.0-5      no     attempts   1     60s  demands 0.603
+   55/120 zephyr2-fill85-a3.0-6      no     attempts   1     60s  demands 0.561
+   56/120 zephyr2-fill85-a3.0-7      no     attempts   1     60s  demands 0.552
+   57/120 zephyr2-fill85-a3.0-8      no     attempts   1     60s  demands 0.573
+   58/120 zephyr2-fill85-a3.0-9      no     attempts   1     60s  demands 0.556
+   59/120 zephyr2-fill85-a3.0-10     no     attempts   1     60s  demands 0.616
+   60/120 zephyr2-fill85-a3.0-11     no     attempts   1     60s  demands 0.554
+   61/120 zephyr2-fill85-a2.0-0      no     attempts   2     60s  demands 0.701
+   62/120 zephyr2-fill85-a2.0-1      no     attempts   2     60s  demands 0.672
+   63/120 zephyr2-fill85-a2.0-2      no     attempts   1     60s  demands 0.516
+   64/120 zephyr2-fill85-a2.0-3      no     attempts   1     60s  demands 0.530
+   65/120 zephyr2-fill85-a2.0-4      no     attempts   1     60s  demands 0.611
+   66/120 zephyr2-fill85-a2.0-5      no     attempts   1     60s  demands 0.621
+   67/120 zephyr2-fill85-a2.0-6      no     attempts   1     60s  demands 0.720
+   68/120 zephyr2-fill85-a2.0-7      no     attempts   1     60s  demands 0.712
+   69/120 zephyr2-fill85-a2.0-8      no     attempts   1     60s  demands 0.623
+   70/120 zephyr2-fill85-a2.0-9      no     attempts   1     60s  demands 0.409
+   71/120 zephyr2-fill85-a2.0-10     no     attempts   2     60s  demands 0.617
+   72/120 zephyr2-fill85-a2.0-11     no     attempts   1     60s  demands 0.572
+   73/120 zephyr2-fill90-a3.0-0      no     attempts   1     60s  demands 0.592
+   74/120 zephyr2-fill90-a3.0-1      no     attempts   1     60s  demands 0.609
+   75/120 zephyr2-fill90-a3.0-2      no     attempts   1     60s  demands 0.631
+   76/120 zephyr2-fill90-a3.0-3      no     attempts   1     60s  demands 0.517
+   77/120 zephyr2-fill90-a3.0-4      no     attempts   1     60s  demands 0.576
+   78/120 zephyr2-fill90-a3.0-5      no     attempts   1     60s  demands 0.566
+   79/120 zephyr2-fill90-a3.0-6      no     attempts   1     60s  demands 0.500
+   80/120 zephyr2-fill90-a3.0-7      no     attempts   1     60s  demands 0.565
+   81/120 zephyr2-fill90-a3.0-8      no     attempts   1     60s  demands 0.543
+   82/120 zephyr2-fill90-a3.0-9      no     attempts   1     60s  demands 0.445
+   83/120 zephyr2-fill90-a3.0-10     no     attempts   1     60s  demands 0.477
+   84/120 zephyr2-fill90-a3.0-11     no     attempts   1     60s  demands 0.443
+   85/120 zephyr2-fill90-a2.0-0      no     attempts   1     60s  demands 0.585
+   86/120 zephyr2-fill90-a2.0-1      no     attempts   1     60s  demands 0.545
+   87/120 zephyr2-fill90-a2.0-2      no     attempts   1     60s  demands 0.605
+   88/120 zephyr2-fill90-a2.0-3      no     attempts   1     60s  demands 0.579
+   89/120 zephyr2-fill90-a2.0-4      no     attempts   1     60s  demands 0.679
+   90/120 zephyr2-fill90-a2.0-5      no     attempts   1     60s  demands 0.473
+   91/120 zephyr2-fill90-a2.0-6      no     attempts   1     60s  demands 0.565
+   92/120 zephyr2-fill90-a2.0-7      no     attempts   1     60s  demands 0.580
+   93/120 zephyr2-fill90-a2.0-8      no     attempts   1     60s  demands 0.655
+   94/120 zephyr2-fill90-a2.0-9      no     attempts   1     60s  demands 0.612
+   95/120 zephyr2-fill90-a2.0-10     no     attempts   1     60s  demands 0.707
+   96/120 zephyr2-fill90-a2.0-11     no     attempts   1     60s  demands 0.571
+   97/120 zephyr2-fill95-a3.0-0      no     attempts   1     60s  demands 0.492
+   98/120 zephyr2-fill95-a3.0-1      no     attempts   1     60s  demands 0.603
+   99/120 zephyr2-fill95-a3.0-2      no     attempts   1     60s  demands 0.561
+  100/120 zephyr2-fill95-a3.0-3      no     attempts   1     60s  demands 0.570
+  101/120 zephyr2-fill95-a3.0-4      no     attempts   1     60s  demands 0.556
+  102/120 zephyr2-fill95-a3.0-5      no     attempts   1     60s  demands 0.612
+  103/120 zephyr2-fill95-a3.0-6      no     attempts   1     60s  demands 0.535
+  104/120 zephyr2-fill95-a3.0-7      no     attempts   1     60s  demands 0.536
+  105/120 zephyr2-fill95-a3.0-8      no     attempts   1     60s  demands 0.553
+  106/120 zephyr2-fill95-a3.0-9      no     attempts   1     60s  demands 0.554
+  107/120 zephyr2-fill95-a3.0-10     no     attempts   1     60s  demands 0.447
+  108/120 zephyr2-fill95-a3.0-11     no     attempts   1     60s  demands 0.587
+  109/120 zephyr2-fill95-a2.0-0      no     attempts   1     60s  demands 0.606
+  110/120 zephyr2-fill95-a2.0-1      no     attempts   1     60s  demands 0.659
+  111/120 zephyr2-fill95-a2.0-2      no     attempts   1     60s  demands 0.613
+  112/120 zephyr2-fill95-a2.0-3      no     attempts   1     60s  demands 0.562
+  113/120 zephyr2-fill95-a2.0-4      no     attempts   1     60s  demands 0.583
+  114/120 zephyr2-fill95-a2.0-5      no     attempts   1     60s  demands 0.605
+  115/120 zephyr2-fill95-a2.0-6      no     attempts   1     60s  demands 0.606
+  116/120 zephyr2-fill95-a2.0-7      no     attempts   1     60s  demands 0.549
+  117/120 zephyr2-fill95-a2.0-8      no     attempts   1     60s  demands 0.623
+  118/120 zephyr2-fill95-a2.0-9      no     attempts   1     60s  demands 0.538
+  119/120 zephyr2-fill95-a2.0-10     no     attempts   1     60s  demands 0.564
+  120/120 zephyr2-fill95-a2.0-11     no     attempts   1     60s  demands 0.483
+
+  cell               n    valid  attempts  demands
+  fill70-a2.0       12     0.00       1.9    0.602
+  fill70-a3.0       12     0.00       1.4    0.604
+  fill80-a2.0       12     0.00       1.2    0.589
+  fill80-a3.0       12     0.00       1.0    0.563
+  fill85-a2.0       12     0.00       1.2    0.609
+  fill85-a3.0       12     0.00       1.0    0.572
+  fill90-a2.0       12     0.00       1.0    0.596
+  fill90-a3.0       12     0.00       1.0    0.539
+  fill95-a2.0       12     0.00       1.0    0.582
+  fill95-a3.0       12     0.00       1.0    0.550
+
+SEARCH CONSTRUCT DONE
