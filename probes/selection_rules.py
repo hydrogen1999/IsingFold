@@ -19,14 +19,15 @@ each instance the rank correlation between resource and assessed quality is repo
 """
 from __future__ import annotations
 
-import argparse, json, sys
+import argparse, json, os, sys
 from pathlib import Path
 
-_ROOT = Path(__file__).resolve().parents[1]
-if str(_ROOT / "src") not in sys.path:
-    sys.path.insert(0, str(_ROOT / "src"))
-if str(Path(__file__).resolve().parent) not in sys.path:
-    sys.path.insert(0, str(Path(__file__).resolve().parent))
+# pin imports to this tree: an editable install of an older tree sits on sys.meta_path
+sys.path.insert(0, os.environ.get("ISINGFOLD_SRC", str(Path(__file__).resolve().parents[1] / "src")))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.meta_path[:] = [f for f in sys.meta_path
+                    if not ("editable" in (getattr(type(f), "__module__", "") or "").lower()
+                            and "isingfold" in (getattr(type(f), "__module__", "") or "").lower())]
 
 import numpy as np
 
