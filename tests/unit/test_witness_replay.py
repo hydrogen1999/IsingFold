@@ -54,16 +54,19 @@ def _consistent(cand, witness, current):
     if cand.opcode is Opcode.ROUTE:
         return all(chain <= witness[v] for v, chain in cand.new_chains.items())
     if cand.opcode is Opcode.COMMIT:
-        return all(current.get(v) == c for v, c in witness.items())
+        # Every chain placed and inside its witness chain; the environment only offers
+        # COMMIT when the embedding is valid.
+        return all(current.get(v) and current[v] <= c for v, c in witness.items())
     return False
 
 
 def replay(task, witness, max_steps=400):
-    from _context import host_context
+    from _context import construction_context
     from isingfold.rl.contracts import DecisionState, Opcode
     from isingfold.rl.env import EmbeddingEnv, Mode, fixed_strength_selector
 
-    ctx = host_context(task.host.number_of_nodes())
+    ctx = construction_context(task.host.number_of_nodes(), task.logical.number_of_nodes(),
+                               task.logical.number_of_edges())
     env = EmbeddingEnv(task, ctx, mode=Mode.CONSTRUCTION, initializer=None,
                        selector=fixed_strength_selector(), reward_reads=8)
     dec = env.reset(0)
@@ -86,9 +89,12 @@ def replay(task, witness, max_steps=400):
     if isinstance(dec, DecisionState):
         return False, "no terminal after %d steps" % steps
     returned = getattr(dec, "embedding", None)
-    if returned is None:
-        return False, "terminal without an embedding: %s" % (getattr(dec, "reason", dec),)
-    return all(returned.get(v) == c for v, c in witness.items()), "returned differs from witness"
+    if returned is None or not getattr(dec, "returned_valid", False):
+        return False, "terminal without a valid embedding: %s" % (getattr(dec, "terminal_reason", dec),)
+    # Every chain the environment returns lies inside the witness chain: the router may drop
+    # a qubit the witness did not need, and that is still the witness's embedding.
+    inside = all(returned.get(v, frozenset()) and returned[v] <= c for v, c in witness.items())
+    return inside, "returned valid but outside the witness"
 
 
 def test_a_planted_witness_replays_through_the_construction_api_on_a_small_host():
@@ -97,11 +103,13 @@ def test_a_planted_witness_replays_through_the_construction_api_on_a_small_host(
     assert ok, why
 
 
-@pytest.mark.xfail(strict=True, reason="Task 12: the default horizon is 32 decisions and "
-                   "placement offers a lexicographic shortlist of 24 roots; a witness with "
-                   "fifty variables cannot be replayed until both scale with the instance")
-def test_a_planted_witness_replays_on_a_host_of_a_hundred_qubits():
-    task, witness = _planted_task(side=10, fill=0.8, seed=1, lmax=2)
+@pytest.mark.parametrize("seed", [1, 2, 3])
+def test_a_planted_witness_replays_on_a_host_of_a_hundred_qubits(seed):
+    # Before Task 12 this failed at step 0: PLACE offered the 24 lexicographically first
+    # roots for the first empty variable, the horizon was 32 decisions, and ROUTE offered one
+    # router path per demand. Placement now follows placed neighbours, the horizon scales
+    # with the instance, and one-qubit bridges are offered beside the router path.
+    task, witness = _planted_task(side=10, fill=0.8, seed=seed, lmax=2)
     assert len(witness) >= 40
-    ok, why = replay(task, witness, max_steps=1000)
+    ok, why = replay(task, witness, max_steps=2000)
     assert ok, why

@@ -282,11 +282,55 @@ class ProposalGenerator:
 
         out: list[tuple[Candidate, int]] = []
         occupied = _occupancy_excluding(chains, set())
-        roots = sorted(self.host.nodes(), key=lambda q: (occupied.get(q, 0), str(q)))
-        for variable in sorted((i for i, chain in chains.items() if not chain), key=str):
-            for root in roots:
+        empty = sorted((i for i, chain in chains.items() if not chain), key=str)
+        if not empty:
+            return out
+
+        # Roots are offered per variable, and the variables with placed logical neighbours
+        # come first: their roots are the free qubits adjacent to those neighbours' chains,
+        # ordered by how many placed neighbours they touch. On a planted instance every chain
+        # of the witness touches the chains of its logical neighbours, so a witness root is
+        # always among these. The earlier rule offered the lexicographically first free
+        # qubits to the lexicographically first empty variable, which on a large host placed
+        # everything in one corner and could not replay a witness at all.
+        def adjacent_roots(variable):
+            touches: dict = {}
+            for nb in self.logical.neighbors(variable):
+                chain = chains.get(nb)
+                if not chain:
+                    continue
+                for q in chain:
+                    for r in self.host.neighbors(q):
+                        if occupied.get(r, 0) == 0:
+                            touches[r] = touches.get(r, 0) + 1
+            return sorted(touches, key=lambda r: (-touches[r], str(r)))
+
+        attached = [(v, adjacent_roots(v)) for v in empty]
+        attached = [(v, roots) for v, roots in attached if roots]
+        attached.sort(key=lambda vr: (-self.logical.degree(vr[0]), str(vr[0])))
+        if not attached:
+            # Nothing placed yet: a spread of free roots for the highest-degree empty
+            # variable, every k-th free qubit, so the first placement is not confined to one
+            # corner. A teacher that needs a specific first root starts the environment from
+            # a one-variable partial embedding instead.
+            first = sorted(empty, key=lambda v: (-self.logical.degree(v), str(v)))[0]
+            free = [q for q in sorted(self.host.nodes(), key=str) if occupied.get(q, 0) == 0]
+            stride = max(1, len(free) // max(1, budget))
+            attached = [(first, free[::stride])]
+
+        # Round-robin across the attached variables so no single variable eats the quota.
+        cursors = [0] * len(attached)
+        progressed = True
+        while progressed:
+            progressed = False
+            for i, (variable, roots) in enumerate(attached):
+                if cursors[i] >= len(roots):
+                    continue
                 if len(out) >= budget or not meter.can_charge(1):
                     return out
+                root = roots[cursors[i]]
+                cursors[i] += 1
+                progressed = True
                 proposal_work = meter.charge(1)
                 out.append(
                     (
@@ -312,16 +356,46 @@ class ProposalGenerator:
         """Bind connected endpoint supersets that realise one selected demand."""
 
         out: list[tuple[Candidate, int]] = []
+        occupied = _occupancy_excluding(chains, set())
+        unmet = []
         for left, right in sorted(
             self.logical.edges(), key=lambda edge: (str(edge[0]), str(edge[1]))
         ):
-            pair = _pair(left, right)
             left_chain = chains.get(left, frozenset())
             right_chain = chains.get(right, frozenset())
             if not left_chain or not right_chain:
                 continue
             if any(q != r and self.host.has_edge(q, r) for q in left_chain for r in right_chain):
                 continue
+            unmet.append((left, right))
+        if not unmet:
+            return out
+        # Rotate the starting demand with the state, so a demand whose offers are all useless
+        # does not occupy the whole family budget at every decision; the rotation is a
+        # function of the state, never of a clock or a random draw.
+        start = sum(len(c) for c in chains.values()) % len(unmet)
+        unmet = unmet[start:] + unmet[:start]
+
+        def distance_to(target_chain, limit=8):
+            """Host BFS distance from every qubit within ``limit`` of the target chain."""
+            dist = {q: 0 for q in target_chain}
+            frontier = list(target_chain)
+            for d in range(1, limit + 1):
+                nxt = []
+                for q in frontier:
+                    for r in self.host.neighbors(q):
+                        if r not in dist:
+                            dist[r] = d
+                            nxt.append(r)
+                frontier = nxt
+                if not frontier:
+                    break
+            return dist
+
+        for left, right in unmet:
+            pair = _pair(left, right)
+            left_chain = chains.get(left, frozenset())
+            right_chain = chains.get(right, frozenset())
             for owner, target in ((left, right), (right, left)):
                 if len(out) >= budget or not meter.can_charge(1):
                     return out
@@ -355,6 +429,90 @@ class ProposalGenerator:
                         attempt.expansions,
                     )
                 )
+            # One-qubit bridges, after the router path: a free qubit adjacent to both
+            # chains. The router returns one shortest path per demand,
+            # and when several bridges exist that path is one arbitrary choice; offering the
+            # bridges themselves lets a teacher's chain be reached exactly. Bounded by the
+            # family budget like everything else.
+            bridges = sorted(
+                (
+                    r
+                    for q in left_chain
+                    for r in self.host.neighbors(q)
+                    if occupied.get(r, 0) == 0
+                    and any(self.host.has_edge(r, t) for t in right_chain)
+                ),
+                key=str,
+            )
+            # Each bridge is offered to either owner: which chain absorbs the qubit is a
+            # decision, and a teacher's chain may hold it on either side.
+            scan = sum(self.host.degree(q) for q in left_chain)
+            for r in bridges:
+                for owner in (left, right):
+                    if len(out) >= budget or not meter.can_charge(scan):
+                        return out
+                    anchor = next(
+                        q for q in sorted(chains[owner], key=str) if self.host.has_edge(q, r)
+                    )
+                    proposal_work = meter.charge(scan)
+                    out.append(
+                        (
+                            self._make(
+                                Opcode.ROUTE,
+                                chains,
+                                {owner: frozenset(set(chains[owner]) | {r})},
+                                routes=(((anchor, r), owner),),
+                                proposal_work=proposal_work,
+                                target_demand=pair,
+                                provenance=f"bridge:{left}:{right}:{owner}:{r}",
+                            ),
+                            scan,
+                        )
+                    )
+            if not bridges:
+                # No single qubit joins the two chains: both grow by one free qubit and meet,
+                # x adjacent to the left chain, y adjacent to the right chain, x adjacent to y.
+                # A ROUTE must realise its demand, so the two additions travel together; a
+                # teacher whose two chains each carry one more qubit is reached this way.
+                left_free = sorted(
+                    {r for q in left_chain for r in self.host.neighbors(q) if occupied.get(r, 0) == 0},
+                    key=str,
+                )
+                right_free = {
+                    r for q in right_chain for r in self.host.neighbors(q) if occupied.get(r, 0) == 0
+                }
+                meets = [
+                    (x, y)
+                    for x in left_free
+                    for y in sorted(self.host.neighbors(x), key=str)
+                    if y in right_free and y != x
+                ]
+                scan = sum(self.host.degree(q) for q in left_chain) + sum(
+                    self.host.degree(q) for q in right_chain
+                )
+                for x, y in meets[:4]:
+                    if len(out) >= budget or not meter.can_charge(scan):
+                        return out
+                    ax = next(q for q in sorted(left_chain, key=str) if self.host.has_edge(q, x))
+                    ay = next(q for q in sorted(right_chain, key=str) if self.host.has_edge(q, y))
+                    proposal_work = meter.charge(scan)
+                    out.append(
+                        (
+                            self._make(
+                                Opcode.ROUTE,
+                                chains,
+                                {
+                                    left: frozenset(set(left_chain) | {x}),
+                                    right: frozenset(set(right_chain) | {y}),
+                                },
+                                routes=(((ax, x), left), ((ay, y), right)),
+                                proposal_work=proposal_work,
+                                target_demand=pair,
+                                provenance=f"meet:{left}:{right}:{x}:{y}",
+                            ),
+                            scan,
+                        )
+                    )
         return out
 
     def _single(

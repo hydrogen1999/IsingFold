@@ -13,7 +13,7 @@ Two things the registry needs that its defaults do not give a modern-host experi
 """
 from dataclasses import replace
 
-from isingfold.rl.contracts import RESERVE, Context
+from isingfold.rl.contracts import DEFAULT_CAPS, RESERVE, Context
 
 REGISTERED_BETA_RANGE: tuple[float, float] = (0.1, 2.0)
 _UNSET = object()
@@ -25,3 +25,22 @@ def host_context(qubit_cap: int, beta_range=_UNSET, **kw) -> Context:
     work = max(RESERVE.feature_work, 32 * (qubit_cap + 64))
     return Context(qubit_cap=qubit_cap, reserve=replace(RESERVE, feature_work=work),
                    beta_range=beta_range, **kw)
+
+
+def construction_context(qubit_cap: int, n_vars: int, n_edges: int, **kw) -> Context:
+    """A Context whose horizon fits building an embedding of this instance from nothing.
+
+    The registered default of 32 decisions was sized for improving a finished embedding. A
+    construction needs one PLACE per variable, at most one ROUTE per logical edge, and a
+    COMMIT, so the horizon scales with the instance; route expansions and materializations
+    scale with it in the same proportion so the meter is not the binding constraint instead.
+    """
+    decisions = n_vars + n_edges + 8
+    factor = max(1.0, decisions / DEFAULT_CAPS.decisions)
+    caps = replace(DEFAULT_CAPS, decisions=decisions,
+                   route_expansions=int(DEFAULT_CAPS.route_expansions * factor),
+                   materializations=int(DEFAULT_CAPS.materializations * factor),
+                   compiler_calls=int(DEFAULT_CAPS.compiler_calls * factor),
+                   validator_calls=int(DEFAULT_CAPS.validator_calls * factor),
+                   feature_work=int(DEFAULT_CAPS.feature_work * factor))
+    return host_context(qubit_cap, caps=caps, **kw)

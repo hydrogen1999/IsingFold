@@ -15,7 +15,7 @@ never depends on memory.
 | Task 9 | quality endpoint at the fill regime under the registered schedule, paired with intervals. Decides feasibility-only or not | apollo `runs/fill/*_witness_registered.log` -> `results/fill/` | **done** both hosts: residual discriminates, -0.021 [-0.030, -0.010] Zephyr and -0.032 [-0.047, -0.017] Pegasus at 80 percent |
 | Task 10 | anytime minorminer with a wall-time deadline, 30 to 300 s. Names the regime where the tool fails at the intended budget | goose `runs/fill/*_anytime.log` | running |
 | budget x20 | minorminer at 200 tries on the fill corpora | apollo `runs/fill/*_budget.log` | running |
-| Task 12 | witness replay through the construction API | `tests/unit/test_witness_replay.py` | diagnosed: fails at step 0 on the 24-root shortlist; fix gated on Checkpoint 3 |
+| Task 12 | witness replay through the construction API | `tests/unit/test_witness_replay.py`, apollo `runs/fill/*_replay.log` | fixed and green on 16 and 100 qubits; corpus-scale replay running |
 
 Checkpoints and gates are in `docs/plans/2026-09-15-plan.md`; decisions in `docs/decisions/`;
 the two reviews in `docs/review/`. When a row above finishes, its log is copied to `results/`
@@ -289,6 +289,13 @@ witness minus minorminer best of four on the energy residual, lower is better: 8
 quality endpoint at the fill regime exists and it is the residual under the registered
 schedule; the cells are small and the thirty-per-cell corpus of Task 10 is where it gets its
 final interval.
+
+Task 12 done in the environment (`src/isingfold/rl/proposal.py`, `probes/_context.py`): PLACE
+follows placed logical neighbours and offers a spread of roots for the first placement; the
+horizon scales with the instance; ROUTE offers, after the router's path, one-qubit bridges to
+either owner and two-owner meeting routes, all charged by the neighbour scans that found them.
+A planted witness now replays to a valid COMMIT on 16 and on 100 qubits with 70 to 76
+variables, three seeds, chains inside the witness's. The suite shows no new failure.
 
 Construction API, measured before any policy: on a 16-qubit toy host the environment in
 construction mode reaches COMMIT with exactly the planted witness in 12 decisions when each
