@@ -115,6 +115,11 @@ def main() -> int:
                     help="train on cells where unseeded minorminer is not already at one")
     ap.add_argument("--fast", action="store_true",
                     help="sample layouts outside the environment (milliseconds a layout)")
+    ap.add_argument("--layout-router-secs", type=float, default=2.0,
+                    help="router budget per sampled layout in the search and in training; the "
+                         "router finishes a right layout in under a second, so a long budget "
+                         "only pays for wrong ones")
+    ap.add_argument("--layout-tries", type=int, default=2)
     a = ap.parse_args()
     tasks = load_instances(a.corpus)
     rng = np.random.default_rng(a.seed)
@@ -155,8 +160,8 @@ def main() -> int:
                 roots, _ = layout(t, model, fc_for(t), a.temperature, rng, train=True)
                 layouts += 1
                 left = a.eval_deadline - (time.time() - t0)
-                ok, _, _ = complete(t, roots, min(a.train_deadline, max(0.5, left)), a.tries,
-                                    70_000 + 1000 * k + 13 * layouts)
+                ok, _, _ = complete(t, roots, min(a.layout_router_secs, max(0.5, left)),
+                                    a.layout_tries, 70_000 + 1000 * k + 13 * layouts)
             ok0, _, _ = complete(t, None, a.eval_deadline, a.tries, 80_000 + 1000 * k)
             cells[t.lineage.rsplit("-", 1)[0].split("-", 1)[1].rsplit("-", 1)[0]].append((ok, ok0, layouts))
         model.train()
@@ -178,7 +183,8 @@ def main() -> int:
             eps = []
             for e in range(a.episodes_per_instance):
                 roots, logps = layout(t, model, fc_for(t), a.temperature, rng, train=True)
-                ok, s, _ = complete(t, roots, a.train_deadline, a.tries, 90_000 + 7 * e + 100 * it)
+                ok, s, _ = complete(t, roots, a.layout_router_secs, a.layout_tries,
+                                    90_000 + 7 * e + 100 * it)
                 r = 1.0 if ok else 0.5 * partial_score(t, roots, 91_000 + 7 * e + 100 * it)
                 eps.append((r, logps)); wins.append(ok); secs.append(s)
             base = np.mean([r for r, _ in eps])
