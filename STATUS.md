@@ -324,17 +324,22 @@ punishes. The learned embedder is therefore trained and judged on measured quali
 valid embeddings, with the router alone as the baseline on the same instances; the search
 over layouts continues until the deadline and selects by a measurement block.
 
-## The roots are the missing information: minorminer seeded with witness roots (partial)
+## The roots are the missing information: minorminer seeded with witness roots
 
 minorminer accepts initial chains. Seeded with one qubit per variable taken from the
 witness, restarted with fresh seeds until the deadline (`runs/seeded/*.log`, tables partial
 while the runs finish):
 
-    cell                              no hint    random roots    witness roots
-    Pegasus 3, 80 percent short        3/12         3/12            12/12
-    Zephyr 2, 80 percent short         1/12         0/12            12/12
-    Pegasus 6, 80 percent short        0/2          0/2             2/2      (300 s; plain is 0 at 20x budget)
-    Zephyr 4, 80 percent short         0/2          0/2             2/2
+    cell (12 a cell, 60 s)             no hint    random roots    witness roots   secs, witness
+    Pegasus 3, 80 percent short         0.25         0.25            1.00           0
+    Pegasus 3, 85 / 90 / 95 short       0 / 0 / 0    0 / 0 / 0       1 / 1 / 1      0
+    Pegasus 3, 90 / 95 medium           0.42 / 0.25  0.42 / 0.25     1 / 1          0
+    Zephyr 2, 80 percent short          0.08         0.00            1.00           0
+    Zephyr 2, 85 / 90 / 95 short        0 / 0 / 0    0 / 0 / 0       1 / 1 / 1      0 to 1
+    Zephyr 2, 90 / 95 medium            0.67 / 0.17  0.75 / 0.17     1 / 1          0
+    Pegasus 6 and Zephyr 4, 80 short    0            0               1.00 so far    (300 s; plain is 0 at 20x budget)
+
+Full tables in `results/seeded/pegasus3.log`, `zephyr2.log`; the big-host runs are in progress.
 
 Random roots do nothing, so the effect is the information in the roots, not the act of
 seeding; and with the right roots the completion takes under a second at 680 qubits. The

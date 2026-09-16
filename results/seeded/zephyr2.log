@@ -1,0 +1,135 @@
+{"corpus": "runs/small/zephyr2/corpus", "instances": 120, "deadline": 60.0, "tries": 10}
+    1/120 zephyr2-fill70-a3.0-0      none valid    6s | witness valid    0s | random valid   16s
+    2/120 zephyr2-fill70-a3.0-1      none valid    0s | witness valid    0s | random valid    0s
+    3/120 zephyr2-fill70-a3.0-2      none valid    0s | witness valid    0s | random valid    1s
+    4/120 zephyr2-fill70-a3.0-3      none valid    0s | witness valid    0s | random valid    1s
+    5/120 zephyr2-fill70-a3.0-4      none valid    0s | witness valid    0s | random valid    0s
+    6/120 zephyr2-fill70-a3.0-5      none valid    0s | witness valid    0s | random valid    0s
+    7/120 zephyr2-fill70-a3.0-6      none valid    0s | witness valid    0s | random valid    0s
+    8/120 zephyr2-fill70-a3.0-7      none valid    2s | witness valid    0s | random valid    1s
+    9/120 zephyr2-fill70-a3.0-8      none valid    0s | witness valid    0s | random valid    0s
+   10/120 zephyr2-fill70-a3.0-9      none valid    0s | witness valid    0s | random valid    0s
+   11/120 zephyr2-fill70-a3.0-10     none valid    0s | witness valid    0s | random valid    0s
+   12/120 zephyr2-fill70-a3.0-11     none valid    1s | witness valid    0s | random valid    0s
+   13/120 zephyr2-fill70-a2.0-0      none valid    0s | witness valid    0s | random valid    0s
+   14/120 zephyr2-fill70-a2.0-1      none valid    0s | witness valid    0s | random valid    0s
+   15/120 zephyr2-fill70-a2.0-2      none valid    0s | witness valid    0s | random valid    0s
+   16/120 zephyr2-fill70-a2.0-3      none valid    0s | witness valid    0s | random valid    0s
+   17/120 zephyr2-fill70-a2.0-4      none valid    0s | witness valid    0s | random valid    0s
+   18/120 zephyr2-fill70-a2.0-5      none valid    0s | witness valid    0s | random valid    0s
+   19/120 zephyr2-fill70-a2.0-6      none valid    0s | witness valid    0s | random valid    0s
+   20/120 zephyr2-fill70-a2.0-7      none valid    0s | witness valid    0s | random valid    0s
+   21/120 zephyr2-fill70-a2.0-8      none valid    0s | witness valid    0s | random valid    0s
+   22/120 zephyr2-fill70-a2.0-9      none valid    0s | witness valid    0s | random valid    0s
+   23/120 zephyr2-fill70-a2.0-10     none valid    0s | witness valid    0s | random valid    0s
+   24/120 zephyr2-fill70-a2.0-11     none valid    0s | witness valid    0s | random valid    0s
+   25/120 zephyr2-fill80-a3.0-0      none no      60s | witness valid    0s | random no      60s
+   26/120 zephyr2-fill80-a3.0-1      none no      61s | witness valid    0s | random no      60s
+   27/120 zephyr2-fill80-a3.0-2      none no      60s | witness valid    0s | random no      61s
+   28/120 zephyr2-fill80-a3.0-3      none no      60s | witness valid    0s | random no      60s
+   29/120 zephyr2-fill80-a3.0-4      none no      60s | witness valid    0s | random no      61s
+   30/120 zephyr2-fill80-a3.0-5      none no      61s | witness valid    0s | random no      61s
+   31/120 zephyr2-fill80-a3.0-6      none valid   48s | witness valid    0s | random no      61s
+   32/120 zephyr2-fill80-a3.0-7      none no      60s | witness valid    0s | random no      61s
+   33/120 zephyr2-fill80-a3.0-8      none no      60s | witness valid    0s | random no      61s
+   34/120 zephyr2-fill80-a3.0-9      none no      61s | witness valid    0s | random no      61s
+   35/120 zephyr2-fill80-a3.0-10     none no      60s | witness valid    0s | random no      61s
+   36/120 zephyr2-fill80-a3.0-11     none no      61s | witness valid    0s | random no      61s
+   37/120 zephyr2-fill80-a2.0-0      none valid    0s | witness valid    0s | random valid    0s
+   38/120 zephyr2-fill80-a2.0-1      none valid    0s | witness valid    0s | random valid    1s
+   39/120 zephyr2-fill80-a2.0-2      none valid    0s | witness valid    0s | random valid    0s
+   40/120 zephyr2-fill80-a2.0-3      none valid    0s | witness valid    0s | random valid    0s
+   41/120 zephyr2-fill80-a2.0-4      none valid    0s | witness valid    0s | random valid    0s
+   42/120 zephyr2-fill80-a2.0-5      none valid    0s | witness valid    0s | random valid    0s
+   43/120 zephyr2-fill80-a2.0-6      none valid    0s | witness valid    0s | random valid    0s
+   44/120 zephyr2-fill80-a2.0-7      none valid    0s | witness valid    0s | random valid    0s
+   45/120 zephyr2-fill80-a2.0-8      none valid    0s | witness valid    0s | random valid    0s
+   46/120 zephyr2-fill80-a2.0-9      none valid    0s | witness valid    0s | random valid    0s
+   47/120 zephyr2-fill80-a2.0-10     none valid    0s | witness valid    0s | random valid    0s
+   48/120 zephyr2-fill80-a2.0-11     none valid    0s | witness valid    0s | random valid    0s
+   49/120 zephyr2-fill85-a3.0-0      none no      60s | witness valid    0s | random no      60s
+   50/120 zephyr2-fill85-a3.0-1      none no      60s | witness valid    0s | random no      61s
+   51/120 zephyr2-fill85-a3.0-2      none no      60s | witness valid    0s | random no      61s
+   52/120 zephyr2-fill85-a3.0-3      none no      60s | witness valid    0s | random no      61s
+   53/120 zephyr2-fill85-a3.0-4      none no      61s | witness valid    0s | random no      61s
+   54/120 zephyr2-fill85-a3.0-5      none no      60s | witness valid    0s | random no      60s
+   55/120 zephyr2-fill85-a3.0-6      none no      60s | witness valid    0s | random no      61s
+   56/120 zephyr2-fill85-a3.0-7      none no      61s | witness valid    0s | random no      61s
+   57/120 zephyr2-fill85-a3.0-8      none no      61s | witness valid    0s | random no      61s
+   58/120 zephyr2-fill85-a3.0-9      none no      61s | witness valid    0s | random no      60s
+   59/120 zephyr2-fill85-a3.0-10     none no      61s | witness valid    0s | random no      60s
+   60/120 zephyr2-fill85-a3.0-11     none no      60s | witness valid    0s | random no      61s
+   61/120 zephyr2-fill85-a2.0-0      none valid    0s | witness valid    0s | random valid    0s
+   62/120 zephyr2-fill85-a2.0-1      none valid    2s | witness valid    0s | random valid    3s
+   63/120 zephyr2-fill85-a2.0-2      none valid    0s | witness valid    0s | random valid    0s
+   64/120 zephyr2-fill85-a2.0-3      none valid    1s | witness valid    0s | random valid    1s
+   65/120 zephyr2-fill85-a2.0-4      none valid    0s | witness valid    0s | random valid    0s
+   66/120 zephyr2-fill85-a2.0-5      none valid   33s | witness valid    0s | random valid   16s
+   67/120 zephyr2-fill85-a2.0-6      none valid    0s | witness valid    0s | random valid    0s
+   68/120 zephyr2-fill85-a2.0-7      none valid    0s | witness valid    0s | random valid    0s
+   69/120 zephyr2-fill85-a2.0-8      none valid    0s | witness valid    0s | random valid    3s
+   70/120 zephyr2-fill85-a2.0-9      none valid    0s | witness valid    0s | random valid    0s
+   71/120 zephyr2-fill85-a2.0-10     none valid    0s | witness valid    0s | random valid    0s
+   72/120 zephyr2-fill85-a2.0-11     none valid    0s | witness valid    0s | random valid    0s
+   73/120 zephyr2-fill90-a3.0-0      none no      60s | witness valid    0s | random no      60s
+   74/120 zephyr2-fill90-a3.0-1      none no      60s | witness valid    0s | random no      61s
+   75/120 zephyr2-fill90-a3.0-2      none no      61s | witness valid    0s | random no      60s
+   76/120 zephyr2-fill90-a3.0-3      none no      61s | witness valid    0s | random no      60s
+   77/120 zephyr2-fill90-a3.0-4      none no      60s | witness valid    0s | random no      61s
+   78/120 zephyr2-fill90-a3.0-5      none no      61s | witness valid    0s | random no      61s
+   79/120 zephyr2-fill90-a3.0-6      none no      60s | witness valid    1s | random no      61s
+   80/120 zephyr2-fill90-a3.0-7      none no      61s | witness valid    0s | random no      60s
+   81/120 zephyr2-fill90-a3.0-8      none no      60s | witness valid    0s | random no      60s
+   82/120 zephyr2-fill90-a3.0-9      none no      60s | witness valid    0s | random no      60s
+   83/120 zephyr2-fill90-a3.0-10     none no      61s | witness valid    0s | random no      61s
+   84/120 zephyr2-fill90-a3.0-11     none no      61s | witness valid    0s | random no      61s
+   85/120 zephyr2-fill90-a2.0-0      none valid    1s | witness valid    0s | random valid    1s
+   86/120 zephyr2-fill90-a2.0-1      none no      60s | witness valid    0s | random no      60s
+   87/120 zephyr2-fill90-a2.0-2      none valid    1s | witness valid    0s | random valid    0s
+   88/120 zephyr2-fill90-a2.0-3      none no      61s | witness valid    0s | random valid   55s
+   89/120 zephyr2-fill90-a2.0-4      none valid    0s | witness valid    0s | random valid    0s
+   90/120 zephyr2-fill90-a2.0-5      none valid    0s | witness valid    0s | random valid    0s
+   91/120 zephyr2-fill90-a2.0-6      none no      60s | witness valid    0s | random no      61s
+   92/120 zephyr2-fill90-a2.0-7      none no      61s | witness valid    0s | random no      61s
+   93/120 zephyr2-fill90-a2.0-8      none valid    2s | witness valid    0s | random valid    3s
+   94/120 zephyr2-fill90-a2.0-9      none valid    4s | witness valid    0s | random valid   12s
+   95/120 zephyr2-fill90-a2.0-10     none valid    0s | witness valid    0s | random valid    0s
+   96/120 zephyr2-fill90-a2.0-11     none valid    5s | witness valid    0s | random valid    2s
+   97/120 zephyr2-fill95-a3.0-0      none no      60s | witness valid    0s | random no      62s
+   98/120 zephyr2-fill95-a3.0-1      none no      61s | witness valid    0s | random no      62s
+   99/120 zephyr2-fill95-a3.0-2      none no      61s | witness valid    0s | random no      60s
+  100/120 zephyr2-fill95-a3.0-3      none no      61s | witness valid    0s | random no      61s
+  101/120 zephyr2-fill95-a3.0-4      none no      61s | witness valid    1s | random no      61s
+  102/120 zephyr2-fill95-a3.0-5      none no      60s | witness valid    0s | random no      60s
+  103/120 zephyr2-fill95-a3.0-6      none no      60s | witness valid    1s | random no      62s
+  104/120 zephyr2-fill95-a3.0-7      none no      60s | witness valid    0s | random no      60s
+  105/120 zephyr2-fill95-a3.0-8      none no      60s | witness valid    1s | random no      61s
+  106/120 zephyr2-fill95-a3.0-9      none no      61s | witness valid    0s | random no      60s
+  107/120 zephyr2-fill95-a3.0-10     none no      61s | witness valid    2s | random no      62s
+  108/120 zephyr2-fill95-a3.0-11     none no      60s | witness valid    0s | random no      60s
+  109/120 zephyr2-fill95-a2.0-0      none no      60s | witness valid    0s | random no      61s
+  110/120 zephyr2-fill95-a2.0-1      none no      61s | witness valid    1s | random no      60s
+  111/120 zephyr2-fill95-a2.0-2      none valid   57s | witness valid    0s | random valid   36s
+  112/120 zephyr2-fill95-a2.0-3      none no      60s | witness valid    3s | random no      60s
+  113/120 zephyr2-fill95-a2.0-4      none no      60s | witness valid    2s | random no      60s
+  114/120 zephyr2-fill95-a2.0-5      none no      60s | witness valid    1s | random no      60s
+  115/120 zephyr2-fill95-a2.0-6      none no      61s | witness valid    0s | random no      61s
+  116/120 zephyr2-fill95-a2.0-7      none no      61s | witness valid    0s | random no      61s
+  117/120 zephyr2-fill95-a2.0-8      none no      60s | witness valid    7s | random no      61s
+  118/120 zephyr2-fill95-a2.0-9      none no      61s | witness valid    0s | random no      61s
+  119/120 zephyr2-fill95-a2.0-10     none valid   29s | witness valid    0s | random valid   53s
+  120/120 zephyr2-fill95-a2.0-11     none no      61s | witness valid    0s | random no      61s
+
+  cell               n     none  witness   random  secs none   secs wit   fill wit
+  fill70-a2.0       12     1.00     1.00     1.00          0          0       0.58
+  fill70-a3.0       12     1.00     1.00     1.00          1          0       0.67
+  fill80-a2.0       12     1.00     1.00     1.00          0          0       0.68
+  fill80-a3.0       12     0.08     1.00     0.00         59          0       0.78
+  fill85-a2.0       12     1.00     1.00     1.00          3          0       0.71
+  fill85-a3.0       12     0.00     1.00     0.00         60          0       0.82
+  fill90-a2.0       12     0.67     1.00     0.75         21          0       0.77
+  fill90-a3.0       12     0.00     1.00     0.00         61          0       0.88
+  fill95-a2.0       12     0.17     1.00     0.17         58          1       0.85
+  fill95-a3.0       12     0.00     1.00     0.00         61          1       0.92
+
+SEEDED MINORMINER DONE
