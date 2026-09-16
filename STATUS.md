@@ -12,7 +12,7 @@ never depends on memory.
 |---|---|---|---|
 | Task 7 | old vs corrected encoding on identical labels, 3 seeds each, both hosts. Decides whether the improvement surrogate lives (>= +0.03 with interval above zero) or is retired | apollo `runs/corrected/*_seed*.log` -> `results/corrected/` | running, ~400 steps each |
 | Task 8 | label reliability, learnable ceiling | `results/corrected/*_reliability.log` | **done**: ceiling +0.109 / +0.122 |
-| Task 9 | quality endpoint at the fill regime under the registered schedule, paired with intervals. Decides feasibility-only or not | apollo `runs/fill/*_witness_registered.log` | running |
+| Task 9 | quality endpoint at the fill regime under the registered schedule, paired with intervals. Decides feasibility-only or not | apollo `runs/fill/*_witness_registered.log` -> `results/fill/` | Zephyr done: residual discriminates, -0.021 [-0.030, -0.010] at 80 percent; Pegasus running |
 | Task 10 | anytime minorminer with a wall-time deadline, 30 to 300 s. Names the regime where the tool fails at the intended budget | goose `runs/fill/*_anytime.log` | running |
 | budget x20 | minorminer at 200 tries on the fill corpora | apollo `runs/fill/*_budget.log` | running |
 | Task 12 | witness replay through the construction API | `tests/unit/test_witness_replay.py` | diagnosed: fails at step 0 on the 24-root shortlist; fix gated on Checkpoint 3 |
@@ -276,6 +276,14 @@ Under the auto schedule resource selection sat at chance on every corpus. A fixe
 makes compression cost something, which is what ADR-002 says it should; measured selection
 still beats resource selection by about twice its margin. The corrected-versus-old comparison
 and the reliability probe are running on these labels.
+
+Task 9, Zephyr 4, registered schedule (`results/fill/zephyr4_witness_registered.log`): paired
+witness minus minorminer best of four on the energy residual, lower is better: 80 percent
+-0.0207 [-0.0300, -0.0095] over 6, 85 percent -0.0148 [-0.0296, +0.0035] over 5, 90 percent
+-0.0161 [-0.0344, +0.0022] over 2. Solve probability is zero on both sides everywhere. The
+quality endpoint at the fill regime exists and it is the residual under the registered
+schedule; the cells are small and the thirty-per-cell corpus of Task 10 is where it gets its
+final interval.
 
 Construction API, measured before any policy: on a 16-qubit toy host the environment in
 construction mode reaches COMMIT with exactly the planted witness in 12 decisions when each

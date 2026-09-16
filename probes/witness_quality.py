@@ -113,7 +113,7 @@ def main() -> int:
             cols.append("%+.4f [%+.4f, %+.4f]" % (d[:, j].mean(), np.percentile(bs, 2.5),
                                                   np.percentile(bs, 97.5)))
         print("  %-16s %3d %22s %22s" % (family, len(d), cols[0], cols[1]))
-    print("  schedule: %s" % (ctx.beta_range if ctx.beta_range is not None else "auto"))
+    print("  schedule: %s" % (str(ctx.beta_range) if ctx.beta_range is not None else "auto",))
     print("\nWITNESS QUALITY DONE", flush=True)
     return 0
 
