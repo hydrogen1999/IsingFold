@@ -389,3 +389,5 @@ each, on the v1 cache; the four-arm representation ablation on the hard corpus; 
 ceiling probe on Pegasus 6 and Zephyr 4 in three versions: `pool_2k_biased.log` is the first
 run whose mixed pool held sixteen candidates and is kept as the record of a withdrawn number,
 `pool_equalk.log` is the corrected three-pool run, `pool.log` adds the diversity-chosen pool.
+
+- `rules/`: selection rules over the same eight router draws (first, random, fewest qubits, shortest chain, measured, oracle), Pegasus 6 and Zephyr 4, registered schedule; `probes/selection_rules.py`.
