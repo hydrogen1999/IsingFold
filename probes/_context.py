@@ -43,4 +43,5 @@ def construction_context(qubit_cap: int, n_vars: int, n_edges: int, **kw) -> Con
                    compiler_calls=int(DEFAULT_CAPS.compiler_calls * factor),
                    validator_calls=int(DEFAULT_CAPS.validator_calls * factor),
                    feature_work=int(DEFAULT_CAPS.feature_work * factor))
-    return host_context(qubit_cap, caps=caps, **kw)
+    quotas = {"place": 64, "route": 64}
+    return host_context(qubit_cap, caps=caps, construction_quotas=quotas, **kw)

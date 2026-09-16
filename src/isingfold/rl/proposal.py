@@ -305,9 +305,18 @@ class ProposalGenerator:
                             touches[r] = touches.get(r, 0) + 1
             return sorted(touches, key=lambda r: (-touches[r], str(r)))
 
+        def placed_neighbours(variable):
+            return sum(1 for nb in self.logical.neighbors(variable) if chains.get(nb))
+
         attached = [(v, adjacent_roots(v)) for v in empty]
         attached = [(v, roots) for v, roots in attached if roots]
-        attached.sort(key=lambda vr: (-self.logical.degree(vr[0]), str(vr[0])))
+        # The most constrained variables first: those with the most placed neighbours have
+        # the fewest qubits adjacent to all of them, so a few roots each cover their
+        # options; on a host of degree fifteen a single root per variable does not.
+        attached.sort(key=lambda vr: (-placed_neighbours(vr[0]), -self.logical.degree(vr[0]),
+                                      str(vr[0])))
+        per_variable = max(1, budget // 8)
+        attached = [(v, roots[:per_variable]) for v, roots in attached[: max(1, budget // per_variable)]]
         if not attached:
             # Nothing placed yet: a spread of free roots for the highest-degree empty
             # variable, every k-th free qubit, so the first placement is not confined to one

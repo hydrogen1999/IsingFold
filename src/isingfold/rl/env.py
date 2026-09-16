@@ -324,6 +324,23 @@ class EmbeddingEnv:
             workspace_valid = True
         else:
             chains = {v: frozenset() for v in self.task.logical.nodes()}
+            if self.initializer is not None:
+                # A partial embedding to build from: some chains placed, the rest empty. A
+                # teacher uses it to fix the first placement, which the spread of first
+                # roots cannot promise to contain; a policy leaves it unset.
+                partial = self.initializer(self.task.logical, self.task.host, self._seed)
+                if partial:
+                    seen: set = set()
+                    for v, chain in partial.items():
+                        if v not in chains:
+                            raise IntegrityError(f"partial embedding names unknown variable {v!r}")
+                        chain = frozenset(chain)
+                        if seen & chain:
+                            raise IntegrityError("partial embedding overlaps its own chains")
+                        if chain and not nx.is_connected(self.task.host.subgraph(chain)):
+                            raise IntegrityError(f"partial chain of {v!r} is not connected")
+                        seen |= chain
+                        chains[v] = chain
             archive = []
             reference_program = None
             workspace_valid = False

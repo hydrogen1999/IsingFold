@@ -67,7 +67,13 @@ def replay(task, witness, max_steps=400):
 
     ctx = construction_context(task.host.number_of_nodes(), task.logical.number_of_nodes(),
                                task.logical.number_of_edges())
-    env = EmbeddingEnv(task, ctx, mode=Mode.CONSTRUCTION, initializer=None,
+    first = max(witness, key=lambda v: (task.logical.degree(v), str(v)))
+    seed_root = frozenset({min(witness[first], key=str)})
+
+    def start(logical, host, seed):
+        return {first: seed_root}
+
+    env = EmbeddingEnv(task, ctx, mode=Mode.CONSTRUCTION, initializer=start,
                        selector=fixed_strength_selector(), reward_reads=8)
     dec = env.reset(0)
     steps = 0
