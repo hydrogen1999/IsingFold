@@ -19,7 +19,8 @@ never depends on memory.
 | direction 3 | adaptive allocation of reads vs uniform, real evaluator, disjoint assessment | `results/adaptive/*.log` | **done, replicated**: successive halving matches uniform at half the reads on both hosts, -0.002 [-0.008, +0.004] Zephyr and +0.002 [-0.004, +0.009] Pegasus; UCB slightly worse; random -0.11 to -0.12 |
 | curriculum baseline | anytime minorminer on Pegasus 3 and Zephyr 2 fill corpora, 12 a cell, deadlines 10 to 120 s | `results/small/*_anytime.log` | **done**: short chains from 80 percent 0 to 0.17 at 120 s with 20 to 40 attempts; medium chains 0.42 / 0.17 (Pegasus 3) and 0.75 / 0.08 (Zephyr 2) at 90 / 95 percent |
 | hybrid | policy roots then minorminer; seeded-minorminer tolerance arms | apollo `runs/seeded/*.log`, `runs/hybrid/*.log` | witness roots turn 0 into 12/12 at 80 percent short chains on both small hosts and 2/2 so far on both big hosts; policy roots and tolerance running |
-| hybrid RL | PLACE-only policy, router completion, reward graded by how close a failed completion came; eval: greedy roots then router within 60 s vs router alone | apollo `runs/hybrid/rl_*.log` | first run had no gradient (0/1 reward, `updates 0`, `*_v1.log`); relaunched with the graded reward; init eval policy+router 0.47 vs router 0.50 (Pegasus 3), 0.37 vs 0.40 (Zephyr 2) |
+| hybrid RL, validity | fast layout sampler, router completion at 2 s a layout, reward graded by completion, eval: policy + layout search vs router alone within 60 s | apollo `runs/hybrid/fast_*.log` | running; with 10 s a layout only 3.7 layouts fit and policy+search equalled router alone (0.50 vs 0.50), `fast_*_v1.log` |
+| hybrid RL, quality | same, but a valid completion is rewarded by its measured energy residual against the router-alone embedding (the objective); eval reports validity and the paired residual on a fresh block | apollo `runs/hybrid/quality_*.log` | running |
 | direction 4, RL | REINFORCE on the constructive policy (policy = prioritiser), dense progress reward, STOP and RESTART masked, evaluation samples until the deadline; from scratch and initialised from the imitation prioritiser; Pegasus 3 and Zephyr 2 | apollo `runs/rl/*_scratch.log`, `runs/rl/*_init.log` | running; before the mask the imitation-initialised policy reached demand fraction 0.70 / 0.63 and validity 0, ending episodes by sampling STOP |
 | imitation, deployed | the imitation prioritiser as a policy on the full fill corpora, sample until 600 s | apollo `runs/rl/*_imitation_deploy.log`; baseline at 300 and 600 s on goose `runs/fill/*_anytime600.log` | running |
 | direction 5 | quality surrogate at ten times the lineages, registered schedule, corrected compiler | `results/large/train_seed*.log` | **done**: held-out +0.021, +0.027, +0.023 over 360 lineages, every interval above zero, against +0.003 at 160 lineages; the ceiling is +0.11. Learnable, slowly |
@@ -311,6 +312,17 @@ minorminer's router reaches 24 of 24 in under a second. A maximum matching of br
 be ripped up. Matching the standard router is an
 engineering project on its own; until it does, the learned layout is measured with the
 standard router as the completion and the standard router alone as the baseline.
+
+## The objective is quality; validity is the gate
+
+minorminer optimises resource first, and its hundred percent from witness roots is
+validity, not the objective. Under the registered schedule the witness embeddings sit below
+minorminer's best of four on the energy residual in every fill cell where both exist
+(Task 9: -0.021 to -0.032), with fewer qubits (544 against 560 at 80 percent on Pegasus 6):
+at high fill the resource-first router completes with long chains, which the objective
+punishes. The learned embedder is therefore trained and judged on measured quality among
+valid embeddings, with the router alone as the baseline on the same instances; the search
+over layouts continues until the deadline and selects by a measurement block.
 
 ## The roots are the missing information: minorminer seeded with witness roots (partial)
 
