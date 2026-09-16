@@ -1,0 +1,16 @@
+{"cache": "runs/relabel/zephyr4_registered.pkl", "split": "eval", "lineages": 32, "states": 63, "reads": 256, "block": 32, "beta_range": [0.1, 2.0]}
+  10/63 states, 423 evaluator calls, 2207s
+  20/63 states, 837 evaluator calls, 4107s
+  30/63 states, 1290 evaluator calls, 6207s
+  40/63 states, 1712 evaluator calls, 8165s
+  50/63 states, 2133 evaluator calls, 10096s
+  60/63 states, 2564 evaluator calls, 11477s
+
+  63 states in 32 lineages, assessed on 512 independent reads
+  arm             reads    quality  minus uniform, 95% over lineages
+  uniform          1544     0.5043  +0.0000 [+0.0000, +0.0000]
+  halving           760     0.5025  -0.0018 [-0.0078, +0.0035]
+  ucb               772     0.4972  -0.0071 [-0.0148, -0.0002]
+  random              0     0.3809  -0.1234 [-0.1617, -0.0856]
+
+ADAPTIVE ALLOCATION DONE

@@ -16,7 +16,7 @@ never depends on memory.
 | Task 10 | anytime minorminer with a wall-time deadline, 30 to 300 s. Names the regime where the tool fails at the intended budget | goose `runs/fill/*_anytime.log` | running |
 | budget x20 | minorminer at 200 tries on the fill corpora | `results/fill/*_budget.log` | **done** both hosts: Pegasus 80 percent medium 0.33 -> 0.83 -> 1.00 at 10, 50, 200 tries, 85 percent 0 -> 0.17 -> 0.17, everything else 0 at 300 to 480 s a draw; Zephyr done: 85 percent medium chains 0.50 -> 0.67 -> 0.83 at 10, 50, 200 tries; 90 percent stays 0.33; short chains stay 0 at 260 to 350 s a draw |
 | Task 12 | witness replay through the construction API | `tests/unit/test_witness_replay.py`, apollo `runs/fill/*_replay_{nohint,hint}.log` | grammar sufficient at scale with the witness as prioritiser (first Zephyr instance, 366 variables: valid in 445 decisions, 267 s); unhinted heuristic order covers almost nothing; full corpus replay running |
-| direction 3 | adaptive allocation of reads vs uniform, real evaluator, disjoint assessment | goose `runs/adaptive/zephyr4.log` | running |
+| direction 3 | adaptive allocation of reads vs uniform, real evaluator, disjoint assessment | `results/adaptive/zephyr4.log`; Pegasus running on goose | Zephyr **done**: successive halving matches uniform at half the reads, -0.002 [-0.008, +0.004]; UCB -0.007; random -0.123 |
 | direction 5 | labels on the 2400-instance Pegasus 6 corpus for the data-scale test | goose corpus `runs/large/`, apollo `runs/large/labels.log` | corpus done in 5 minutes; labelling running |
 
 Checkpoints and gates are in `docs/plans/2026-09-15-plan.md`; decisions in `docs/decisions/`;
@@ -251,6 +251,22 @@ Fill regime, further facts: with chains of length one, where minimal fill is exa
 finds nothing from 70 percent up on either host at 60 to 155 seconds a draw
 (`results/fill/*_exact.log`). Pegasus 6 at fifty tries: 80 percent with medium chains rises
 from 0.33 to 0.83 and 85 percent from 0 to 0.17; everything else stays at zero.
+
+## Adaptive allocation of reads (direction 3)
+
+Zephyr 4, 63 held-out states in 32 lineages, every read a real evaluator call, the chosen
+candidate assessed on 512 independent reads (`results/adaptive/zephyr4.log`):
+
+    arm                     reads   selected quality   minus uniform, 95% over lineages
+    uniform, 8 x 256         1544       0.5043
+    successive halving        760       0.5025          -0.0018 [-0.0078, +0.0035]
+    UCB, blocks of 32         772       0.4972          -0.0071 [-0.0148, -0.0002]
+    random, no reads            0       0.3809          -0.1234 [-0.1617, -0.0856]
+
+Successive halving reaches the quality of uniform selection with half the measurement. This
+is the first positive result of the relaunch, and it is the measured-selection finding made
+into a mechanism: the reads that decide are the ones spent on the contenders. A learned
+prior over candidates can only be judged against this, not against uniform.
 
 ## Checkpoint 2: the corrected surrogate does not transfer either (Task 7)
 
