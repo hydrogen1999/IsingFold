@@ -200,6 +200,41 @@ length exactly one make it exact: the logical graph is then an induced subgraph 
 n = f·|H| nodes, every embedding needs at least n qubits, and the witness uses exactly n. That
 sweep is running. Logs in `results/fill/`.
 
+## Relaunch, 2026-09-15: two reviewers, two defects, a spec before code
+
+Two independent critical reviews (`docs/review/`) were run against the premise that the method
+and the objective are right, so a failure to learn is a defect. GPT-6 astra found two:
+
+- **D1.** The successor scorer's input was compiled with chain strength ratio times mean|J|
+  (`probes/train_successor.py:compile_for`); the environment that produced every label uses
+  ratio times the RMS coefficient scale (`src/isingfold/rl/program.py:strength_registry`). On
+  the audit fixtures the shown strength was 8.6, 18.5, 1.0 and 43.9 percent above the evaluated
+  one; on the unit fixture 12.6 percent. The model fitted labels of a program it never saw.
+  Fixed in `cf62297`, pinned by `tests/unit/test_probe_compile_matches_env.py`. ADR-001.
+- **D2.** `Context.beta_range` defaulted to None and no labelling or assessment probe set it, so
+  every quality label was measured under the auto schedule that cancels energy compression,
+  which the repository had already shown (`results/audit/`). The registered range (0.1, 2.0)
+  is now the default in `probes/_context.py`, so every earlier quality number is a number about
+  a different objective. Fixed in `4ed5771`, pinned by `tests/unit/test_registered_schedule.py`.
+  ADR-002.
+
+The reviews also narrow what the earlier results rule out. The pool-ceiling result constrains
+one growth distribution, not every local policy. The flat learning curve covers lexicographic
+subsets of one cache with a mismatched encoding. Label reliability was already measured in
+audit 3: within-state correlation 0.979 to 0.998 across two 512-read blocks. So the record
+supports "the tested models did not transfer", not "nothing is learnable". Spec, three ADRs
+and the task plan are in `docs/specs/`, `docs/decisions/`, `docs/plans/`.
+
+The test suite was testing the wrong tree on the remote hosts (an editable install of the old
+workspace shadowed PYTHONPATH). `tests/conftest.py` pins it to this repository; baseline on
+apollo is 1234 passed, 16 failed, 5 collection errors, every failure and error in tests that
+depend on LAC_B or on runtime assets outside this tree. Noticed, not touched.
+
+Fill regime, further facts: with chains of length one, where minimal fill is exact, minorminer
+finds nothing from 70 percent up on either host at 60 to 155 seconds a draw
+(`results/fill/*_exact.log`). Pegasus 6 at fifty tries: 80 percent with medium chains rises
+from 0.33 to 0.83 and 85 percent from 0 to 0.17; everything else stays at zero.
+
 ## Three facts about the fill regime, measured before anything is built for it
 
 - **The in-tree constructor is at zero.** `router_initializer`, the greedy degree-order

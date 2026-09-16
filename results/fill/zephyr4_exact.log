@@ -3,3 +3,7 @@
   0.70  3.0      403      403     0.00         -     59.4         -
   0.80  3.0      461      461     0.00         -     84.7         -
   0.85  3.0      490      490     0.00         -     94.2         -
+  0.90  3.0      518      518     0.00         -    114.1         -
+  0.95  3.0      547      547     0.00         -    154.1         -
+{"generator_version": "rev2-inkdrop-frustrated-1", "instances": 30, "strength_records": 25, "split": {"train": 21, "validation": 4, "test": 5, "ood": 0}, "files": ["evaluator_only.jsonl", "instances.jsonl", "splits.json", "strength_counts.jsonl"], "digest": "e0aa13b557a8d2e1"}
+FILL CORPUS DONE
