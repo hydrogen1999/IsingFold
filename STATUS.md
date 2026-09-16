@@ -330,6 +330,27 @@ the learned allocation prior (directions 3 plus 5) against plain halving on froz
 the first learned-win test, hybrid validity then quality is the embedder's line, and
 constructive RL alone is parked.
 
+## The qubit-spend sweep under the registered schedule: how a qubit is spent decides the sign
+
+Same corpora, lineages, exponents and seed as the unbiased confirmation, one draw per arm,
+now measured under the objective (`results/modern/*/sweep_registered.log`), utility of the
+grown embedding minus the start, 90 lineages:
+
+    spend             alpha   Pegasus 6                     Zephyr 4
+    lengthen          2.2     -0.057 [-0.070, -0.045]       -0.052 [-0.068, -0.036]
+    lengthen          1.6     -0.092 [-0.117, -0.069]       -0.110 [-0.130, -0.090]
+    redundancy        3.0     -0.024 [-0.039, -0.010]       -0.010 [-0.024, +0.004]
+    redundancy        1.6     -0.118 [-0.143, -0.093]       -0.117 [-0.147, -0.089]
+    contacts          3.0     +0.016 [-0.002, +0.036]       -0.000 [-0.014, +0.014]
+    contacts          2.2     -0.012 [-0.037, +0.012]       +0.006 [-0.021, +0.033]
+    contacts          1.6     -0.025 [-0.052, +0.001]       +0.011 [-0.024, +0.044]
+
+Under the fixed temperature, lengthening and redundancy cost more than they did under the
+auto schedule, since compression is now paid for; growing toward coupled chains is the one
+spend that does not hurt and is slightly positive at small spends, intervals including
+zero. The premise that more qubits raise the objective does not hold in general; the sign
+is decided by how the qubit is spent, which is the decision a policy can learn.
+
 ## The objective is quality; validity is the gate
 
 minorminer optimises resource first, and its hundred percent from witness roots is
