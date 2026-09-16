@@ -46,6 +46,11 @@ def main() -> int:
     ap.add_argument("--assess-reads", type=int, default=512)
     ap.add_argument("--qubit-cap", type=int, default=248)
     ap.add_argument("--split", default="eval", choices=("eval", "train"))
+    ap.add_argument("--prior", default="",
+                    help="a trained successor scorer (train_successor.py checkpoint); adds the "
+                         "arms prior (its argmax, no reads) and halving+prior (its bottom half "
+                         "dropped unread, halving on the rest at the same total reads)")
+    ap.add_argument("--width", type=int, default=64)
     a = ap.parse_args()
     with open(a.cache, "rb") as fh:
         blob = pickle.load(fh)
@@ -56,7 +61,20 @@ def main() -> int:
     states = [st for st in states if st["lineage"] in set(roots)]
     print(json.dumps({"cache": a.cache, "split": a.split, "lineages": len(roots),
                       "states": len(states), "reads": a.reads, "block": a.block,
-                      "beta_range": list(ctx.beta_range)}), flush=True)
+                      "beta_range": list(ctx.beta_range), "prior": a.prior or None}), flush=True)
+    prior_scores = {}
+    if a.prior:
+        import torch
+        from successor_scorer import SuccessorScorer
+        from train_successor import build
+        device = torch.device("cpu")
+        model = SuccessorScorer(width=a.width, node_dim=4, chain_dim=4)
+        model.load_state_dict(torch.load(a.prior, map_location="cpu"))
+        model.eval()
+        built = build(states, ctx, device, "prior states")
+        with torch.no_grad():
+            for st in built:
+                prior_scores[st["state_id"]] = [float(model(r["graph"])) for r in st["rows"]]
 
     calls = {"n": 0}
 
@@ -136,6 +154,28 @@ def main() -> int:
         pick_random = int(rng.integers(0, K))
         picks = {"uniform": pick_uniform, "halving": pick_halving, "ucb": pick_ucb,
                  "random": pick_random}
+        if prior_scores.get(st.get("state_id")):
+            pr = np.asarray(prior_scores[st["state_id"]])
+            if len(pr) == K:
+                picks["prior"] = int(np.argmax(pr)); spent["prior"] = 0
+                # halving from the prior's top half, same total reads as plain halving
+                alive = list(np.argsort(-pr)[: max(2, K // 2)])
+                acc = {j: [0, 0] for j in alive}
+                rounds = int(np.ceil(np.log2(len(alive))))
+                per_round = budget // max(1, rounds)
+                seed_ctr = 30_000
+                for _ in range(rounds):
+                    if len(alive) <= 1:
+                        break
+                    each = max(a.block, per_round // len(alive))
+                    for j in alive:
+                        seed_ctr += 1
+                        h = hits(task, rows[j]["succ"], SELECT_BASE + 1000 * k + seed_ctr, each)
+                        if h is not None:
+                            acc[j][0] += h[0]; acc[j][1] += h[1]
+                    alive.sort(key=lambda j: -(acc[j][0] / max(1, acc[j][1])))
+                    alive = alive[: max(1, len(alive) // 2)]
+                picks["halving+prior"] = int(alive[0]); spent["halving+prior"] = sum(v[1] for v in acc.values())
         # one assessment block per distinct chosen candidate, shared across arms that agree
         assessed = {}
         for name, j in picks.items():
@@ -160,12 +200,18 @@ def main() -> int:
 
     print("\n  %d states in %d lineages, assessed on %d independent reads"
           % (len(per_state), len({s['lineage'] for s in per_state}), a.assess_reads))
-    print("  %-10s %10s %10s  %s" % ("arm", "reads", "quality", "minus uniform, 95% over lineages"))
-    for name in ("uniform", "halving", "ucb", "random"):
-        reads = np.mean([s["spent"].get(name, 0) for s in per_state])
-        q, _, _ = boot(lambda s: s[name])
-        d, lo, hi = boot(lambda s: s[name] - s["uniform"])
-        print("  %-10s %10.0f %10.4f  %+.4f [%+.4f, %+.4f]" % (name, reads, q, d, lo, hi))
+    print("  %-14s %10s %10s  %s" % ("arm", "reads", "quality", "differences, 95% over lineages"))
+    arms = ["uniform", "halving", "ucb", "random"] + (["prior", "halving+prior"] if a.prior else [])
+    for name in arms:
+        rows_ok = [s for s in per_state if name in s]
+        if not rows_ok:
+            continue
+        reads = np.mean([s["spent"].get(name, 0) for s in rows_ok])
+        q = float(np.mean([s[name] for s in rows_ok]))
+        d, lo, hi = boot(lambda s: s[name] - s["uniform"]) if len(rows_ok) == len(per_state) else (float("nan"),) * 3
+        dh = float(np.mean([s[name] - s["halving"] for s in rows_ok]))
+        print("  %-14s %10.0f %10.4f  vs uniform %+.4f [%+.4f, %+.4f]  vs halving %+.4f"
+              % (name, reads, q, d, lo, hi, dh))
     print("\nADAPTIVE ALLOCATION DONE", flush=True)
     return 0
 
