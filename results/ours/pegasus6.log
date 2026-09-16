@@ -1,0 +1,61 @@
+{"corpus": "runs/fill/pegasus6/corpus", "instances": 48, "deadline": 120.0}
+    1/48 pegasus6-fill80-a3.0-0     witness: ours no 120.1s mm ok   0.2s | half: ours no 120.1s mm no 124.2s
+    2/48 pegasus6-fill80-a3.0-1     witness: ours no 120.1s mm ok   0.5s | half: ours no 120.1s mm no 121.0s
+    3/48 pegasus6-fill80-a3.0-2     witness: ours no 120.0s mm ok   0.5s | half: ours no 120.1s mm no 137.6s
+    4/48 pegasus6-fill80-a3.0-3     witness: ours no 120.0s mm ok   0.4s | half: ours no 120.0s mm no 134.0s
+    5/48 pegasus6-fill80-a3.0-4     witness: ours no 120.0s mm ok   2.5s | half: ours no 120.1s mm no 128.9s
+    6/48 pegasus6-fill80-a3.0-5     witness: ours no 120.0s mm ok   0.2s | half: ours no 120.0s mm no 129.0s
+    7/48 pegasus6-fill80-a2.0-0     witness: ours no 120.0s mm ok   0.2s | half: ours no 120.0s mm ok   0.3s
+    8/48 pegasus6-fill80-a2.0-1     witness: ours no 120.0s mm ok   0.2s | half: ours no 120.1s mm ok   0.2s
+    9/48 pegasus6-fill80-a2.0-2     witness: ours no 120.0s mm ok   0.3s | half: ours no 120.1s mm ok   0.7s
+   10/48 pegasus6-fill80-a2.0-3     witness: ours no 120.0s mm ok   0.4s | half: ours no 120.1s mm ok   1.1s
+   11/48 pegasus6-fill80-a2.0-4     witness: ours ok  35.4s mm ok   0.1s | half: ours no 120.0s mm ok   0.6s
+   12/48 pegasus6-fill80-a2.0-5     witness: ours no 120.0s mm ok   0.2s | half: ours no 120.0s mm ok   1.6s
+   13/48 pegasus6-fill85-a3.0-0     witness: ours no 120.0s mm ok   2.1s | half: ours no 120.0s mm no 134.8s
+   14/48 pegasus6-fill85-a3.0-1     witness: ours no 120.1s mm ok   0.9s | half: ours no 120.0s mm no 127.3s
+   15/48 pegasus6-fill85-a3.0-2     witness: ours no 120.1s mm ok   1.5s | half: ours no 120.1s mm no 130.4s
+   16/48 pegasus6-fill85-a3.0-3     witness: ours no 120.0s mm ok   4.0s | half: ours no 120.0s mm no 129.7s
+   17/48 pegasus6-fill85-a3.0-4     witness: ours no 120.0s mm ok   4.5s | half: ours no 120.0s mm no 135.2s
+   18/48 pegasus6-fill85-a3.0-5     witness: ours no 120.0s mm ok  15.6s | half: ours no 120.0s mm no 132.4s
+   19/48 pegasus6-fill85-a2.0-0     witness: ours no 120.0s mm ok   0.2s | half: ours no 120.0s mm ok   3.0s
+   20/48 pegasus6-fill85-a2.0-1     witness: ours no 120.1s mm ok   0.4s | half: ours no 120.0s mm no 124.8s
+   21/48 pegasus6-fill85-a2.0-2     witness: ours no 120.0s mm ok   0.2s | half: ours no 120.0s mm ok   1.1s
+   22/48 pegasus6-fill85-a2.0-3     witness: ours no 120.0s mm ok   0.3s | half: ours no 120.0s mm no 133.2s
+   23/48 pegasus6-fill85-a2.0-4     witness: ours no 120.0s mm ok   0.2s | half: ours no 120.0s mm no 124.1s
+   24/48 pegasus6-fill85-a2.0-5     witness: ours no 120.0s mm ok   0.1s | half: ours no 120.0s mm no 120.2s
+   25/48 pegasus6-fill90-a3.0-0     witness: ours no 120.0s mm ok  63.7s | half: ours no 120.0s mm no 129.2s
+   26/48 pegasus6-fill90-a3.0-1     witness: ours no 120.0s mm ok  64.7s | half: ours no 120.0s mm no 126.8s
+   27/48 pegasus6-fill90-a3.0-2     witness: ours no 120.0s mm ok   8.4s | half: ours no 120.0s mm no 121.6s
+   28/48 pegasus6-fill90-a3.0-3     witness: ours no 120.0s mm ok   0.5s | half: ours no 120.0s mm no 127.4s
+   29/48 pegasus6-fill90-a3.0-4     witness: ours no 120.0s mm ok  53.6s | half: ours no 120.0s mm no 126.0s
+   30/48 pegasus6-fill90-a3.0-5     witness: ours no 120.0s mm no 124.1s | half: ours no 120.0s mm no 127.0s
+   31/48 pegasus6-fill90-a2.0-0     witness: ours no 120.0s mm no 123.9s | half: ours no 120.0s mm no 122.3s
+   32/48 pegasus6-fill90-a2.0-1     witness: ours no 120.0s mm ok  19.0s | half: ours no 120.0s mm no 123.0s
+   33/48 pegasus6-fill90-a2.0-2     witness: ours no 120.0s mm ok  75.5s | half: ours no 120.0s mm no 136.1s
+   34/48 pegasus6-fill90-a2.0-3     witness: ours no 120.0s mm ok  15.9s | half: ours no 120.0s mm no 135.7s
+   35/48 pegasus6-fill90-a2.0-4     witness: ours no 120.0s mm no 121.5s | half: ours no 120.0s mm no 120.9s
+   36/48 pegasus6-fill90-a2.0-5     witness: ours no 120.0s mm ok   4.3s | half: ours no 120.0s mm no 121.1s
+   37/48 pegasus6-fill95-a3.0-0     witness: ours no 120.0s mm ok  94.1s | half: ours no 120.0s mm no 135.4s
+   38/48 pegasus6-fill95-a3.0-1     witness: ours no 120.0s mm ok  12.2s | half: ours no 120.0s mm no 121.0s
+   39/48 pegasus6-fill95-a3.0-2     witness: ours no 120.0s mm no 120.6s | half: ours no 120.0s mm no 137.2s
+   40/48 pegasus6-fill95-a3.0-3     witness: ours no 120.0s mm ok   4.5s | half: ours no 120.0s mm no 144.5s
+   41/48 pegasus6-fill95-a3.0-4     witness: ours no 120.0s mm no 125.0s | half: ours no 120.0s mm no 131.4s
+   42/48 pegasus6-fill95-a3.0-5     witness: ours no 120.0s mm no 125.1s | half: ours no 120.1s mm no 136.9s
+   43/48 pegasus6-fill95-a2.0-0     witness: ours no 120.0s mm no 120.7s | half: ours no 120.0s mm no 127.6s
+   44/48 pegasus6-fill95-a2.0-1     witness: ours no 120.0s mm no 122.7s | half: ours no 120.0s mm no 124.6s
+   45/48 pegasus6-fill95-a2.0-2     witness: ours no 120.0s mm no 125.0s | half: ours no 120.0s mm no 134.1s
+   46/48 pegasus6-fill95-a2.0-3     witness: ours no 120.0s mm no 121.2s | half: ours no 120.0s mm no 136.1s
+   47/48 pegasus6-fill95-a2.0-4     witness: ours no 120.0s mm no 122.5s | half: ours no 120.0s mm no 122.2s
+   48/48 pegasus6-fill95-a2.0-5     witness: ours no 120.0s mm no 124.8s | half: ours no 120.0s mm no 138.4s
+
+  cell               n   ours/wit     mm/wit  ours/half    mm/half
+  fill80-a2.0        6       0.17       1.00       0.00       1.00
+  fill80-a3.0        6       0.00       1.00       0.00       0.00
+  fill85-a2.0        6       0.00       1.00       0.00       0.33
+  fill85-a3.0        6       0.00       1.00       0.00       0.00
+  fill90-a2.0        6       0.00       0.67       0.00       0.00
+  fill90-a3.0        6       0.00       0.83       0.00       0.00
+  fill95-a2.0        6       0.00       0.00       0.00       0.00
+  fill95-a3.0        6       0.00       0.50       0.00       0.00
+
+OURS COMPLETION DONE

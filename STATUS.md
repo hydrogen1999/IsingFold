@@ -393,6 +393,15 @@ punishes. The learned embedder is therefore trained and judged on measured quali
 valid embeddings, with the router alone as the baseline on the same instances; the search
 over layouts continues until the deadline and selects by a measurement block.
 
+Our router, final tables from witness roots (`results/ours/*.log`, negotiated congestion
+with restarts, 30 s on the small hosts, 120 s on the big ones): Pegasus 3 from 1.00 at 70
+percent down to 0.17 at 95 percent short chains, Zephyr 2 from 1.00 to 0.08; Pegasus 6 at
+most 0.17, Zephyr 4 at most 0.83 at 80 percent medium chains and 0 from 85 percent short.
+The standard router from the same roots: 1.00 in every small-host cell; on the big hosts
+1.00 to 80 percent, then 0.67 / 0.83 / 0.00 / 0.50 (Pegasus 6, 90 medium, 90 short, 95
+medium, 95 short) and 1.00 / 1.00 / 0.17 / 0.00 (Zephyr 4). Our router is not the completion
+the platform deploys; it is reported beside the standard one.
+
 ## The roots are the missing information: minorminer seeded with witness roots
 
 minorminer accepts initial chains. Seeded with one qubit per variable taken from the
