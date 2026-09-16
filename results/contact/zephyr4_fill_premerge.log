@@ -1,0 +1,1 @@
+{"corpus": "runs/fill/zephyr4/corpus", "train": 30, "held_out": 16, "spend": 0.1, "start": "witness", "objective": "residual", "beta_range": [0.1, 2.0]}

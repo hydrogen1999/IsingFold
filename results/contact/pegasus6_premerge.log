@@ -1,0 +1,26 @@
+{"corpus": "runs/modern/pegasus6/corpus", "train": 60, "held_out": 30, "spend": 0.1, "start": "router", "objective": "utility", "beta_range": [0.1, 2.0]}
+  init held-out over 30: policy-random -0.0047 [-0.0339, +0.0249] | policy-start +0.0441 [+0.0199, +0.0736] | random-start +0.0488 [+0.0243, +0.0753]
+  iter    0  mean gain +0.0032  updates 16  occupancy 0.03
+  iter    1  mean gain +0.0303  updates 16  occupancy 0.04
+  iter    2  mean gain +0.0562  updates 16  occupancy 0.04
+  iter    3  mean gain +0.0115  updates 16  occupancy 0.04
+  iter    4  mean gain +0.0178  updates 16  occupancy 0.04
+  iter    5  mean gain -0.0022  updates 16  occupancy 0.04
+  iter    6  mean gain +0.0225  updates 16  occupancy 0.03
+  iter    7  mean gain +0.0383  updates 16  occupancy 0.03
+  iter    8  mean gain +0.0259  updates 16  occupancy 0.04
+  iter    9  mean gain +0.0444  updates 16  occupancy 0.03
+  iter   10  mean gain -0.0500  updates 16  occupancy 0.03
+  iter   11  mean gain +0.0024  updates 16  occupancy 0.04
+  iter   12  mean gain -0.0054  updates 16  occupancy 0.04
+  iter   13  mean gain +0.0037  updates 16  occupancy 0.04
+  iter   14  mean gain -0.0330  updates 16  occupancy 0.04
+  iter   15  mean gain +0.0698  updates 16  occupancy 0.04
+  iter   16  mean gain +0.0828  updates 16  occupancy 0.04
+  iter   17  mean gain +0.0239  updates 16  occupancy 0.04
+  iter   18  mean gain +0.0349  updates 16  occupancy 0.04
+  iter   19  mean gain +0.0085  updates 16  occupancy 0.04
+  iter   20  mean gain +0.0061  updates 16  occupancy 0.04
+  iter   21  mean gain +0.0083  updates 16  occupancy 0.04
+  iter   22  mean gain -0.0154  updates 16  occupancy 0.03
+  iter   23  mean gain -0.0205  updates 16  occupancy 0.04

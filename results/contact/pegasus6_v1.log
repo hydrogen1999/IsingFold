@@ -1,0 +1,1 @@
+{"corpus": "runs/modern/pegasus6/corpus", "train": 60, "held_out": 30, "spend": 0.1, "beta_range": [0.1, 2.0]}

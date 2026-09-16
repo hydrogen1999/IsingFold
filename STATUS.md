@@ -382,6 +382,27 @@ intervals include zero; the large scorer is validation evidence against random, 
 over halving; the selection reference is finite-read. Every run in flight was restarted on
 the merged code; numbers from before the merge are history.
 
+## First positive number on the objective: contact growth with measured selection (partial)
+
+Contact policy, low fill, post-merge code (`results/contact/pegasus6.log`, `zephyr4.log`),
+p_solve under the registered schedule, 30 validation instances, best of four samples chosen
+by a measurement block, assessed on a fresh block, the start assessed the same way:
+
+    arm minus start                    Pegasus 6                   Zephyr 4
+    random contact growth, best of 4   +0.066 [+0.031, +0.114]     +0.079 [+0.043, +0.120]
+    policy contact growth, best of 4   +0.038 [+0.016, +0.063]     +0.079 [+0.042, +0.122]
+    policy minus random                -0.029 [-0.080, +0.013]     +0.000 [-0.032, +0.030]
+
+High fill, from the planted witness at 96 percent occupancy, energy residual (sign flipped,
+higher is better), 16 instances: policy minus start +0.0057 [+0.0034, +0.0078] and random
+minus start +0.0061 on Pegasus 6; +0.0077 and +0.0066 on Zephyr 4.
+
+Proposing by contact growth and selecting by measurement beats the resource-first start on
+the objective on both hosts. The learned policy adds nothing over random proposals so far.
+The comparison is not yet the paper's: the start is one draw while the arms search four,
+so the control that decides the claim is four fresh router draws with the same selection
+(arm A of the A/B/C/D table), being added now.
+
 ## The objective is quality; validity is the gate
 
 minorminer optimises resource first, and its hundred percent from witness roots is

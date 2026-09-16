@@ -1,0 +1,21 @@
+{"corpus": "runs/modern/zephyr4/corpus", "train": 60, "held_out": 30, "spend": 0.1, "start": "router", "objective": "utility", "beta_range": [0.1, 2.0]}
+  init held-out over 30: policy-random +0.0124 [-0.0170, +0.0451] | policy-start +0.0643 [+0.0329, +0.0990] | random-start +0.0518 [+0.0175, +0.0921]
+  iter    0  mean gain +0.0491  updates 16  occupancy 0.04
+  iter    1  mean gain -0.0068  updates 16  occupancy 0.04
+  iter    2  mean gain +0.0283  updates 16  occupancy 0.04
+  iter    3  mean gain +0.0269  updates 16  occupancy 0.04
+  iter    4  mean gain +0.0195  updates 16  occupancy 0.04
+  iter    5  mean gain +0.0056  updates 16  occupancy 0.04
+  iter    6  mean gain -0.0142  updates 16  occupancy 0.04
+  iter    7  mean gain +0.0269  updates 16  occupancy 0.04
+  iter    8  mean gain +0.0520  updates 16  occupancy 0.04
+  iter    9  mean gain +0.0063  updates 16  occupancy 0.04
+  iter   10  mean gain -0.0129  updates 16  occupancy 0.04
+  iter   11  mean gain +0.0039  updates 16  occupancy 0.04
+  iter   12  mean gain -0.0308  updates 16  occupancy 0.05
+  iter   13  mean gain +0.0510  updates 16  occupancy 0.04
+  iter   14  mean gain -0.0042  updates 16  occupancy 0.04
+  iter   15  mean gain -0.0134  updates 16  occupancy 0.04
+  iter   16  mean gain +0.0076  updates 16  occupancy 0.04
+  iter   17  mean gain +0.0364  updates 16  occupancy 0.04
+  iter   18  mean gain +0.0183  updates 16  occupancy 0.04
