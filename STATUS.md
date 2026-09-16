@@ -22,7 +22,7 @@ never depends on memory.
 | hybrid RL | PLACE-only policy, router completion, reward graded by how close a failed completion came; eval: greedy roots then router within 60 s vs router alone | apollo `runs/hybrid/rl_*.log` | first run had no gradient (0/1 reward, `updates 0`, `*_v1.log`); relaunched with the graded reward; init eval policy+router 0.47 vs router 0.50 (Pegasus 3), 0.37 vs 0.40 (Zephyr 2) |
 | direction 4, RL | REINFORCE on the constructive policy (policy = prioritiser), dense progress reward, STOP and RESTART masked, evaluation samples until the deadline; from scratch and initialised from the imitation prioritiser; Pegasus 3 and Zephyr 2 | apollo `runs/rl/*_scratch.log`, `runs/rl/*_init.log` | running; before the mask the imitation-initialised policy reached demand fraction 0.70 / 0.63 and validity 0, ending episodes by sampling STOP |
 | imitation, deployed | the imitation prioritiser as a policy on the full fill corpora, sample until 600 s | apollo `runs/rl/*_imitation_deploy.log`; baseline at 300 and 600 s on goose `runs/fill/*_anytime600.log` | running |
-| direction 5 | labels on the 2400-instance Pegasus 6 corpus for the data-scale test | `results/relabel/pegasus6_large_labels.log`; apollo `runs/large/train_seed*.log` | labels **done**: 3298 training states, 696 held-out, 24,123 candidates, 3 h; oracle minus random +0.108 and +0.099 on 696 held-out states; three trainings running |
+| direction 5 | quality surrogate at ten times the lineages, registered schedule, corrected compiler | `results/large/train_seed*.log` | **done**: held-out +0.021, +0.027, +0.023 over 360 lineages, every interval above zero, against +0.003 at 160 lineages; the ceiling is +0.11. Learnable, slowly |
 
 Checkpoints and gates are in `docs/plans/2026-09-15-plan.md`; decisions in `docs/decisions/`;
 the two reviews in `docs/review/`. When a row above finishes, its log is copied to `results/`
@@ -357,6 +357,17 @@ finishing. The failure is in the last third of the demands, the constrained comp
 not in placing variables. probes/placement_completion.py measures whether a fixed
 completion rule finishes from witness roots, which decides whether the learned part can be
 placement alone.
+
+## Data scale (direction 5): the surrogate transfers a little, and more data helps a little
+
+Three seeds on 1680 training lineages of Pegasus 6 under the registered schedule with the
+corrected compiler, 696 held-out states in 360 lineages (`results/large/train_seed*.log`):
++0.0205 [+0.0094, +0.0318], +0.0273 [+0.0147, +0.0387], +0.0230 [+0.0110, +0.0354]. At 160
+lineages the same encoding gave +0.003. So the prediction direction is not closed: the
+signal is real and grows with data, from nothing to about +0.02 for ten times the lineages,
+against a ceiling of +0.11. At that rate the ceiling is out of reach by data alone; what
++0.02 of ranking signal is worth is as a prior inside adaptive allocation (direction 3),
+where it can only be judged against successive halving, not against uniform.
 
 ## Adaptive allocation of reads (direction 3)
 
