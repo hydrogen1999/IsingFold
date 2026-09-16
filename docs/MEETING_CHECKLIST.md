@@ -136,3 +136,18 @@ set fixed and the training subsets nested.
 - All earlier conclusions were Chimera-only; Pegasus and Zephyr are now the default hosts.
 - Still open: feasibility-threshold regime, measurement-budget allocation, section 5 budget
   conditioning, section 9 completion heads, coordinate-permutation control, paper outline.
+
+## Update 2026-09-15, relaunch
+
+- Two independent reviews against the premise that the method is right. Two defects found and
+  fixed with reproduction tests: the scorer saw a program compiled with the wrong strength
+  (ADR-001), and every label was measured under the auto schedule (ADR-002).
+- Section 3, bottom-up: label reliability now measured with intervals; ceiling +0.11 to +0.12.
+- Section 3, feasibility threshold: located on Pegasus 6 and Zephyr 4 by size (`results/feasibility/`)
+  and by planted fill (`results/fill/`); minimal fill defined exactly with singleton chains.
+- Section 5, budget conditioning: still not started; the fill corpus is the instrument for it.
+- Section 7, item 4: done. Item 6 (outline) and 7 (self-consistency): the spec in `docs/specs/`
+  is the first version of both.
+- Power-law chain lengths: exponent and bounds are a corpus parameter (`--alphas`, `--lmin`,
+  `--lmax`); the test for distribution shift is not yet run.
+- The joint formulation: a constructive MDP on the fill corpus is proposed in ADR-003 and gated.

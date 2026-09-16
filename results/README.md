@@ -1,5 +1,27 @@
 # Results
 
+## Index
+
+One line per directory. The section below each name, where it exists, says how the number was
+produced and what would make it an artefact. A directory listed here and described nowhere
+else is described by its log's own header line.
+
+| directory | what it holds | status |
+|---|---|---|
+| `v1/`, `v3/` | the registered-bar policy runs on the Chimera v1 corpus | history; auto schedule, pre-ADR-001 encoding |
+| `quality/`, `quality_es/`, `quality_v2/`, `quality_cap/` | the quality surrogate on Chimera, four variants | history; auto schedule |
+| `r1/`, `r2/`, `r2b/` | successor scorer labels and runs on Chimera | history; encoding mismatch (D1), auto schedule (D2) |
+| `premise/` | the frontier premise checks | history |
+| `hard/`, `hard_abl/` | the clique-16 hard corpus and its four-arm representation ablation | history; within seed noise |
+| `diverse/`, `diverse_abl/` | seven-family corpus labels and the family-held-out five-arm ablation | history; within 0.02 of each other |
+| `curve/` | learning curve 25/50/100/200 lineages, two seeds | history; flat, lexicographic subsets |
+| `audit/` | sampler scale controls, auto vs registered schedule | the basis of ADR-002 |
+| `modern/` | Pegasus 6 and Zephyr 4 corpora, the power-law budget sweeps, three pool-ceiling versions | current hardware; auto schedule |
+| `feasibility/` | minorminer validity by size and family, budget check, deterministic clique embedder | current |
+| `fill/` | fill-planted corpora, minorminer at ten and fifty tries, constructor floor, witness quality, exact and long-chain sweeps, anytime baseline | current; `*_witness_registered.log` is Task 9 |
+| `relabel/` | labels under the registered schedule with the corrected compiler, both modern hosts | current; Task 6 |
+| `corrected/` | old versus corrected encoding on identical labels, and label reliability | current; Tasks 7 and 8 |
+
 Logs from runs executed on this tree, and the checks that decide whether to believe them.
 
 Nothing here is a headline. Two of the three arms below are development diagnostics measured on

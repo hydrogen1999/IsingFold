@@ -1,10 +1,25 @@
 # Status
 
 A running record of what has been done, what each result is worth, and what is still open. Kept
-because this project has withdrawn seven published numbers, and a list of what currently stands
-is the only way to tell a finding from a leftover.
+because this project has withdrawn eleven published numbers, and a list of what currently
+stands is the only way to tell a finding from a leftover. Every number cites its log under
+`results/`; every experiment in flight is on the board below with its log path, so a check
+never depends on memory.
 
-Last updated against commit `ad43c21` plus the work described under "Running now".
+## Board, 2026-09-15
+
+| task | what it decides | host, log | state |
+|---|---|---|---|
+| Task 7 | old vs corrected encoding on identical labels, 3 seeds each, both hosts. Decides whether the improvement surrogate lives (>= +0.03 with interval above zero) or is retired | apollo `runs/corrected/*_seed*.log` -> `results/corrected/` | running, ~400 steps each |
+| Task 8 | label reliability, learnable ceiling | `results/corrected/*_reliability.log` | **done**: ceiling +0.109 / +0.122 |
+| Task 9 | quality endpoint at the fill regime under the registered schedule, paired with intervals. Decides feasibility-only or not | apollo `runs/fill/*_witness_registered.log` | running |
+| Task 10 | anytime minorminer with a wall-time deadline, 30 to 300 s. Names the regime where the tool fails at the intended budget | goose `runs/fill/*_anytime.log` | running |
+| budget x20 | minorminer at 200 tries on the fill corpora | apollo `runs/fill/*_budget.log` | running |
+| Task 12 | witness replay through the construction API | `tests/unit/test_witness_replay.py` | diagnosed: fails at step 0 on the 24-root shortlist; fix gated on Checkpoint 3 |
+
+Checkpoints and gates are in `docs/plans/2026-09-15-plan.md`; decisions in `docs/decisions/`;
+the two reviews in `docs/review/`. When a row above finishes, its log is copied to `results/`
+and its number is written into the section of this file that it belongs to, in the same commit.
 
 ## Where it stands in one paragraph
 
