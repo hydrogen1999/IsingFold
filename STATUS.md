@@ -200,6 +200,26 @@ length exactly one make it exact: the logical graph is then an induced subgraph 
 n = f·|H| nodes, every embedding needs at least n qubits, and the witness uses exactly n. That
 sweep is running. Logs in `results/fill/`.
 
+## Three facts about the fill regime, measured before anything is built for it
+
+- **The in-tree constructor is at zero.** `router_initializer`, the greedy degree-order
+  placer behind the environment's PLACE and ROUTE proposals, produces no valid embedding on
+  any fill-planted instance at 80 to 95 percent on either host, 24 draws per cell, under a
+  second each (`results/fill/*_construct.log`). A learned constructor starts from that floor.
+- **Solve probability is zero for every embedding at this scale.** On Zephyr 4 the witness and
+  minorminer's best of four both read 0.0000 in every cell (`results/fill/zephyr4_witness.log`).
+  At 280 to 440 variables of frustrated loops, 512 reads never reach the planted ground state,
+  whatever the embedding. The registered objective does not discriminate here; the mean energy
+  residual above the planted ground energy, which the evaluator already computes, is being
+  measured in its place.
+- **Five times the budget moves minorminer one cell.** Zephyr 4 at fifty tries: 85 percent fill
+  with medium chains rises from 0.50 to 0.67 and 90 percent stays at 0.33, at 35 to 80 seconds
+  a draw; short chains stay at zero (`results/fill/zephyr4_budget.log`).
+
+With chains of length exactly one, where minimal fill equals planted fill, minorminer finds
+nothing from 70 percent up on either host at 60 to 100 seconds a draw
+(`results/fill/*_exact.log`, running).
+
 ## The embeddability threshold on Pegasus 6 and Zephyr 4
 
 Validity rate of minorminer at ten tries, six instances by four draws per cell, in

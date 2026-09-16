@@ -49,9 +49,16 @@ def main() -> int:
             print("  measure failed on %s: %s" % (task.name, e), flush=True)
             return None
         o = out[0]
-        return float(o.utility) if o.returned_valid and o.utility is not None else None
+        if not o.returned_valid or o.utility is None:
+            return None
+        # Solve probability is the registered objective; at three to four hundred variables it
+        # is zero for every embedding at this read count, so the mean energy residual above the
+        # planted ground energy is reported beside it as the metric that still discriminates.
+        return float(o.utility), (float(o.mean_energy_residual)
+                                  if o.mean_energy_residual is not None else float("nan"))
 
-    cells = defaultdict(lambda: {"witness": [], "mm_best": [], "mm_valid": 0, "n": 0})
+    cells = defaultdict(lambda: {"witness": [], "mm_best": [], "mm_valid": 0, "n": 0,
+                                 "witness_res": [], "mm_best_res": []})
     for k, task in enumerate(tasks):
         family = task.lineage.rsplit("-", 1)[0].split("-", 1)[1].rsplit("-", 1)[0]
         cell = cells[family]
@@ -59,7 +66,7 @@ def main() -> int:
         if task.witness:
             u = measure(task, task.witness, 90_000_000 + k, a.assess_reads)
             if u is not None:
-                cell["witness"].append(u)
+                cell["witness"].append(u[0]); cell["witness_res"].append(u[1])
         draws = []
         for j in range(a.k):
             ch = mm(task.logical, task.host, 5_000 + 97 * j + 1000 * k)
@@ -67,23 +74,28 @@ def main() -> int:
                 continue
             u = measure(task, ch, 5_000 + 97 * j + 1000 * k, a.reads)
             if u is not None:
-                draws.append((u, ch))
+                draws.append((u[0], -u[1], ch))
         if draws:
             cell["mm_valid"] += 1
-            best = max(draws, key=lambda t: t[0])[1]
+            # Best by solve probability, ties broken by the lower residual, so the selection
+            # still means something where every probability is zero.
+            best = max(draws, key=lambda t: (t[0], t[1]))[2]
             u = measure(task, best, 90_000_000 + 13 * k + 7, a.assess_reads)
             if u is not None:
-                cell["mm_best"].append(u)
+                cell["mm_best"].append(u[0]); cell["mm_best_res"].append(u[1])
         print("  %3d/%d %s" % (k + 1, len(tasks), task.name), flush=True)
 
-    print("\n  %-16s %3s %10s %9s %10s" % ("cell", "n", "witness", "mm valid", "mm best"))
+    print("\n  %-16s %3s %10s %9s %10s %12s %12s"
+          % ("cell", "n", "witness", "mm valid", "mm best", "witness res", "mm best res"))
     for family in sorted(cells):
         c = cells[family]
-        print("  %-16s %3d %10s %9.2f %10s"
+        print("  %-16s %3d %10s %9.2f %10s %12s %12s"
               % (family, c["n"],
                  ("%.4f" % np.mean(c["witness"])) if c["witness"] else "-",
                  c["mm_valid"] / max(1, c["n"]),
-                 ("%.4f" % np.mean(c["mm_best"])) if c["mm_best"] else "-"))
+                 ("%.4f" % np.mean(c["mm_best"])) if c["mm_best"] else "-",
+                 ("%.3f" % np.nanmean(c["witness_res"])) if c["witness_res"] else "-",
+                 ("%.3f" % np.nanmean(c["mm_best_res"])) if c["mm_best_res"] else "-"))
     print("\nWITNESS QUALITY DONE", flush=True)
     return 0
 
