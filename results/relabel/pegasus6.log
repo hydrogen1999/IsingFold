@@ -1,0 +1,30 @@
+{"corpus": "runs/modern/pegasus6/corpus", "family": "if-mlp", "train_lineages": 160, "eval_lineages": 36, "states": 2, "max_candidates": 8, "reads": 256}
+  wrote labels to runs/relabel/pegasus6_registered.pkl
+  309 training states, 69 held-out states, 2298 labelled candidates, 1003s
+  step   1  nll 0.69812  rank 0.00000  train regret 0.1198  grad 37.662
+
+== TRAINING states, fitted on, 69 states, every pick re-measured on 512 independent reads
+  picking by oracle     0.5247  over 69 states
+  picking by head       0.4215  over 69 states
+  picking by random     0.4084  over 69 states
+  picking by resource   0.4592  over 69 states
+  picking by incumbent  0.4398  over 69 states
+  head minus random                    n  69 states in  37 lineages  +0.0219 [-0.0187, +0.0700]  (paired by lineage)
+  head minus the protected incumbent   n  69 states in  37 lineages  -0.0098 [-0.0549, +0.0396]  (paired by lineage)
+  oracle minus random, the ceiling     n  69 states in  37 lineages  +0.1230 [+0.0865, +0.1655]  (paired by lineage)
+  head minus oracle, what is left on the table n  69 states in  37 lineages  -0.1012 [-0.1302, -0.0723]  (paired by lineage)
+  median within-state rank correlation -0.071
+
+== HELD-OUT lineages, never trained on, 69 states, every pick re-measured on 512 independent reads
+  picking by oracle     0.4485  over 69 states
+  picking by head       0.3606  over 69 states
+  picking by random     0.3524  over 69 states
+  picking by resource   0.3810  over 69 states
+  picking by incumbent  0.3362  over 69 states
+  head minus random                    n  69 states in  36 lineages  +0.0093 [-0.0331, +0.0512]  (paired by lineage)
+  head minus the protected incumbent   n  69 states in  36 lineages  +0.0254 [-0.0184, +0.0675]  (paired by lineage)
+  oracle minus random, the ceiling     n  69 states in  36 lineages  +0.0948 [+0.0666, +0.1264]  (paired by lineage)
+  head minus oracle, what is left on the table n  69 states in  36 lineages  -0.0855 [-0.1190, -0.0543]  (paired by lineage)
+  median within-state rank correlation +0.168
+
+TRAIN QUALITY DONE

@@ -235,6 +235,16 @@ finds nothing from 70 percent up on either host at 60 to 155 seconds a draw
 (`results/fill/*_exact.log`). Pegasus 6 at fifty tries: 80 percent with medium chains rises
 from 0.33 to 0.83 and 85 percent from 0 to 0.17; everything else stays at zero.
 
+Labels under the registered schedule with the corrected compiler exist for both modern
+corpora (`results/relabel/`, 2298 and 2329 labelled candidates, 17 and 19 minutes). A side
+observation from the labelling run's own one-epoch head, preliminary at 69 and 71 held-out
+states: on Pegasus 6 picking the cheapest candidate scores 0.459 against 0.408 for random
+choice and 0.525 for the label oracle; on Zephyr 4 it scores 0.438 against 0.440 and 0.537.
+Under the auto schedule resource selection sat at chance on every corpus. A fixed temperature
+makes compression cost something, which is what ADR-002 says it should; measured selection
+still beats resource selection by about twice its margin. The corrected-versus-old comparison
+and the reliability probe are running on these labels.
+
 Construction API, measured before any policy: on a 16-qubit toy host the environment in
 construction mode reaches COMMIT with exactly the planted witness in 12 decisions when each
 step picks a witness-consistent candidate (`tests/unit/test_witness_replay.py`). On a 100-qubit
