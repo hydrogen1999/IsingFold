@@ -134,3 +134,28 @@ the probes themselves on apollo; their logs are the evidence and are committed.
   effective temperature for Advantage-class devices?
 - Is a feasibility-only contribution at 85 to 95 percent fill acceptable if quality cannot be
   resolved there, or must every claim carry the objective?
+
+
+## Amendment 2026-09-17: what fill means, and the two test cases
+
+Fill is the occupancy of the state, rho_t = |union of chains| / |V_H|, and it bounds the
+action space: the free set F_t is not equally reachable from every chain, so the decision
+is which chain to extend and in which direction, given what that opens or closes for the
+others. The resource is a budget for downstream quality, not a quantity to minimise.
+
+Two test cases, kept separate:
+
+1. Completion in tight space: a partial embedding at about 90 percent occupancy with
+   demands still unmet; the policy and the search finish it within the budget. Measured by
+   validity against the router alone at the same deadline, with failures counted.
+2. Allocation for quality: a valid embedding at about 90 percent occupancy (the planted
+   witness on the fill corpora); the policy spends the remaining space to raise the measured
+   objective (energy residual at this scale). Measured by the paired objective against
+   random spending of the same budget and against the start, with episodes that exceed the
+   budget or cannot be measured counted at the start's value minus a penalty.
+
+The state for both carries each chain's frontiers, the free space reachable from each
+within two and three steps, the unmet demands, the other chains bordering that space, and
+the contact and coefficient context (`probes/candidate_features.py:frontier_features`).
+Occupancy is traced along every trajectory. A mask removes overlap and disconnection; it
+does not remove dead ends, which the policy has to learn to avoid.
