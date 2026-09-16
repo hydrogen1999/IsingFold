@@ -36,7 +36,7 @@ def consistent(cand, witness, current):
     return False
 
 
-def replay(task, witness, max_steps, hint, dump=None):
+def replay(task, witness, max_steps, hint, dump=None, scorer=None):
     ctx = construction_context(task.host.number_of_nodes(), task.logical.number_of_nodes(),
                                task.logical.number_of_edges())
     first = max(witness, key=lambda v: (task.logical.degree(v), str(v)))
@@ -49,6 +49,8 @@ def replay(task, witness, max_steps, hint, dump=None):
                        selector=fixed_strength_selector(), reward_reads=8)
     if hint:
         env.generator.prefer = lambda v, q: 1.0 if q in witness[v] else 0.0
+    elif scorer is not None:
+        env.generator.prefer = scorer(task, env)
     dec = env.reset(0)
     steps = 0
     t0 = time.time()
@@ -95,6 +97,8 @@ def main() -> int:
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--max-steps", type=int, default=5000)
     ap.add_argument("--dump", default="", help="pickle path for compact imitation records")
+    ap.add_argument("--scorer", default="", help="a trained prioritiser (train_prioritiser.py) "
+                    "used as the generator's preference when --hint is not given")
     ap.add_argument("--hint", action="store_true",
                     help="let the generator prefer the witness's qubits before truncating its "
                          "offer: measures whether the grammar can express the witness at all, "
@@ -106,10 +110,26 @@ def main() -> int:
     print(json.dumps({"corpus": a.corpus, "instances": len(tasks), "hint": a.hint}), flush=True)
     cells = defaultdict(list)
     records = [] if a.dump else None
+    scorer = None
+    if a.scorer:
+        import torch
+        from candidate_features import FeatureContext
+        from train_prioritiser import Prioritiser
+        blob = torch.load(a.scorer, map_location="cpu")
+        model = Prioritiser(blob["width"]); model.load_state_dict(blob["state"]); model.eval()
+
+        def scorer(task, env):
+            fc = FeatureContext(task)
+
+            def prefer(v, q):
+                with torch.no_grad():
+                    x = fc.pair(v, [q], env.state.chains, "PLACE")
+                    return float(model(torch.as_tensor(x)))
+            return prefer
     for k, task in enumerate(tasks):
         family = task.lineage.rsplit("-", 1)[0].split("-", 1)[1].rsplit("-", 1)[0]
         witness = {v: frozenset(c) for v, c in task.witness.items()}
-        r = replay(task, witness, a.max_steps, a.hint, records)
+        r = replay(task, witness, a.max_steps, a.hint, records, scorer)
         if records is not None:
             import pickle
             with open(a.dump, "wb") as fh:
