@@ -67,6 +67,10 @@ def main() -> int:
     ap.add_argument("--corpus", required=True)
     ap.add_argument("--deadline", type=float, default=120.0)
     ap.add_argument("--tries", type=int, default=10)
+    ap.add_argument("--arms", default="none,witness,random",
+                    help="any of none, witness, random, half (witness roots for a random half "
+                         "of the variables), noisy (every witness root moved to a random host "
+                         "neighbour), quarter")
     a = ap.parse_args()
     tasks = load_instances(a.corpus)
     cap = tasks[0].host.number_of_nodes()
@@ -78,9 +82,25 @@ def main() -> int:
         witness = {v: frozenset(c) for v, c in task.witness.items()}
         rng = np.random.default_rng(k)
         free = list(task.host.nodes())
-        hints = {"none": None, "witness": witness_roots(task, witness),
-                 "random": {v: frozenset({free[i]}) for v, i in
-                            zip(witness, rng.choice(len(free), size=len(witness), replace=False))}}
+        roots = witness_roots(task, witness)
+        variables = sorted(witness, key=str)
+        keep_half = set(rng.choice(variables, size=len(variables) // 2, replace=False))
+        keep_quarter = set(rng.choice(variables, size=len(variables) // 4, replace=False))
+        noisy = {}
+        for v, c in roots.items():
+            q = next(iter(c))
+            nb = sorted(task.host.neighbors(q), key=str)
+            noisy[v] = frozenset({nb[rng.integers(0, len(nb))]}) if nb else c
+        hints_all = {
+            "none": None,
+            "witness": roots,
+            "random": {v: frozenset({free[i]}) for v, i in
+                       zip(witness, rng.choice(len(free), size=len(witness), replace=False))},
+            "half": {v: c for v, c in roots.items() if v in keep_half},
+            "quarter": {v: c for v, c in roots.items() if v in keep_quarter},
+            "noisy": noisy,
+        }
+        hints = {arm: hints_all[arm] for arm in a.arms.split(",")}
         row = []
         for arm, hint in hints.items():
             t0, ok, n = time.time(), None, 0
@@ -92,16 +112,15 @@ def main() -> int:
                                        (sum(len(c) for c in ok.values()) / cap) if ok else None))
             row.append("%s %s %4.0fs" % (arm, "valid" if ok else "no   ", secs))
         print("  %3d/%d %-26s %s" % (k + 1, len(tasks), task.name, " | ".join(row)), flush=True)
-    print("\n  %-16s %3s %8s %8s %8s %10s %10s %10s" % ("cell", "n", "none", "witness", "random",
-                                                         "secs none", "secs wit", "fill wit"))
+    arms = a.arms.split(",")
+    print("\n  %-16s %3s " % ("cell", "n") + " ".join("%9s" % arm for arm in arms)
+          + "   " + " ".join("%7s" % ("s:" + arm[:5]) for arm in arms))
     for family in sorted(cells):
         c = cells[family]
-        n = len(c["none"])
-        fills = [r[3] for r in c["witness"] if r[3] is not None]
-        print("  %-16s %3d %8.2f %8.2f %8.2f %10.0f %10.0f %10s"
-              % (family, n, np.mean([r[0] for r in c["none"]]), np.mean([r[0] for r in c["witness"]]),
-                 np.mean([r[0] for r in c["random"]]), np.mean([r[1] for r in c["none"]]),
-                 np.mean([r[1] for r in c["witness"]]), ("%.2f" % np.mean(fills)) if fills else "-"))
+        n = len(c[arms[0]])
+        print("  %-16s %3d " % (family, n)
+              + " ".join("%9.2f" % np.mean([r[0] for r in c[arm]]) for arm in arms)
+              + "   " + " ".join("%7.0f" % np.mean([r[1] for r in c[arm]]) for arm in arms))
     print("\nSEEDED MINORMINER DONE", flush=True)
     return 0
 
