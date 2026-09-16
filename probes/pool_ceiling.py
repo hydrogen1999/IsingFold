@@ -46,6 +46,7 @@ from isingfold.rl.data.generate import load_instances
 from isingfold.rl.env import fixed_strength_selector
 from isingfold.rl.evaluate import first_commit_controller, run_controller
 
+from _context import host_context
 from _initializers import minorminer_initializer
 from powerlaw_embeddings import grown_embedding, realises
 
@@ -67,7 +68,7 @@ def main() -> int:
     a = ap.parse_args()
 
     tasks = load_instances(a.corpus)[: a.lineages]
-    ctx = Context(qubit_cap=a.qubit_cap)
+    ctx = host_context(a.qubit_cap)
     mm = minorminer_initializer(20)
     rng = np.random.default_rng(a.seed)
     print(json.dumps({"corpus": a.corpus, "lineages": len(tasks), "k": a.k, "alpha": a.alpha,

@@ -35,6 +35,7 @@ from isingfold.rl.env import (LEGACY_ONLINE_INITIALIZER_RESTARTS_V1, EmbeddingEn
 from isingfold.rl.evaluate import first_commit_controller, run_controller
 from isingfold.rl.model import build_model
 
+from _context import host_context
 from _initializers import minorminer_initializer
 
 LABEL_BASE = 40_000_000
@@ -211,7 +212,7 @@ def main() -> int:
     split = json.loads((Path(a.corpus) / "splits.json").read_text())
     train_tasks = [t for t in tasks if t.lineage in set(split["train"])][: a.train_lineages]
     eval_tasks = [t for t in tasks if t.lineage in set(split["validation"])][: a.eval_lineages]
-    ctx = Context(qubit_cap=a.qubit_cap)
+    ctx = host_context(a.qubit_cap)
     mm = minorminer_initializer(10)
     rng = np.random.default_rng(a.seed)
     print(json.dumps({"corpus": a.corpus, "family": a.family, "train_lineages": len(train_tasks),
