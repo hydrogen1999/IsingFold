@@ -40,12 +40,26 @@ def valid(chains, logical, host):
 
 
 def attempt(task, hint, seed, tries):
+    """minorminer takes an edge list, so isolated logical nodes get no chain from it; they
+    are placed afterwards on any free qubit, and the hint is restricted to nodes it knows."""
+    edges = list(task.logical.edges())
+    in_edges = {u for e in edges for u in e}
     kw = {"tries": tries, "random_seed": seed % (2 ** 31)}
     if hint:
-        kw["initial_chains"] = {v: list(c) for v, c in hint.items()}
-    emb = minorminer.find_embedding(list(task.logical.edges()), list(task.host.edges()), **kw)
-    emb = {v: frozenset(c) for v, c in emb.items()} if emb else None
-    return emb if emb and valid(emb, task.logical, task.host) else None
+        kw["initial_chains"] = {v: list(c) for v, c in hint.items() if v in in_edges}
+    emb = minorminer.find_embedding(edges, list(task.host.edges()), **kw)
+    if not emb:
+        return None
+    emb = {v: frozenset(c) for v, c in emb.items()}
+    used = {q for c in emb.values() for q in c}
+    free = iter(sorted((q for q in task.host.nodes() if q not in used), key=str))
+    for v in task.logical.nodes():
+        if v not in emb:
+            try:
+                emb[v] = frozenset({next(free)})
+            except StopIteration:
+                return None
+    return emb if valid(emb, task.logical, task.host) else None
 
 
 def main() -> int:
