@@ -300,9 +300,11 @@ def main() -> int:
             if pr.shape != (K,) or not np.isfinite(pr).all():
                 raise ValueError("prior must provide one finite score per candidate")
             picks["prior"] = int(np.argmax(pr)); spent["prior"] = 0
-            alive = list(np.argsort(-pr, kind="stable")[:max(2, (K + 1) // 2)])
+            # plain ints: the assessment seed is derived through JSON, which numpy ints break
+            alive = [int(i) for i in np.argsort(-pr, kind="stable")[:max(2, (K + 1) // 2)]]
             arm_started = time.monotonic()
-            picks["halving+prior"], spent["halving+prior"] = successive_halving(alive, budget, sample)
+            pick_hp, spent_hp = successive_halving(alive, budget, sample)
+            picks["halving+prior"], spent["halving+prior"] = int(pick_hp), spent_hp
             arm_seconds["halving+prior"] = time.monotonic() - arm_started
         # one assessment block per distinct chosen candidate, shared across arms that agree
         assessed = {}
