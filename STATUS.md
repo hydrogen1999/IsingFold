@@ -289,6 +289,20 @@ valid embedding, and that is measured by the RL evaluation protocol: running on 
 curriculum hosts with the prioritiser as initialisation, and on the full fill corpora at
 300 s (`runs/rl/*_imitation_deploy.log`).
 
+## The constructive policy so far: it places, it does not finish
+
+With the budget features the prioritiser's teacher agreement is 0.342 (Pegasus 6) and 0.336
+(Zephyr 4), the teacher's pick at median rank 1 (`results/imitation/*_budget_train.log`).
+Deployed on the curriculum hosts with episodes sampled until a 30 s deadline, the imitation
+policy reaches 0.71 (Pegasus 3) and 0.64 (Zephyr 2) of demands and no valid embedding in
+any cell, from 70 to 95 percent fill; from scratch 0.59 (`runs/rl/*_init.log`, `*_scratch.log`).
+Before the budget it ended every episode with the host full at 83 percent of demands
+(`results/rl/*_v3.log`, `*_v4.log`); under the budget it runs to the deadline without
+finishing. The failure is in the last third of the demands, the constrained completion,
+not in placing variables. probes/placement_completion.py measures whether a fixed
+completion rule finishes from witness roots, which decides whether the learned part can be
+placement alone.
+
 ## Adaptive allocation of reads (direction 3)
 
 Zephyr 4, 63 held-out states in 32 lineages, every read a real evaluator call, the chosen

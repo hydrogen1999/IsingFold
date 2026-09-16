@@ -1,0 +1,1 @@
+{"corpus": "runs/fill/pegasus6/corpus", "train": 0, "held_out": 48, "init": "runs/imitation/pegasus6.pt", "episodes_per_instance": 4, "deadline": 300.0}

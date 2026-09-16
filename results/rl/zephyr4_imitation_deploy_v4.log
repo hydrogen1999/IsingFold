@@ -1,0 +1,1 @@
+{"corpus": "runs/fill/zephyr4/corpus", "train": 0, "held_out": 48, "init": "runs/imitation/zephyr4.pt", "episodes_per_instance": 4, "deadline": 600.0}

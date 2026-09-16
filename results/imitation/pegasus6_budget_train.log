@@ -1,0 +1,14 @@
+{"records": 26547, "instances": 48, "held_out": 12, "train_decisions": 20043, "test_decisions": 6504, "featurise_seconds": 147}
+/home/nguyencongt/prj_IsingFold/probes/train_prioritiser.py:113: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:836.)
+  total += float(loss)
+  epoch   0  loss 2.6400  train top1 0.278 rank 5.4 | held-out top1 0.273 rank 5.8 median 2
+  epoch   5  loss 2.1897  train top1 0.355 rank 4.5 | held-out top1 0.325 rank 5.0 median 2
+  epoch  10  loss 2.0784  train top1 0.344 rank 4.3 | held-out top1 0.328 rank 4.9 median 2
+  epoch  15  loss 2.0335  train top1 0.376 rank 3.9 | held-out top1 0.355 rank 4.2 median 1
+  epoch  20  loss 2.0004  train top1 0.372 rank 4.0 | held-out top1 0.354 rank 4.3 median 1
+  epoch  25  loss 1.9797  train top1 0.391 rank 3.5 | held-out top1 0.363 rank 4.1 median 1
+  epoch  29  loss 1.9611  train top1 0.362 rank 3.9 | held-out top1 0.342 rank 4.4 median 1
+  wrote runs/imitation/pegasus6_budget.pt
+
+PRIORITISER DONE
