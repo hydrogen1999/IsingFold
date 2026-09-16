@@ -1,0 +1,64 @@
+{"corpus": "runs/fill/pegasus6/corpus", "instances": 48, "qubits": 680, "tries_per_call": 10, "deadlines": [300.0, 600.0]}
+    1/48 pegasus6-fill80-a3.0-0   none within 600s attempts 5
+    2/48 pegasus6-fill80-a3.0-1   none within 600s attempts 5
+    3/48 pegasus6-fill80-a3.0-2   none within 600s attempts 6
+    4/48 pegasus6-fill80-a3.0-3   none within 600s attempts 6
+    5/48 pegasus6-fill80-a3.0-4   none within 600s attempts 6
+    6/48 pegasus6-fill80-a3.0-5   none within 600s attempts 5
+    7/48 pegasus6-fill80-a2.0-0   valid at 36s attempts 1
+    8/48 pegasus6-fill80-a2.0-1   valid at 150s attempts 2
+    9/48 pegasus6-fill80-a2.0-2   valid at 155s attempts 2
+   10/48 pegasus6-fill80-a2.0-3   valid at 42s attempts 1
+   11/48 pegasus6-fill80-a2.0-4   valid at 68s attempts 1
+   12/48 pegasus6-fill80-a2.0-5   valid at 146s attempts 2
+   13/48 pegasus6-fill85-a3.0-0   none within 600s attempts 5
+   14/48 pegasus6-fill85-a3.0-1   none within 600s attempts 5
+   15/48 pegasus6-fill85-a3.0-2   none within 600s attempts 5
+   16/48 pegasus6-fill85-a3.0-3   none within 600s attempts 5
+   17/48 pegasus6-fill85-a3.0-4   none within 600s attempts 5
+   18/48 pegasus6-fill85-a3.0-5   none within 600s attempts 5
+   19/48 pegasus6-fill85-a2.0-0   none within 600s attempts 6
+   20/48 pegasus6-fill85-a2.0-1   none within 600s attempts 6
+   21/48 pegasus6-fill85-a2.0-2   valid at 390s attempts 4
+   22/48 pegasus6-fill85-a2.0-3   none within 600s attempts 6
+   23/48 pegasus6-fill85-a2.0-4   none within 600s attempts 6
+   24/48 pegasus6-fill85-a2.0-5   none within 600s attempts 5
+   25/48 pegasus6-fill90-a3.0-0   none within 600s attempts 5
+   26/48 pegasus6-fill90-a3.0-1   none within 600s attempts 5
+   27/48 pegasus6-fill90-a3.0-2   none within 600s attempts 5
+   28/48 pegasus6-fill90-a3.0-3   none within 600s attempts 4
+   29/48 pegasus6-fill90-a3.0-4   none within 600s attempts 5
+   30/48 pegasus6-fill90-a3.0-5   none within 600s attempts 5
+   31/48 pegasus6-fill90-a2.0-0   none within 600s attempts 6
+   32/48 pegasus6-fill90-a2.0-1   none within 600s attempts 6
+   33/48 pegasus6-fill90-a2.0-2   none within 600s attempts 5
+   34/48 pegasus6-fill90-a2.0-3   none within 600s attempts 6
+   35/48 pegasus6-fill90-a2.0-4   none within 600s attempts 5
+   36/48 pegasus6-fill90-a2.0-5   none within 600s attempts 6
+   37/48 pegasus6-fill95-a3.0-0   none within 600s attempts 4
+   38/48 pegasus6-fill95-a3.0-1   none within 600s attempts 4
+   39/48 pegasus6-fill95-a3.0-2   none within 600s attempts 4
+   40/48 pegasus6-fill95-a3.0-3   none within 600s attempts 4
+   41/48 pegasus6-fill95-a3.0-4   none within 600s attempts 8
+   42/48 pegasus6-fill95-a3.0-5   none within 600s attempts 20
+   43/48 pegasus6-fill95-a2.0-0   none within 600s attempts 24
+   44/48 pegasus6-fill95-a2.0-1   none within 600s attempts 26
+   45/48 pegasus6-fill95-a2.0-2   none within 600s attempts 24
+   46/48 pegasus6-fill95-a2.0-3   none within 600s attempts 24
+   47/48 pegasus6-fill95-a2.0-4   none within 600s attempts 23
+   48/48 pegasus6-fill95-a2.0-5   none within 600s attempts 8
+
+  cell               n  <=300s  <=600s  attempts   mmfill
+  fill80-a2.0        6    1.00    1.00       1.5     0.85
+  fill80-a3.0        6    0.00    0.00       5.5        -
+  fill85-a2.0        6    0.00    0.17       5.5     0.88
+  fill85-a3.0        6    0.00    0.00       5.0        -
+  fill90-a2.0        6    0.00    0.00       5.7        -
+  fill90-a3.0        6    0.00    0.00       4.8        -
+  fill95-a2.0        6    0.00    0.00      21.5        -
+  fill95-a3.0        6    0.00    0.00       7.3        -
+
+  Validity at each deadline is the fraction of instances whose first valid embedding
+  arrived within it; every attempt, including failures, is counted in wall time.
+
+ANYTIME BASELINE DONE
