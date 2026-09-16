@@ -1,0 +1,61 @@
+{"corpus": "runs/fill/pegasus6/corpus", "instances": 48, "hint": false}
+    1/48 pegasus6-fill80-a3.0-0     stuck   steps     8     3.5s  placed 0.01
+    2/48 pegasus6-fill80-a3.0-1     stuck   steps     2     0.8s  placed 0.00
+    3/48 pegasus6-fill80-a3.0-2     stuck   steps    13     5.7s  placed 0.02
+    4/48 pegasus6-fill80-a3.0-3     stuck   steps     4     1.6s  placed 0.01
+    5/48 pegasus6-fill80-a3.0-4     stuck   steps     0     0.0s  placed 0.00
+    6/48 pegasus6-fill80-a3.0-5     stuck   steps     0     0.0s  placed 0.00
+    7/48 pegasus6-fill80-a2.0-0     stuck   steps     0     0.0s  placed 0.00
+    8/48 pegasus6-fill80-a2.0-1     stuck   steps     8     2.7s  placed 0.02
+    9/48 pegasus6-fill80-a2.0-2     stuck   steps     1     0.3s  placed 0.01
+   10/48 pegasus6-fill80-a2.0-3     stuck   steps     0     0.0s  placed 0.00
+   11/48 pegasus6-fill80-a2.0-4     stuck   steps     2     0.7s  placed 0.01
+   12/48 pegasus6-fill80-a2.0-5     stuck   steps     6     2.2s  placed 0.02
+   13/48 pegasus6-fill85-a3.0-0     stuck   steps     0     0.0s  placed 0.00
+   14/48 pegasus6-fill85-a3.0-1     stuck   steps     0     0.0s  placed 0.00
+   15/48 pegasus6-fill85-a3.0-2     stuck   steps     2     0.9s  placed 0.01
+   16/48 pegasus6-fill85-a3.0-3     stuck   steps     0     0.0s  placed 0.00
+   17/48 pegasus6-fill85-a3.0-4     stuck   steps     3     1.4s  placed 0.01
+   18/48 pegasus6-fill85-a3.0-5     stuck   steps    11     4.8s  placed 0.02
+   19/48 pegasus6-fill85-a2.0-0     stuck   steps     3     1.1s  placed 0.01
+   20/48 pegasus6-fill85-a2.0-1     stuck   steps     1     0.4s  placed 0.01
+   21/48 pegasus6-fill85-a2.0-2     stuck   steps     4     1.2s  placed 0.01
+   22/48 pegasus6-fill85-a2.0-3     stuck   steps     0     0.0s  placed 0.00
+   23/48 pegasus6-fill85-a2.0-4     stuck   steps     0     0.0s  placed 0.00
+   24/48 pegasus6-fill85-a2.0-5     stuck   steps    19     8.5s  placed 0.03
+   25/48 pegasus6-fill90-a3.0-0     stuck   steps     2     1.1s  placed 0.00
+   26/48 pegasus6-fill90-a3.0-1     stuck   steps    11     5.3s  placed 0.02
+   27/48 pegasus6-fill90-a3.0-2     stuck   steps    12     5.8s  placed 0.02
+   28/48 pegasus6-fill90-a3.0-3     stuck   steps     0     0.0s  placed 0.00
+   29/48 pegasus6-fill90-a3.0-4     stuck   steps     1     0.5s  placed 0.00
+   30/48 pegasus6-fill90-a3.0-5     stuck   steps     0     0.0s  placed 0.00
+   31/48 pegasus6-fill90-a2.0-0     stuck   steps     0     0.0s  placed 0.00
+   32/48 pegasus6-fill90-a2.0-1     stuck   steps     8     3.2s  placed 0.02
+   33/48 pegasus6-fill90-a2.0-2     stuck   steps     2     0.8s  placed 0.01
+   34/48 pegasus6-fill90-a2.0-3     stuck   steps     0     0.0s  placed 0.00
+   35/48 pegasus6-fill90-a2.0-4     stuck   steps    16     6.9s  placed 0.03
+   36/48 pegasus6-fill90-a2.0-5     stuck   steps    11     5.0s  placed 0.02
+   37/48 pegasus6-fill95-a3.0-0     stuck   steps    16     8.8s  placed 0.03
+   38/48 pegasus6-fill95-a3.0-1     stuck   steps     1     0.5s  placed 0.00
+   39/48 pegasus6-fill95-a3.0-2     stuck   steps     1     0.5s  placed 0.00
+   40/48 pegasus6-fill95-a3.0-3     stuck   steps    24    13.2s  placed 0.04
+   41/48 pegasus6-fill95-a3.0-4     stuck   steps     0     0.0s  placed 0.00
+   42/48 pegasus6-fill95-a3.0-5     stuck   steps     6     2.9s  placed 0.01
+   43/48 pegasus6-fill95-a2.0-0     stuck   steps    12     5.1s  placed 0.02
+   44/48 pegasus6-fill95-a2.0-1     stuck   steps     0     0.0s  placed 0.00
+   45/48 pegasus6-fill95-a2.0-2     stuck   steps     0     0.0s  placed 0.00
+   46/48 pegasus6-fill95-a2.0-3     stuck   steps     0     0.0s  placed 0.00
+   47/48 pegasus6-fill95-a2.0-4     stuck   steps     8     3.4s  placed 0.01
+   48/48 pegasus6-fill95-a2.0-5     stuck   steps     2     0.8s  placed 0.01
+
+  cell               n  reached    steps     secs stops
+  fill80-a2.0        6     0.00        3      1.0 {'stuck': 6}
+  fill80-a3.0        6     0.00        4      1.9 {'stuck': 6}
+  fill85-a2.0        6     0.00        4      1.9 {'stuck': 6}
+  fill85-a3.0        6     0.00        3      1.2 {'stuck': 6}
+  fill90-a2.0        6     0.00        6      2.7 {'stuck': 6}
+  fill90-a3.0        6     0.00        4      2.1 {'stuck': 6}
+  fill95-a2.0        6     0.00        4      1.6 {'stuck': 6}
+  fill95-a3.0        6     0.00        8      4.3 {'stuck': 6}
+
+WITNESS REPLAY DONE

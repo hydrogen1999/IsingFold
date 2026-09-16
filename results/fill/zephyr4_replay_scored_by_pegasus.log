@@ -1,0 +1,61 @@
+{"corpus": "runs/fill/zephyr4/corpus", "instances": 48, "hint": false}
+    1/48 zephyr4-fill80-a3.0-0      stuck   steps     4     1.7s  placed 0.01
+    2/48 zephyr4-fill80-a3.0-1      stuck   steps     0     0.0s  placed 0.00
+    3/48 zephyr4-fill80-a3.0-2      stuck   steps     1     0.3s  placed 0.01
+    4/48 zephyr4-fill80-a3.0-3      stuck   steps     0     0.0s  placed 0.00
+    5/48 zephyr4-fill80-a3.0-4      stuck   steps     5     2.1s  placed 0.01
+    6/48 zephyr4-fill80-a3.0-5      stuck   steps     1     0.4s  placed 0.01
+    7/48 zephyr4-fill80-a2.0-0      stuck   steps     0     0.0s  placed 0.00
+    8/48 zephyr4-fill80-a2.0-1      stuck   steps     0     0.0s  placed 0.00
+    9/48 zephyr4-fill80-a2.0-2      stuck   steps    15     6.0s  placed 0.03
+   10/48 zephyr4-fill80-a2.0-3      stuck   steps     7     2.5s  placed 0.02
+   11/48 zephyr4-fill80-a2.0-4      stuck   steps     5     1.6s  placed 0.01
+   12/48 zephyr4-fill80-a2.0-5      stuck   steps     0     0.0s  placed 0.00
+   13/48 zephyr4-fill85-a3.0-0      stuck   steps     0     0.0s  placed 0.00
+   14/48 zephyr4-fill85-a3.0-1      stuck   steps     0     0.0s  placed 0.00
+   15/48 zephyr4-fill85-a3.0-2      stuck   steps     2     0.7s  placed 0.01
+   16/48 zephyr4-fill85-a3.0-3      stuck   steps     5     1.9s  placed 0.01
+   17/48 zephyr4-fill85-a3.0-4      stuck   steps     0     0.0s  placed 0.00
+   18/48 zephyr4-fill85-a3.0-5      stuck   steps     0     0.0s  placed 0.00
+   19/48 zephyr4-fill85-a2.0-0      stuck   steps     3     1.0s  placed 0.01
+   20/48 zephyr4-fill85-a2.0-1      stuck   steps     3     1.0s  placed 0.01
+   21/48 zephyr4-fill85-a2.0-2      stuck   steps     2     0.6s  placed 0.01
+   22/48 zephyr4-fill85-a2.0-3      stuck   steps     3     0.9s  placed 0.01
+   23/48 zephyr4-fill85-a2.0-4      stuck   steps    13     5.0s  placed 0.02
+   24/48 zephyr4-fill85-a2.0-5      stuck   steps    10     3.5s  placed 0.02
+   25/48 zephyr4-fill90-a3.0-0      stuck   steps     0     0.0s  placed 0.00
+   26/48 zephyr4-fill90-a3.0-1      stuck   steps     3     1.5s  placed 0.01
+   27/48 zephyr4-fill90-a3.0-2      stuck   steps     0     0.0s  placed 0.00
+   28/48 zephyr4-fill90-a3.0-3      stuck   steps     1     0.4s  placed 0.00
+   29/48 zephyr4-fill90-a3.0-4      stuck   steps     2     0.8s  placed 0.00
+   30/48 zephyr4-fill90-a3.0-5      stuck   steps     0     0.0s  placed 0.00
+   31/48 zephyr4-fill90-a2.0-0      stuck   steps     2     0.6s  placed 0.01
+   32/48 zephyr4-fill90-a2.0-1      stuck   steps     0     0.0s  placed 0.00
+   33/48 zephyr4-fill90-a2.0-2      stuck   steps     0     0.0s  placed 0.00
+   34/48 zephyr4-fill90-a2.0-3      stuck   steps     0     0.0s  placed 0.00
+   35/48 zephyr4-fill90-a2.0-4      stuck   steps     0     0.0s  placed 0.00
+   36/48 zephyr4-fill90-a2.0-5      stuck   steps     0     0.0s  placed 0.00
+   37/48 zephyr4-fill95-a3.0-0      stuck   steps     2     1.0s  placed 0.01
+   38/48 zephyr4-fill95-a3.0-1      stuck   steps     2     0.9s  placed 0.00
+   39/48 zephyr4-fill95-a3.0-2      stuck   steps     0     0.0s  placed 0.00
+   40/48 zephyr4-fill95-a3.0-3      stuck   steps     0     0.0s  placed 0.00
+   41/48 zephyr4-fill95-a3.0-4      stuck   steps     0     0.0s  placed 0.00
+   42/48 zephyr4-fill95-a3.0-5      stuck   steps     2     0.9s  placed 0.00
+   43/48 zephyr4-fill95-a2.0-0      stuck   steps     3     1.1s  placed 0.01
+   44/48 zephyr4-fill95-a2.0-1      stuck   steps     6     2.4s  placed 0.02
+   45/48 zephyr4-fill95-a2.0-2      stuck   steps     0     0.0s  placed 0.00
+   46/48 zephyr4-fill95-a2.0-3      stuck   steps     0     0.0s  placed 0.00
+   47/48 zephyr4-fill95-a2.0-4      stuck   steps    17     7.4s  placed 0.03
+   48/48 zephyr4-fill95-a2.0-5      stuck   steps     0     0.0s  placed 0.00
+
+  cell               n  reached    steps     secs stops
+  fill80-a2.0        6     0.00        4      1.7 {'stuck': 6}
+  fill80-a3.0        6     0.00        2      0.8 {'stuck': 6}
+  fill85-a2.0        6     0.00        6      2.0 {'stuck': 6}
+  fill85-a3.0        6     0.00        1      0.4 {'stuck': 6}
+  fill90-a2.0        6     0.00        0      0.1 {'stuck': 6}
+  fill90-a3.0        6     0.00        1      0.4 {'stuck': 6}
+  fill95-a2.0        6     0.00        4      1.8 {'stuck': 6}
+  fill95-a3.0        6     0.00        1      0.5 {'stuck': 6}
+
+WITNESS REPLAY DONE

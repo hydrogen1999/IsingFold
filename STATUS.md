@@ -274,6 +274,20 @@ in, at the same deadline. With the quality endpoint (Task 9) and the encoding co
 (Task 7) done, the three gates of ADR-003 are passed on Zephyr; Pegasus is four instances
 from done.
 
+## The imitation prioritiser (Task 12b)
+
+Trained on the hinted-replay records of one host, held out by instance
+(`results/imitation/*_train.log`): teacher agreement top-1 0.333 on Pegasus 6 and 0.314 on
+Zephyr 4 among up to 64 candidates a decision, the teacher's pick at median rank 2, mean
+rank 5.4. As the generator's preference on the other host with the witness-consistency
+check still applied, the replay stalls within a few steps
+(`results/fill/*_replay_scored_by_*.log`): that measures whether the model's shortlist
+contains the exact witness root at every step, which at a third per step it cannot. The
+deployment question is different, whether the policy sampled until a deadline reaches any
+valid embedding, and that is measured by the RL evaluation protocol: running on the
+curriculum hosts with the prioritiser as initialisation, and on the full fill corpora at
+300 s (`runs/rl/*_imitation_deploy.log`).
+
 ## Adaptive allocation of reads (direction 3)
 
 Zephyr 4, 63 held-out states in 32 lineages, every read a real evaluator call, the chosen
