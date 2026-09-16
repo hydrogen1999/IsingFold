@@ -7,7 +7,7 @@ stands in the logical graph, and how the two relate. Nothing here needs the full
 """
 import numpy as np
 
-from space_features import directional_capacity, free_volume, residual_graph
+from space_features import residual_graph
 from successor_scorer import native_coordinates, parse_host_name
 
 OPCODES = ("PLACE", "ROUTE", "REWRITE_ONE", "COMMIT", "OTHER")
@@ -59,11 +59,20 @@ class FeatureContext:
         if q0 is None:
             f += [0.0] * (WIDTH - len(f))
             return np.asarray(f, dtype=np.float32)
-        # qubit on the residual host
+        # qubit on the residual host, by neighbour counts. The first version used BFS free
+        # volumes to radius two and the free component; called for hundreds of pairs a step
+        # it made an episode on 144 qubits take forty seconds, and the counts carry the same
+        # local information the prioritiser has shown it needs.
         reduced = allowed - set(qubits)
-        vol = free_volume(self.host, reduced, q0, radii=(1, 2))
-        cap = directional_capacity(self.host, reduced, q0, radius=2)
-        f += [vol[0] / 16.0, vol[1] / 64.0, min(vol[2], 4096.0) / 4096.0, cap[3] / 16.0,
+        nb1 = [r for r in self.host.neighbors(q0) if r in reduced]
+        second = set()
+        dead = 0
+        for r in nb1:
+            further = [t for t in self.host.neighbors(r) if t in reduced and t != q0]
+            second.update(further)
+            if not further:
+                dead += 1
+        f += [len(nb1) / 16.0, len(second) / 64.0, 0.0, dead / 16.0,
               self.host_degree.get(q0, 0) / 16.0]
         # pair: contact with placed neighbours' chains, and with any placed chain
         touches = 0

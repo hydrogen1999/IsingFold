@@ -16,11 +16,11 @@ for HS in "pegasus 3" "zephyr 2"; do
 done
 python -u probes/train_constructor_rl.py --corpus runs/small/pegasus3/corpus \
   --out runs/rl/pegasus3_scratch.pt --iterations 300 --instances-per-iteration 4 \
-  --episodes-per-instance 4 --deadline 60 --eval-every 10 --seed 0 \
+  --episodes-per-instance 2 --deadline 30 --eval-every 10 --seed 0 \
   > runs/rl/pegasus3_scratch.log 2>&1 &
 python -u probes/train_constructor_rl.py --corpus runs/small/zephyr2/corpus \
   --out runs/rl/zephyr2_scratch.pt --iterations 300 --instances-per-iteration 4 \
-  --episodes-per-instance 4 --deadline 60 --eval-every 10 --seed 0 \
+  --episodes-per-instance 2 --deadline 30 --eval-every 10 --seed 0 \
   > runs/rl/zephyr2_scratch.log 2>&1 &
 wait
 echo "CONSTRUCTOR RL FINISHED"

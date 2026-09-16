@@ -271,9 +271,16 @@ class ProposalGenerator:
         # deployment a learned scorer can stand in the same place. None means the family's
         # own deterministic order.
         self.prefer = None
+        self._pref_cache: dict = {}
 
     def _pref(self, variable, qubit) -> float:
-        return 0.0 if self.prefer is None else float(self.prefer(variable, qubit))
+        if self.prefer is None:
+            return 0.0
+        key = (variable, qubit)
+        cache = self._pref_cache
+        if key not in cache:
+            cache[key] = float(self.prefer(variable, qubit))
+        return cache[key]
 
     # -- families -------------------------------------------------------------------
 
@@ -1067,6 +1074,9 @@ class ProposalGenerator:
         quotas = dict(
             self.ctx.construction_quotas if self.mode is Mode.CONSTRUCTION else self.ctx.quotas
         )
+        # One state per proposal round: the preference of a (variable, qubit) pair is asked
+        # by several families and is the same for all of them.
+        self._pref_cache = {}
         common_allowance = allowance or self.ctx.caps
         meter = WorkMeter(
             route_expansions=common_allowance.route_expansions,
