@@ -264,6 +264,16 @@ class ProposalGenerator:
         self.improvement_restart_protocol = improvement_restart_protocol
         self.overfill = overfill
         self.jitter_scale = jitter_scale
+        # An optional prioritiser over (variable, qubit) pairs, higher first, consulted by
+        # the construction families before their budget truncates the offer. The registered
+        # cap of 64 state-changing candidates applies to what a decision sees, not to how
+        # the generator ranks what it considers. A teacher sets it to prefer a witness; at
+        # deployment a learned scorer can stand in the same place. None means the family's
+        # own deterministic order.
+        self.prefer = None
+
+    def _pref(self, variable, qubit) -> float:
+        return 0.0 if self.prefer is None else float(self.prefer(variable, qubit))
 
     # -- families -------------------------------------------------------------------
 
@@ -303,18 +313,21 @@ class ProposalGenerator:
                     for r in self.host.neighbors(q):
                         if occupied.get(r, 0) == 0:
                             touches[r] = touches.get(r, 0) + 1
-            return sorted(touches, key=lambda r: (-touches[r], str(r)))
+            return sorted(touches, key=lambda r: (-self._pref(variable, r), -touches[r], str(r)))
 
         def placed_neighbours(variable):
             return sum(1 for nb in self.logical.neighbors(variable) if chains.get(nb))
+
+        def best_pref(vr):
+            return max((self._pref(vr[0], r) for r in vr[1]), default=0.0)
 
         attached = [(v, adjacent_roots(v)) for v in empty]
         attached = [(v, roots) for v, roots in attached if roots]
         # The most constrained variables first: those with the most placed neighbours have
         # the fewest qubits adjacent to all of them, so a few roots each cover their
         # options; on a host of degree fifteen a single root per variable does not.
-        attached.sort(key=lambda vr: (-placed_neighbours(vr[0]), -self.logical.degree(vr[0]),
-                                      str(vr[0])))
+        attached.sort(key=lambda vr: (-best_pref(vr), -placed_neighbours(vr[0]),
+                                      -self.logical.degree(vr[0]), str(vr[0])))
         per_variable = max(1, budget // 8)
         attached = [(v, roots[:per_variable]) for v, roots in attached[: max(1, budget // per_variable)]]
         if not attached:
@@ -325,7 +338,10 @@ class ProposalGenerator:
             first = sorted(empty, key=lambda v: (-self.logical.degree(v), str(v)))[0]
             free = [q for q in sorted(self.host.nodes(), key=str) if occupied.get(q, 0) == 0]
             stride = max(1, len(free) // max(1, budget))
-            attached = [(first, free[::stride])]
+            spread = free[::stride]
+            if self.prefer is not None:
+                spread = sorted(free, key=lambda q: (-self._pref(first, q), str(q)))[: len(spread)]
+            attached = [(first, spread)]
 
         # Round-robin across the attached variables so no single variable eats the quota.
         cursors = [0] * len(attached)
@@ -385,11 +401,16 @@ class ProposalGenerator:
         placed.sort(key=lambda v: (-unplaced_neighbours(v), str(v)))
         start = sum(len(c) for c in chains.values()) % len(placed)
         placed = placed[start:] + placed[:start]
+        if self.prefer is not None:
+            def chain_pref(v):
+                return max((self._pref(v, r) for q in chains[v] for r in self.host.neighbors(q)
+                            if occupied.get(r, 0) == 0), default=0.0)
+            placed.sort(key=lambda v: -chain_pref(v))
         for v in placed:
             chain = chains[v]
             free = sorted(
                 {r for q in chain for r in self.host.neighbors(q) if occupied.get(r, 0) == 0},
-                key=str,
+                key=lambda r: (-self._pref(v, r), str(r)),
             )
             scan = sum(self.host.degree(q) for q in chain)
             for r in free:
@@ -440,6 +461,17 @@ class ProposalGenerator:
         # function of the state, never of a clock or a random draw.
         start = sum(len(c) for c in chains.values()) % len(unmet)
         unmet = unmet[start:] + unmet[:start]
+        if self.prefer is not None:
+            def demand_pref(lr):
+                l, r = lr
+                return max(
+                    [self._pref(l, q) for c in chains[l] for q in self.host.neighbors(c)
+                     if occupied.get(q, 0) == 0]
+                    + [self._pref(r, q) for c in chains[r] for q in self.host.neighbors(c)
+                       if occupied.get(q, 0) == 0],
+                    default=0.0,
+                )
+            unmet.sort(key=lambda lr: -demand_pref(lr))
 
         def distance_to(target_chain, limit=8):
             """Host BFS distance from every qubit within ``limit`` of the target chain."""
@@ -512,8 +544,10 @@ class ProposalGenerator:
             # Each bridge is offered to either owner: which chain absorbs the qubit is a
             # decision, and a teacher's chain may hold it on either side.
             scan = sum(self.host.degree(q) for q in left_chain)
-            for r in bridges:
-                for owner in (left, right):
+            pairs = sorted(((r, owner) for r in bridges for owner in (left, right)),
+                           key=lambda ro: (-self._pref(ro[1], ro[0]), str(ro[0]), str(ro[1])))
+            for r, owner in pairs:
+                if True:
                     if len(out) >= budget or not meter.can_charge(scan):
                         return out
                     anchor = next(
@@ -546,12 +580,16 @@ class ProposalGenerator:
                 right_free = {
                     r for q in right_chain for r in self.host.neighbors(q) if occupied.get(r, 0) == 0
                 }
-                meets = [
-                    (x, y)
-                    for x in left_free
-                    for y in sorted(self.host.neighbors(x), key=str)
-                    if y in right_free and y != x
-                ]
+                meets = sorted(
+                    (
+                        (x, y)
+                        for x in left_free
+                        for y in sorted(self.host.neighbors(x), key=str)
+                        if y in right_free and y != x
+                    ),
+                    key=lambda xy: (-(self._pref(left, xy[0]) + self._pref(right, xy[1])),
+                                    str(xy[0]), str(xy[1])),
+                )
                 scan = sum(self.host.degree(q) for q in left_chain) + sum(
                     self.host.degree(q) for q in right_chain
                 )

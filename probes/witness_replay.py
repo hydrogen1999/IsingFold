@@ -36,7 +36,7 @@ def consistent(cand, witness, current):
     return False
 
 
-def replay(task, witness, max_steps):
+def replay(task, witness, max_steps, hint):
     ctx = construction_context(task.host.number_of_nodes(), task.logical.number_of_nodes(),
                                task.logical.number_of_edges())
     first = max(witness, key=lambda v: (task.logical.degree(v), str(v)))
@@ -47,6 +47,8 @@ def replay(task, witness, max_steps):
 
     env = EmbeddingEnv(task, ctx, mode=Mode.CONSTRUCTION, initializer=start,
                        selector=fixed_strength_selector(), reward_reads=8)
+    if hint:
+        env.generator.prefer = lambda v, q: 1.0 if q in witness[v] else 0.0
     dec = env.reset(0)
     steps = 0
     t0 = time.time()
@@ -75,16 +77,20 @@ def main() -> int:
     ap.add_argument("--corpus", required=True)
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--max-steps", type=int, default=5000)
+    ap.add_argument("--hint", action="store_true",
+                    help="let the generator prefer the witness's qubits before truncating its "
+                         "offer: measures whether the grammar can express the witness at all, "
+                         "as opposed to whether the unhinted heuristic order covers it")
     a = ap.parse_args()
     tasks = load_instances(a.corpus)
     if a.limit:
         tasks = tasks[: a.limit]
-    print(json.dumps({"corpus": a.corpus, "instances": len(tasks)}), flush=True)
+    print(json.dumps({"corpus": a.corpus, "instances": len(tasks), "hint": a.hint}), flush=True)
     cells = defaultdict(list)
     for k, task in enumerate(tasks):
         family = task.lineage.rsplit("-", 1)[0].split("-", 1)[1].rsplit("-", 1)[0]
         witness = {v: frozenset(c) for v, c in task.witness.items()}
-        r = replay(task, witness, a.max_steps)
+        r = replay(task, witness, a.max_steps, a.hint)
         cells[family].append(r)
         print("  %3d/%d %-26s %-7s steps %5d  %6.1fs  placed %.2f"
               % (k + 1, len(tasks), task.name, r["why"], r["steps"], r["secs"], r["placed"]),

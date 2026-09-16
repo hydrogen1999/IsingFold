@@ -60,7 +60,7 @@ def _consistent(cand, witness, current):
     return False
 
 
-def replay(task, witness, max_steps=400):
+def replay(task, witness, max_steps=400, hint=False):
     from _context import construction_context
     from isingfold.rl.contracts import DecisionState, Opcode
     from isingfold.rl.env import EmbeddingEnv, Mode, fixed_strength_selector
@@ -75,6 +75,8 @@ def replay(task, witness, max_steps=400):
 
     env = EmbeddingEnv(task, ctx, mode=Mode.CONSTRUCTION, initializer=start,
                        selector=fixed_strength_selector(), reward_reads=8)
+    if hint:
+        env.generator.prefer = lambda v, q: 1.0 if q in witness[v] else 0.0
     dec = env.reset(0)
     steps = 0
     while isinstance(dec, DecisionState) and steps < max_steps:
@@ -109,13 +111,13 @@ def test_a_planted_witness_replays_through_the_construction_api_on_a_small_host(
     assert ok, why
 
 
-@pytest.mark.parametrize("seed", [1, 2, 3])
-def test_a_planted_witness_replays_on_a_host_of_a_hundred_qubits(seed):
+@pytest.mark.parametrize("seed,hint", [(1, False), (2, False), (3, False), (2, True)])
+def test_a_planted_witness_replays_on_a_host_of_a_hundred_qubits(seed, hint):
     # Before Task 12 this failed at step 0: PLACE offered the 24 lexicographically first
     # roots for the first empty variable, the horizon was 32 decisions, and ROUTE offered one
     # router path per demand. Placement now follows placed neighbours, the horizon scales
     # with the instance, and one-qubit bridges are offered beside the router path.
     task, witness = _planted_task(side=10, fill=0.8, seed=seed, lmax=2)
     assert len(witness) >= 40
-    ok, why = replay(task, witness, max_steps=2000)
+    ok, why = replay(task, witness, max_steps=2000, hint=hint)
     assert ok, why
