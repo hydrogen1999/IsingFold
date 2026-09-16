@@ -306,7 +306,9 @@ Our own completion search, run that way (`probes/route_search.py`, `results/ours
 chronological-backtracking router fails from witness roots at corpus scale; a negotiated-
 congestion router with per-demand rip-up, randomised restarts and chain-connectivity
 invariants reaches 9 of 24 hard small-host instances from witness roots in 13 s where
-minorminer's router reaches 24 of 24 in under a second. Matching the standard router is an
+minorminer's router reaches 24 of 24 in under a second. A maximum matching of bridge demands to free qubits before negotiation makes it worse, 0 of
+24: the matching takes exactly the qubits the remaining demands need and, being fixed, cannot
+be ripped up. Matching the standard router is an
 engineering project on its own; until it does, the learned layout is measured with the
 standard router as the completion and the standard router alone as the baseline.
 

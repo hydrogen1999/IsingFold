@@ -339,3 +339,170 @@ def negotiate_restarts(host, logical, roots, budget, deadline=10.0, seed=0):
             return res
     negotiate_restarts.last = {"attempts": attempt, "secs": time.time() - t0}
     return None
+
+
+def matched_completion(host, logical, roots, budget, deadline=10.0, seed=0):
+    """Bridge demands by maximum matching first, then negotiate the rest.
+
+    At high fill with short chains most unmet demands can be met by one free qubit adjacent
+    to both roots, and the free qubits are scarce, so which demand gets which bridge is an
+    assignment problem. A maximum bipartite matching (demand to bridge qubit) settles it
+    exactly in milliseconds; the negotiated router then only handles the demands that no
+    single bridge can serve, with the matched bridges in place.
+    """
+    import networkx as nx
+    from networkx.algorithms import bipartite
+
+    t0 = time.time()
+    root_of = {v: next(iter(c)) for v, c in roots.items()}
+    if any(v not in root_of for v in logical.nodes()):
+        return None
+    chains = {v: {root_of[v]} for v in logical.nodes()}
+    occupied = set(root_of.values())
+    unmet = [(u, v) for u, v in logical.edges() if not _touch(host, chains[u], chains[v])]
+    # candidate bridges per demand
+    g = nx.Graph()
+    demand_nodes = []
+    for (u, v) in unmet:
+        fu = _neighbors_free(host, chains[u], occupied)
+        fv = _neighbors_free(host, chains[v], occupied)
+        node = ("d", u, v)
+        g.add_node(node, bipartite=0)
+        demand_nodes.append(node)
+        for r in fu & fv:
+            g.add_node(("q", r), bipartite=1)
+            g.add_edge(node, ("q", r))
+    matching = bipartite.hopcroft_karp_matching(g, top_nodes=demand_nodes) if g.number_of_edges() else {}
+    seeded = {v: set(c) for v, c in chains.items()}
+    for node in demand_nodes:
+        q = matching.get(node)
+        if q is None:
+            continue
+        _, u, v = node
+        r = q[1]
+        owner = u if len(seeded[u]) <= len(seeded[v]) else v
+        seeded[owner].add(r)
+        occupied.add(r)
+    # every chain is still root plus adjacent bridges: connected by construction
+    rest = [(u, v) for u, v in logical.edges() if not _touch(host, seeded[u], seeded[v])]
+    if not rest:
+        total = sum(len(c) for c in seeded.values())
+        matched_completion.last = {"matched": len(matching) // 2, "rest": 0, "secs": time.time() - t0}
+        return {v: frozenset(c) for v, c in seeded.items()} if total <= budget else None
+    # negotiate the remaining demands with the bridged chains as the starting chains:
+    # negotiate() takes roots, so pass the seeded chains as multi-qubit "roots" by giving
+    # it a logical view where each seeded chain is contracted to its root and the extra
+    # qubits are pre-occupied. Simplest faithful way: run negotiate on the original roots
+    # but with the matched bridges fixed through a wrapper host cost. Here we fall back to
+    # negotiate on the seeded chains directly by treating each chain as fixed occupancy.
+    res = negotiate_from_chains(host, logical, seeded, budget, deadline - (time.time() - t0), seed)
+    matched_completion.last = {"matched": len(matching) // 2, "rest": len(rest), "secs": time.time() - t0}
+    return res
+
+
+def negotiate_from_chains(host, logical, chains, budget, deadline=10.0, seed=0):
+    """negotiate_restarts() generalised to start from connected multi-qubit chains."""
+    import random
+    t0 = time.time()
+    rng = random.Random(seed)
+    attempt = 0
+    while time.time() - t0 < deadline:
+        attempt += 1
+        left = deadline - (time.time() - t0)
+        res = _negotiate_chains(host, logical, chains, budget, left, rng)
+        if res is not None:
+            return res
+    return None
+
+
+def _negotiate_chains(host, logical, start, budget, deadline, rng, max_rounds=400):
+    t0 = time.time()
+    pressure = 2.0 + rng.random()
+    history_step = 0.5 + rng.random()
+    base = {v: set(c) for v, c in start.items()}
+    demands = [(u, v) for u, v in logical.edges()]
+    rng.shuffle(demands)
+    jitter = {q: rng.random() * 0.3 for q in host.nodes()}
+    seg = {}
+    history = {}
+    ch = {v: set(c) for v, c in base.items()}
+    own = {}
+    for v, qs in ch.items():
+        for q in qs:
+            own.setdefault(q, set()).add(v)
+
+    def route_one(u, v):
+        def cost(r):
+            holders = own.get(r, set()) - {u, v}
+            return 1.0 + jitter.get(r, 0.0) + pressure * len(holders) + history.get(r, 0.0)
+        path, _ = _dijkstra_route(host, ch[u], ch[v], cost)
+        if path is None:
+            return False
+        k = (len(path) + 1) // 2
+        seg[(u, v)] = (u, path[:k]); seg[(u, v, "tail")] = (v, path[k:])
+        for q in path[:k]:
+            own.setdefault(q, set()).add(u); ch[u].add(q)
+        for q in path[k:]:
+            own.setdefault(q, set()).add(v); ch[v].add(q)
+        return True
+
+    def drop(u, v):
+        for key in ((u, v), (u, v, "tail")):
+            if key in seg:
+                owner, qs = seg.pop(key)
+                for q in qs:
+                    ch[owner].discard(q)
+                    s = own.get(q)
+                    if s:
+                        s.discard(owner)
+                        if not s:
+                            del own[q]
+
+    def cascade():
+        changed = True
+        while changed:
+            changed = False
+            for var in list(ch):
+                comp, frontier = set(base[var]), list(base[var])
+                while frontier:
+                    q = frontier.pop()
+                    for r in host.neighbors(q):
+                        if r in ch[var] and r not in comp:
+                            comp.add(r); frontier.append(r)
+                loose = ch[var] - comp
+                if loose:
+                    for key, (owner, qs) in list(seg.items()):
+                        if owner == var and any(q in loose for q in qs):
+                            drop(key[0], key[1]); changed = True
+
+    rounds = 0
+    while time.time() - t0 < deadline and rounds < max_rounds:
+        for (u, v) in demands:
+            if not _touch(host, ch[u], ch[v]) and not route_one(u, v):
+                return None
+        shared = {q for q, s in own.items() if len(s) > 1}
+        if not shared:
+            total = sum(len(c) for c in ch.values())
+            if total <= budget:
+                return {v: frozenset(c) for v, c in ch.items()}
+            longest = sorted(((k, o, qs) for k, (o, qs) in seg.items()), key=lambda t: -len(t[2]))
+            for key, _, _ in longest[: max(1, len(longest) // 8)]:
+                drop(key[0], key[1])
+            cascade(); pressure *= 1.5; rounds += 1
+            continue
+        for q in shared:
+            history[q] = history.get(q, 0.0) + history_step
+        conflicted = []
+        for key, (owner, qs) in list(seg.items()):
+            if any(q in shared for q in qs) and key[:2] not in conflicted:
+                conflicted.append(key[:2])
+        for q in shared:
+            for var in list(own.get(q, ())):
+                if q in base[var]:
+                    for key, (owner, qs) in list(seg.items()):
+                        if q in qs and key[:2] not in conflicted:
+                            conflicted.append(key[:2])
+        for (u, v) in conflicted:
+            drop(u, v)
+        cascade(); rounds += 1
+    return None
