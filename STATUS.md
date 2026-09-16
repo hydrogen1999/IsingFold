@@ -19,6 +19,7 @@ never depends on memory.
 | direction 3 | adaptive allocation of reads vs uniform, real evaluator, disjoint assessment | `results/adaptive/*.log` | **done, replicated**: successive halving matches uniform at half the reads on both hosts, -0.002 [-0.008, +0.004] Zephyr and +0.002 [-0.004, +0.009] Pegasus; UCB slightly worse; random -0.11 to -0.12 |
 | curriculum baseline | anytime minorminer on Pegasus 3 and Zephyr 2 fill corpora, 12 a cell, deadlines 10 to 120 s | `results/small/*_anytime.log` | **done**: short chains from 80 percent 0 to 0.17 at 120 s with 20 to 40 attempts; medium chains 0.42 / 0.17 (Pegasus 3) and 0.75 / 0.08 (Zephyr 2) at 90 / 95 percent |
 | hybrid | policy roots then minorminer; seeded-minorminer tolerance arms | apollo `runs/seeded/*.log`, `runs/hybrid/*.log` | witness roots turn 0 into 12/12 at 80 percent short chains on both small hosts and 2/2 so far on both big hosts; policy roots and tolerance running |
+| hybrid RL | PLACE-only policy, minorminer completion, reward = valid within 10 s; eval: greedy roots then minorminer within 60 s vs plain minorminer | apollo `runs/hybrid/rl_*.log` | running on Pegasus 3 (init and scratch) and Zephyr 2 (init) |
 | direction 4, RL | REINFORCE on the constructive policy (policy = prioritiser), dense progress reward, STOP and RESTART masked, evaluation samples until the deadline; from scratch and initialised from the imitation prioritiser; Pegasus 3 and Zephyr 2 | apollo `runs/rl/*_scratch.log`, `runs/rl/*_init.log` | running; before the mask the imitation-initialised policy reached demand fraction 0.70 / 0.63 and validity 0, ending episodes by sampling STOP |
 | imitation, deployed | the imitation prioritiser as a policy on the full fill corpora, sample until 600 s | apollo `runs/rl/*_imitation_deploy.log`; baseline at 300 and 600 s on goose `runs/fill/*_anytime600.log` | running |
 | direction 5 | labels on the 2400-instance Pegasus 6 corpus for the data-scale test | `results/relabel/pegasus6_large_labels.log`; apollo `runs/large/train_seed*.log` | labels **done**: 3298 training states, 696 held-out, 24,123 candidates, 3 h; oracle minus random +0.108 and +0.099 on 696 held-out states; three trainings running |
@@ -311,6 +312,16 @@ the shape of the learning problem: how accurate the roots must be (`*_tolerance.
 quarter, one-step-noisy witness roots) and what the current PLACE-only policy's roots are
 worth (`runs/hybrid/*.log`); its first lines show it placing every variable in seconds and
 agreeing with the witness on almost none.
+
+Tolerance of the completion (`runs/seeded/*_tolerance.log`, 80 percent short chains): with
+the witness roots of a random half of the variables, 10/10 on Pegasus 3 and 7/8 on Zephyr 2;
+with a quarter, 5/10 and 2/8; with every root moved one step, 5/10 and 2/8; unseeded 2/10 and
+1/8. Half of the roots right is enough. The imitation prioritiser's PLACE-only roots are
+worth nothing (`runs/hybrid/*.log`: 1/10 against 2/10 unseeded), and agreement with one
+witness is the wrong measure since the witness is one of many symmetric layouts: minorminer
+needs a globally consistent layout, which a locally trained scorer does not give. So the
+layout is learned against the deployment signal itself: PLACE-only episodes, minorminer
+completion under a short deadline, reward one if it succeeds (`probes/train_hybrid_rl.py`).
 
 ## The constructive policy so far: it places, it does not finish
 
