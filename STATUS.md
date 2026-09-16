@@ -18,7 +18,7 @@ never depends on memory.
 | Task 12 | witness replay through the construction API | `tests/unit/test_witness_replay.py`, apollo `runs/fill/*_replay_{nohint,hint}.log` | grammar sufficient at scale with the witness as prioritiser (first Zephyr instance, 366 variables: valid in 445 decisions, 267 s); unhinted heuristic order covers almost nothing; full corpus replay running |
 | direction 3 | adaptive allocation of reads vs uniform, real evaluator, disjoint assessment | `results/adaptive/*.log` | **done, replicated**: successive halving matches uniform at half the reads on both hosts, -0.002 [-0.008, +0.004] Zephyr and +0.002 [-0.004, +0.009] Pegasus; UCB slightly worse; random -0.11 to -0.12 |
 | direction 4, RL | REINFORCE on the constructive policy (policy = prioritiser), from scratch, Pegasus 3 and Zephyr 2 fill corpora, deadline 60 s an episode; anytime baseline on the same corpora at 10 to 120 s | apollo `runs/rl/*_scratch.log`, goose `runs/small/*_anytime.log` | running |
-| direction 5 | labels on the 2400-instance Pegasus 6 corpus for the data-scale test | goose corpus `runs/large/`, apollo `runs/large/labels.log` | corpus done in 5 minutes; labelling running |
+| direction 5 | labels on the 2400-instance Pegasus 6 corpus for the data-scale test | `results/relabel/pegasus6_large_labels.log`; apollo `runs/large/train_seed*.log` | labels **done**: 3298 training states, 696 held-out, 24,123 candidates, 3 h; oracle minus random +0.108 and +0.099 on 696 held-out states; three trainings running |
 
 Checkpoints and gates are in `docs/plans/2026-09-15-plan.md`; decisions in `docs/decisions/`;
 the two reviews in `docs/review/`. When a row above finishes, its log is copied to `results/`
