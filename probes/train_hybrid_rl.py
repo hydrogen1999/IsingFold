@@ -29,6 +29,7 @@ from isingfold.rl.env import EmbeddingEnv, Mode, fixed_strength_selector
 from _context import construction_context, qubit_budget
 from candidate_features import FeatureContext
 from seeded_minorminer import attempt
+from fast_layout import sample_layout
 from train_constructor_rl import candidate_tuple
 from train_prioritiser import Prioritiser
 
@@ -112,6 +113,8 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--hard-only", action="store_true",
                     help="train on cells where unseeded minorminer is not already at one")
+    ap.add_argument("--fast", action="store_true",
+                    help="sample layouts outside the environment (milliseconds a layout)")
     a = ap.parse_args()
     tasks = load_instances(a.corpus)
     rng = np.random.default_rng(a.seed)
@@ -133,9 +136,10 @@ def main() -> int:
             fcs[task.name] = FeatureContext(task, qubit_budget({v: frozenset(c) for v, c in task.witness.items()}))
         return fcs[task.name]
 
+    layout = sample_layout if a.fast else place_roots
     print(json.dumps({"corpus": a.corpus, "train": len(train_tasks), "held_out": len(eval_tasks),
                       "init": a.init or None, "train_deadline": a.train_deadline,
-                      "eval_deadline": a.eval_deadline}), flush=True)
+                      "eval_deadline": a.eval_deadline, "fast": a.fast}), flush=True)
 
     def evaluate(tag):
         """Policy plus search: layouts are sampled from the policy until the deadline, each
@@ -148,7 +152,7 @@ def main() -> int:
         for k, t in enumerate(eval_tasks):
             t0, ok, layouts = time.time(), False, 0
             while not ok and time.time() - t0 < a.eval_deadline:
-                roots, _ = place_roots(t, model, fc_for(t), a.temperature, rng, train=True)
+                roots, _ = layout(t, model, fc_for(t), a.temperature, rng, train=True)
                 layouts += 1
                 left = a.eval_deadline - (time.time() - t0)
                 ok, _, _ = complete(t, roots, min(a.train_deadline, max(0.5, left)), a.tries,
@@ -173,7 +177,7 @@ def main() -> int:
             t = train_tasks[idx]
             eps = []
             for e in range(a.episodes_per_instance):
-                roots, logps = place_roots(t, model, fc_for(t), a.temperature, rng, train=True)
+                roots, logps = layout(t, model, fc_for(t), a.temperature, rng, train=True)
                 ok, s, _ = complete(t, roots, a.train_deadline, a.tries, 90_000 + 7 * e + 100 * it)
                 r = 1.0 if ok else 0.5 * partial_score(t, roots, 91_000 + 7 * e + 100 * it)
                 eps.append((r, logps)); wins.append(ok); secs.append(s)

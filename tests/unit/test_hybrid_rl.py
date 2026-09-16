@@ -32,3 +32,24 @@ def test_place_roots_then_minorminer_on_a_toy():
     assert len(logps) == len(roots)
     ok, secs, n = complete(task, roots, 5.0, 5, 1)
     assert isinstance(ok, bool) and n >= 1
+
+
+def test_fast_layout_places_every_variable_in_milliseconds():
+    import time
+    import torch
+    from _context import qubit_budget
+    from candidate_features import FeatureContext
+    from fast_layout import sample_layout
+    from train_prioritiser import Prioritiser
+    from . import test_witness_replay as tw
+
+    task, witness = tw._planted_task(side=10, fill=0.85, seed=1, lmax=2)
+    torch.manual_seed(0)
+    model = Prioritiser(16)
+    t0 = time.time()
+    chains, logps = sample_layout(task, model, FeatureContext(task, qubit_budget(witness)), 1.0,
+                                  np.random.default_rng(0), train=True)
+    assert set(chains) == set(task.logical.nodes())
+    assert len({next(iter(c)) for c in chains.values()}) == len(chains)
+    assert len(logps) == len(chains)
+    assert time.time() - t0 < 5.0
