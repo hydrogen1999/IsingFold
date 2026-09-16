@@ -34,15 +34,28 @@ and its number is written into the section of this file that it belongs to, in t
 
 ## Where it stands in one paragraph
 
-The reinforcement embedder does not beat a random controller at matched episodes by enough to
-claim it: +0.0157, +0.0262 and +0.0135 on ninety test lineages, every interval containing zero.
-What the work has established instead is where the difficulty lies. Choosing among the candidates
-at a single state is worth about +0.11 to +0.13 in solve probability. The specified network can
-fit that choice exactly on states it has seen, and transfers almost none of it. Reading the
-compiled program rather than the environment state recovers about +0.012 of it. And the number of
-qubits an embedding uses carries no information about its quality at all.
+The objective is downstream solution quality under a declared hardware and measurement budget.
+Fill means actual state occupancy; the witness-fill label alone does not make an empty-start
+episode a tight-space completion test. Contact growth from a valid witness tests allocation of
+the remaining space, with the witness supplied equally to every arm. It does not demonstrate
+that the policy can construct that starting embedding. The large corrected scorer has a positive
+validation gain over random (+0.0205, +0.0273, +0.0230), while learned hybrid roots have not shown
+a completion advantage in the committed results. Plain successive halving is a useful selection
+baseline, not a learned result. Registered growth sweeps show that indiscriminate growth can harm
+quality; the contact-versus-start intervals still include zero. New contact-policy and hybrid
+training jobs are not results until their completed logs and independent assessment are committed.
 
-## Claims and their standing
+Implementation corrections and the verification scope are recorded in
+`docs/review/2026-09-16-quality-contract-fixes.md`. They do not retroactively change historical
+numbers or establish a new training gain. Checkpoint selection uses validation; an unopened final
+test is still required for a paper result.
+
+## Historical claims and their standing at the time
+
+This table records earlier configurations, including the auto-schedule experiments. Its broad
+negative statements are not conclusions about the current model family. In particular, the
+large corrected scorer supersedes "does not transfer" as a universal claim. A noisy measured
+selection reference is not a theoretical upper bound on what a learned selector can achieve.
 
 | Claim | Number | Standing |
 |---|---|---|
@@ -210,7 +223,7 @@ interval about 0.09 wide and every pair within 0.02. No arm separates from the b
 That is three corpora and three splits on which the representation does not matter. Logs in
 `results/diverse_abl/`.
 
-## Planted fill is not hardness; minimal fill is
+## Historical construction diagnostic: witness fill does not determine difficulty
 
 `probes/gen_fill_corpus.py` plants a chain partition of the host at a chosen fill and takes the
 quotient as the logical graph, so a valid embedding at that fill is known. With chains of one
@@ -347,11 +360,13 @@ grown embedding minus the start, 90 lineages:
     contacts          2.2     -0.012 [-0.037, +0.012]       +0.006 [-0.021, +0.033]
     contacts          1.6     -0.025 [-0.052, +0.001]       +0.011 [-0.024, +0.044]
 
-Under the fixed temperature, lengthening and redundancy cost more than they did under the
-auto schedule, since compression is now paid for; growing toward coupled chains is the one
-spend that does not hurt and is slightly positive at small spends, intervals including
-zero. The premise that more qubits raise the objective does not hold in general; the sign
-is decided by how the qubit is spent, which is the decision a policy can learn.
+Under this registered schedule, several lengthening and redundancy arms reduce measured
+quality. Contact-growth effects versus the start have intervals containing zero on both hosts;
+these experiments neither establish a positive gain nor prove that contact growth cannot hurt.
+Each growth arm starts independently from the same base, so the rows are not a nested trajectory
+and do not isolate qubit count from geometry. The result motivates learning where to spend rather
+than assuming any extra qubit helps. The supplied start is a training/diagnostic reference;
+end-to-end deployment starts empty and must construct its own valid output.
 
 ## The objective is quality; validity is the gate
 
@@ -427,11 +442,12 @@ placement alone.
 Three seeds on 1680 training lineages of Pegasus 6 under the registered schedule with the
 corrected compiler, 696 held-out states in 360 lineages (`results/large/train_seed*.log`):
 +0.0205 [+0.0094, +0.0318], +0.0273 [+0.0147, +0.0387], +0.0230 [+0.0110, +0.0354]. At 160
-lineages the same encoding gave +0.003. So the prediction direction is not closed: the
-signal is real and grows with data, from nothing to about +0.02 for ten times the lineages,
-against a ceiling of +0.11. At that rate the ceiling is out of reach by data alone; what
-+0.02 of ranking signal is worth is as a prior inside adaptive allocation (direction 3),
-where it can only be judged against successive halving, not against uniform.
+lineages the same encoding gave +0.003. The prediction direction is not closed. The small and
+large runs use different evaluation sets, so they do not establish a controlled scaling law
+or a limit to data scaling. The measured-selection reference is not a theoretical ceiling.
+The practical next question is whether this ranking signal helps adaptive allocation
+(direction 3) against plain successive halving at the same cost. These are validation results,
+not an unopened final-test result.
 
 ## Adaptive allocation of reads (direction 3)
 

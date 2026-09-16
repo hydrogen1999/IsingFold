@@ -21,6 +21,17 @@ else is described by its log's own header line.
 | `fill/` | fill-planted corpora, minorminer at ten and fifty tries, constructor floor, witness quality, exact and long-chain sweeps, anytime baseline | current; `*_witness_registered.log` is Task 9 |
 | `relabel/` | labels under the registered schedule with the corrected compiler, both modern hosts | current; Task 6 |
 | `corrected/` | old versus corrected encoding on identical labels, and label reliability | current; Tasks 7 and 8 |
+| `large/` | corrected successor scorer, 1,680 training lineages, three optimization seeds | positive validation gain over random; no paired resource-baseline CI or final-test claim |
+| `adaptive/` | uniform, successive halving and UCB selection on frozen pools | classical allocation baseline; existing logs do not measure a learned prior |
+| `hybrid/` | imitation-root deployment and early hybrid RL snapshots | learned roots tied the plain router in aggregate; new jobs need completed logs |
+| `rl/`, `imitation/`, `search/`, `ours/` | constructive training, replay, deployment and router diagnostics | snapshots and diagnostics, not a demonstrated learned end-to-end win |
+| `seeded/` | witness, random and partial-hint completion controls | witness is privileged information, not a learned result |
+
+`modern/*/sweep_registered.log` supersedes the auto-schedule sweep for the registered objective.
+Its contact-versus-start intervals include zero. The old log footer incorrectly describes
+independently grown arms as nested; the raw observations remain unchanged for provenance.
+See `docs/review/2026-09-16-quality-contract-fixes.md` for the corrected evaluation contracts.
+Source fixes do not change results already recorded here; rerun and version the corrected protocol.
 
 Logs from runs executed on this tree, and the checks that decide whether to believe them.
 

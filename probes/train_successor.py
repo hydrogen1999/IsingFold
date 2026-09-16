@@ -338,13 +338,21 @@ def main() -> int:
         torch.save(model.state_dict(), out.with_suffix(".pt"))
         out.write_text(json.dumps({
             "model": "SuccessorScorer", "coords": bool(a.coords),
+            "checkpoint_sha256": hashlib.sha256(out.with_suffix(".pt").read_bytes()).hexdigest(),
             "physics": bool(a.physics), "space": bool(a.space), "width": a.width,
             "parameters":
                 sum(p.numel() for p in model.parameters()),
             "optimizer_steps": steps, "learning_rate": a.learning_rate,
             "weight_decay": a.weight_decay, "rank_weight": a.rank_weight,
             "inner_fraction": a.inner_fraction, "cache": a.cache, "cache_key": blob["key"],
-            "source_sha256": h.hexdigest()[:16], "seed": a.seed}, indent=1))
+            "source_sha256": h.hexdigest()[:16], "seed": a.seed,
+            "training_lineages": sorted({st["lineage"] for st in train_states}),
+            "selection_lineages": sorted({st["lineage"] for st in inner_states}),
+            "evaluation_lineages": sorted({st["lineage"] for st in eval_states}),
+            "holdout_family": a.holdout_family,
+            "legacy_compile": bool(a.legacy_compile),
+            "label_provenance": blob.get("provenance"),
+            "allow_stale_cache": bool(a.allow_stale_cache)}, indent=1))
     print("\nSUCCESSOR SCORER DONE", flush=True)
     return 0
 

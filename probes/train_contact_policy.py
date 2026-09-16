@@ -1,21 +1,26 @@
 """Learn where to spend a qubit: contact growth chosen by a policy, rewarded by the objective.
 
-Under the registered schedule, growing a chain toward the chains of its coupled variables
-is the one way of spending qubits that does not hurt the measured objective, and it is
-slightly positive at small spends; lengthening and redundancy hurt. Which contacts to add
-is therefore the decision worth learning. Starting from the router's embedding, an episode
-adds m qubits one at a time, each a free qubit adjacent to one chain and adjacent to the
+This probe tests whether contact growth improves the registered downstream objective; it
+does not assume that adding contacts helps on every instance. Starting from a router or
+witness embedding, an episode adds at most m qubits, each free and adjacent to one chain and to the
 chain of a coupled variable, chosen by a softmax over the prioritiser's scores of the
 candidate (variable, qubit) pairs; the reward is the measured utility of the grown
 embedding minus the start's, under the registered schedule, on an independent block.
-REINFORCE with the instance's mean over K episodes as baseline.
+REINFORCE uses a leave-one-out instance baseline and the sum of trajectory log probabilities.
 
-Evaluation on held-out lineages, matched reads: policy best of K episodes selected by a
+Validation on disjoint lineages, matched reads: policy best of K candidates selected by a
 measurement block, random contact growth best of K the same way, and the start, all
 assessed on a fresh block. Policy minus random is the learned contribution; both minus the
-start is what the spend is worth at all.
+start is what the spend is worth at all. Both candidate pools contain K growth proposals;
+the unchanged start is assessed separately as a reference and is never added as a fallback
+candidate. Failed arm evaluations receive the declared failure penalty rather than being
+dropped. This is a training/continuation diagnostic from a supplied valid state, not an
+end-to-end embedder evaluation: deployed embedding construction must begin from empty.
+Witness starts are allowed only for learning or controlled diagnostics. Checkpoint selection
+uses validation, not an untouched final test. Witness fill describes actual starting occupancy
+only when --start=witness; requested generator fill alone is not an occupancy measurement.
 """
-import argparse, json, os, sys, time
+import argparse, hashlib, json, os, sys
 from collections import defaultdict
 from pathlib import Path
 
@@ -35,7 +40,65 @@ from _initializers import minorminer_initializer
 from candidate_features import FRONTIER_WIDTH, WIDTH, FeatureContext, frontier_features
 from train_prioritiser import Prioritiser
 
-SELECT_BASE, ASSESS_BASE = 41_000_000, 42_000_000
+def block_seed(seed, domain, *parts):
+    """Stable domain separation: no arithmetic overlap between training/select/assess blocks."""
+    payload = json.dumps([int(seed), domain, *parts], sort_keys=True, default=str).encode()
+    return int.from_bytes(hashlib.blake2s(payload, digest_size=4).digest(), "big")
+
+
+def split_representatives(tasks, train_lineages, eval_lineages, seed):
+    """One deterministic representative per lineage; never truncate across flattened tasks."""
+    groups = defaultdict(list)
+    for task in tasks:
+        if not task.lineage:
+            raise ValueError("contact-policy splitting requires a nonempty lineage")
+        groups[task.lineage].append(task)
+    lineages = sorted(groups)
+    np.random.default_rng(seed).shuffle(lineages)
+    if len(lineages) < train_lineages + eval_lineages:
+        raise ValueError("corpus has fewer distinct lineages than requested train + validation")
+    representatives = [sorted(groups[lineage], key=lambda t: t.name)[0] for lineage in lineages]
+    return (representatives[:train_lineages],
+            representatives[train_lineages:train_lineages + eval_lineages])
+
+
+def spend_limit(start, fraction, qubit_cap, host_size):
+    """Additional qubits allowed by both the physical host and the declared experiment cap."""
+    used = sum(len(c) for c in start.values())
+    slack = max(0, min(qubit_cap, host_size) - used)
+    return min(max(0, int(round(fraction * used))), slack)
+
+
+def reinforce_loss(episodes):
+    """An action-independent leave-one-out baseline; no variable-length trajectory bias."""
+    if len(episodes) < 2:
+        return None
+    total = sum(g for g, _ in episodes)
+    losses = []
+    for gain, logps in episodes:
+        if logps:
+            baseline = (total - gain) / (len(episodes) - 1)
+            losses.append(-(gain - baseline) * torch.stack(logps).sum())
+    return torch.stack(losses).mean() if losses else None
+
+
+def select_and_assess(candidates, measure, select_seed, assess_seed, baseline, penalty, cap):
+    """Keep failed candidates in the attempted count; score an all-failed arm explicitly."""
+    measured = []
+    for index, chains in enumerate(candidates):
+        if sum(len(c) for c in chains.values()) > cap:
+            continue
+        score = measure(chains, select_seed(index), False)
+        if score is not None and np.isfinite(score):
+            measured.append((float(score), chains))
+    failures = len(candidates) - len(measured)
+    if not measured:
+        return baseline - penalty, failures, True
+    chosen = max(measured, key=lambda item: item[0])[1]
+    assessed = measure(chosen, assess_seed, True)
+    if assessed is None or not np.isfinite(assessed):
+        return baseline - penalty, failures, True
+    return float(assessed), failures, False
 
 
 def contact_moves(task, chains, occupied, cap_per_var=6):
@@ -43,10 +106,11 @@ def contact_moves(task, chains, occupied, cap_per_var=6):
     logical neighbour of v. Returned as (v, r, touches)."""
     host, logical = task.host, task.logical
     out = []
-    for v, chain in chains.items():
+    for v in sorted(chains, key=repr):
+        chain = chains[v]
         seen = set()
-        for q in chain:
-            for r in host.neighbors(q):
+        for q in sorted(chain, key=repr):
+            for r in sorted(host.neighbors(q), key=repr):
                 if r in occupied or r in seen:
                     continue
                 seen.add(r)
@@ -78,12 +142,22 @@ def episode(task, start, model, fc, m, temperature, rng, train=True):
         feats = np.stack([np.concatenate([fc.pair(v, [r], frozen, "ROUTE"),
                                           frontier_features(task.host, task.logical, frozen, v, r)])
                           for v, r, _ in moves]).astype(np.float32)
+        if model is None:
+            j = int(rng.integers(0, len(moves)))
+            v, r, _ = moves[j]
+            chains[v].add(r); occupied.add(r)
+            continue
         scores = model(torch.as_tensor(feats)) / temperature
         if train:
             dist = torch.distributions.Categorical(logits=scores)
-            j = int(dist.sample()); logps.append(dist.log_prob(torch.tensor(j)))
+            # Sampling uses the caller's RNG, so evaluating checkpoints cannot perturb
+            # subsequent training trajectories through PyTorch's global generator.
+            probabilities = dist.probs.detach().cpu().numpy().astype(np.float64)
+            probabilities /= probabilities.sum()
+            j = int(rng.choice(len(moves), p=probabilities))
+            logps.append(dist.log_prob(torch.tensor(j, device=scores.device)))
         else:
-            j = int(rng.integers(0, len(moves))) if model is None else int(torch.argmax(scores))
+            j = int(torch.argmax(scores))
         v, r, _ = moves[j]
         chains[v].add(r); occupied.add(r)
     return {v: frozenset(c) for v, c in chains.items()}, logps
@@ -118,7 +192,8 @@ def main() -> int:
     ap.add_argument("--train-lineages", type=int, default=60)
     ap.add_argument("--eval-lineages", type=int, default=30)
     ap.add_argument("--eval-every", type=int, default=25)
-    ap.add_argument("--eval-k", type=int, default=4)
+    ap.add_argument("--eval-k", type=int, default=4,
+                    help="growth proposals per arm; the unchanged start is a separate reference")
     ap.add_argument("--width", type=int, default=64)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--start", default="router", choices=("router", "witness"),
@@ -132,13 +207,21 @@ def main() -> int:
                     help="an episode that exceeds the budget or cannot be measured counts as the "
                          "start's value minus this, not as missing")
     a = ap.parse_args()
+    for key in ("qubit_cap", "instances_per_iteration", "reads", "assess_reads",
+                "train_lineages", "eval_lineages", "eval_every", "eval_k", "width"):
+        if getattr(a, key) <= 0:
+            ap.error("--" + key.replace("_", "-") + " must be positive")
+    if a.episodes_per_instance < 2:
+        ap.error("--episodes-per-instance must be at least 2 for the leave-one-out baseline")
+    if a.iterations < 0 or not np.isfinite(a.spend) or a.spend < 0:
+        ap.error("iterations and spend must be nonnegative and spend must be finite")
+    if not np.isfinite(a.temperature) or a.temperature <= 0:
+        ap.error("temperature must be finite and positive")
+    if not np.isfinite(a.fail_penalty) or a.fail_penalty <= 0:
+        ap.error("fail-penalty must be finite and positive")
     tasks = load_instances(a.corpus)
-    lineages = sorted({t.lineage for t in tasks})
     rng = np.random.default_rng(a.seed)
-    rng.shuffle(lineages)
-    train_l = set(lineages[: a.train_lineages]); eval_l = set(lineages[a.train_lineages: a.train_lineages + a.eval_lineages])
-    train_tasks = [t for t in tasks if t.lineage in train_l][: a.train_lineages]
-    eval_tasks = [t for t in tasks if t.lineage in eval_l][: a.eval_lineages]
+    train_tasks, eval_tasks = split_representatives(tasks, a.train_lineages, a.eval_lineages, a.seed)
     ctx = host_context(a.qubit_cap)
     mm = minorminer_initializer(20)
     torch.manual_seed(a.seed)
@@ -146,8 +229,15 @@ def main() -> int:
     if a.init:
         model.load_state_dict(torch.load(a.init, map_location="cpu")["state"])
     opt = torch.optim.Adam(model.parameters(), lr=a.learning_rate)
-    print(json.dumps({"corpus": a.corpus, "train": len(train_tasks), "held_out": len(eval_tasks),
+    print(json.dumps({"corpus": a.corpus, "train": len(train_tasks), "validation": len(eval_tasks),
                       "spend": a.spend, "start": a.start, "objective": a.objective,
+                      "selection_candidates": a.eval_k,
+                      "evaluation_scope": "continuation_diagnostic_not_end_to_end_embedding",
+                      "selection_read_budget_per_arm": a.eval_k * a.reads,
+                      "assessment_reads_per_arm": a.assess_reads,
+                      "failure_penalty": a.fail_penalty,
+                      "train_lineages": [t.lineage for t in train_tasks],
+                      "validation_lineages": [t.lineage for t in eval_tasks],
                       "beta_range": list(ctx.beta_range)}), flush=True)
 
     def measure(task, chains, seed, reads):
@@ -157,7 +247,9 @@ def main() -> int:
             out = run_controller([task], ctx, first_commit_controller, initializer=fixed,
                                  selector=fixed_strength_selector(), reward_reads=reads,
                                  repetitions=1, seed=seed)
-        except Exception:
+        except Exception as exc:
+            print(json.dumps({"measurement_failure": type(exc).__name__, "task": task.name,
+                              "seed": seed, "reads": reads}), flush=True)
             return None
         o = out[0]
         if not o.returned_valid:
@@ -169,92 +261,117 @@ def main() -> int:
 
     starts, fcs = {}, {}
 
-    def start_of(task, k):
-        if task.name not in starts:
+    def start_of(task):
+        key = (task.lineage, task.name)
+        if key not in starts:
             if a.start == "witness":
                 ch = {v: frozenset(c) for v, c in task.witness.items()}
             else:
-                ch = mm(task.logical, task.host, 5000 + k)
-            starts[task.name] = ch
-            fcs[task.name] = FeatureContext(task, a.qubit_cap)
-        return starts[task.name], fcs[task.name]
+                ch = mm(task.logical, task.host, block_seed(a.seed, "initializer", *key))
+            starts[key] = ch
+            fcs[key] = FeatureContext(task, min(a.qubit_cap, task.host.number_of_nodes()))
+        return starts[key], fcs[key]
 
-    def spend_of(start):
-        used = sum(len(c) for c in start.values())
-        return max(1, min(int(round(a.spend * used)), a.qubit_cap - used))
+    def spend_of(task, start):
+        return spend_limit(start, a.spend, a.qubit_cap, task.host.number_of_nodes())
 
     def evaluate(tag):
         model.eval()
         rows = []
+        unavailable_starts = 0
+        candidate_failures = {"policy": 0, "random": 0}
+        arm_failures = {"policy": 0, "random": 0}
+        initial_occupancy = []
         for k, t in enumerate(eval_tasks):
-            start, fc = start_of(t, 9000 + k)
-            if start is None:
+            start, fc = start_of(t)
+            if not start or sum(len(c) for c in start.values()) > a.qubit_cap:
+                unavailable_starts += 1
                 continue
-            m = spend_of(start)
+            start_score = measure(t, start, block_seed(a.seed, "validation-start-assessment", t.name), a.assess_reads)
+            if start_score is None or not np.isfinite(start_score):
+                unavailable_starts += 1
+                continue
+            initial_occupancy.append(sum(len(c) for c in start.values()) / t.host.number_of_nodes())
+            m = spend_of(t, start)
             arms = {}
             for name in ("policy", "random"):
                 cands = []
                 for e in range(a.eval_k):
+                    # Fixed validation seeds at every checkpoint; no mutation of training RNG.
+                    eval_rng = np.random.default_rng(block_seed(a.seed, "validation-proposal", t.name, name, e))
                     if name == "policy":
-                        ch, _ = episode(t, start, model, fc, m, a.temperature, rng, train=True)
+                        with torch.no_grad():
+                            ch, _ = episode(t, start, model, fc, m, a.temperature, eval_rng, train=True)
                     else:
-                        ch = random_episode(t, start, m, rng)
-                    if sum(len(c) for c in ch.values()) > a.qubit_cap:
-                        continue
-                    u = measure(t, ch, SELECT_BASE + 1000 * k + 7 * e + (0 if name == "policy" else 500), a.reads)
-                    if u is not None:
-                        cands.append((u, ch))
-                if not cands:
-                    arms[name] = None; continue
-                best = max(cands, key=lambda x: x[0])[1]
-                arms[name] = measure(t, best, ASSESS_BASE + 1000 * k + (0 if name == "policy" else 500), a.assess_reads)
-            arms["start"] = measure(t, start, ASSESS_BASE + 1000 * k + 900, a.assess_reads)
-            if all(v is not None for v in arms.values()):
-                rows.append(arms)
+                        ch = random_episode(t, start, m, eval_rng)
+                    cands.append(ch)
+                def arm_measure(chains, seed, assess):
+                    return measure(t, chains, seed, a.assess_reads if assess else a.reads)
+                # Matching block seeds across arms permits common random numbers;
+                # assessment remains domain-disjoint from all selection measurements.
+                score, failed_candidates, failed_arm = select_and_assess(
+                    cands, arm_measure,
+                    lambda index: block_seed(a.seed, "validation-selection", t.name, index),
+                    block_seed(a.seed, "validation-assessment", t.name),
+                    start_score, a.fail_penalty, a.qubit_cap)
+                arms[name] = score
+                candidate_failures[name] += failed_candidates
+                arm_failures[name] += int(failed_arm)
+            arms["start"] = start_score
+            rows.append(arms)
         model.train()
+        print(json.dumps({"validation_tag": tag, "requested_instances": len(eval_tasks),
+                          "measurable_starts": len(rows), "unavailable_starts": unavailable_starts,
+                          "failed_candidates": candidate_failures, "failed_arms": arm_failures,
+                          "mean_actual_start_occupancy": float(np.mean(initial_occupancy)) if initial_occupancy else None,
+                          "score": "downstream objective with declared failure penalty"}), flush=True)
         if not rows:
-            print("  %s: nothing measured" % tag, flush=True); return 0.0
+            print("  %s: nothing measured" % tag, flush=True); return -float("inf")
         def boot(fn):
             d = np.array([fn(r) for r in rows]); rng2 = np.random.default_rng(0)
             bs = [d[rng2.integers(0, len(d), len(d))].mean() for _ in range(2000)]
             return d.mean(), np.percentile(bs, 2.5), np.percentile(bs, 97.5)
         pr = boot(lambda r: r["policy"] - r["random"]); ps = boot(lambda r: r["policy"] - r["start"]); rs = boot(lambda r: r["random"] - r["start"])
-        print("  %s held-out over %d: policy-random %+.4f [%+.4f, %+.4f] | policy-start %+.4f [%+.4f, %+.4f] | random-start %+.4f [%+.4f, %+.4f]"
+        print("  %s validation over %d: policy-random %+.4f [%+.4f, %+.4f] | policy-start %+.4f [%+.4f, %+.4f] | random-start %+.4f [%+.4f, %+.4f]"
               % (tag, len(rows), *pr, *ps, *rs), flush=True)
         return float(pr[0])
 
-    best = -1.0
-    evaluate("init")
+    def save_checkpoint(path):
+        torch.save({"state": model.state_dict(), "width": a.width,
+                    "in_dim": WIDTH + FRONTIER_WIDTH, "objective": a.objective,
+                    "start": a.start, "spend": a.spend, "qubit_cap": a.qubit_cap,
+                    "evaluation_scope": "continuation_diagnostic_not_end_to_end_embedding",
+                    "checkpoint_selection_split": "validation",
+                    "validation_lineages": [t.lineage for t in eval_tasks]}, path)
+    Path(a.out).parent.mkdir(parents=True, exist_ok=True)
+    best = evaluate("init")
+    save_checkpoint(a.out)
     for it in range(a.iterations):
         batch = rng.choice(len(train_tasks), size=min(a.instances_per_iteration, len(train_tasks)), replace=False)
         loss, n, gains, rho = 0.0, 0, [], []
         for idx in batch:
             t = train_tasks[idx]
-            start, fc = start_of(t, int(idx))
-            if start is None:
+            start, fc = start_of(t)
+            if not start or sum(len(c) for c in start.values()) > a.qubit_cap:
                 continue
-            m = spend_of(start)
-            u0 = measure(t, start, SELECT_BASE + 100 * it + 3 * int(idx), a.reads)
-            if u0 is None:
+            m = spend_of(t, start)
+            u0 = measure(t, start, block_seed(a.seed, "train-start", it, t.name), a.reads)
+            if u0 is None or not np.isfinite(u0):
                 continue
             eps = []
             for e in range(a.episodes_per_instance):
                 ch, logps = episode(t, start, model, fc, m, a.temperature, rng, train=True)
-                if not logps:
-                    continue
                 used = sum(len(c) for c in ch.values())
                 if used > a.qubit_cap:
                     eps.append((-a.fail_penalty, logps)); gains.append(-a.fail_penalty); continue
-                u = measure(t, ch, SELECT_BASE + 100 * it + 3 * int(idx) + 11 * (e + 1), a.reads)
-                if u is None:
+                u = measure(t, ch, block_seed(a.seed, "train-growth", it, t.name, e), a.reads)
+                if u is None or not np.isfinite(u):
                     eps.append((-a.fail_penalty, logps)); gains.append(-a.fail_penalty); continue
                 eps.append((u - u0, logps)); gains.append(u - u0)
                 rho.append(used / t.host.number_of_nodes())
-            if len(eps) < 2:
-                continue
-            base = np.mean([g for g, _ in eps])
-            for g, logps in eps:
-                loss = loss - (g - base) * torch.stack(logps).sum() / len(logps); n += 1
+            instance_loss = reinforce_loss(eps)
+            if instance_loss is not None:
+                loss = loss + instance_loss; n += 1
         if n:
             opt.zero_grad(); (loss / n).backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0); opt.step()
@@ -262,8 +379,8 @@ def main() -> int:
         if (it + 1) % a.eval_every == 0:
             v = evaluate("iter %d" % it)
             if v > best:
-                best = v; torch.save({"state": model.state_dict(), "width": a.width}, a.out)
-    torch.save({"state": model.state_dict(), "width": a.width}, a.out + ".last")
+                best = v; save_checkpoint(a.out)
+    save_checkpoint(a.out + ".last")
     print("\nCONTACT POLICY DONE", flush=True)
     return 0
 

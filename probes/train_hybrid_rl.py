@@ -1,17 +1,13 @@
-"""Reinforcement learning of the hybrid: the policy places roots, minorminer completes, the
-reward is whether the completion succeeds within a deadline.
+"""Hybrid RL: a sampled root layout is completed by minorminer within a qubit/time budget.
 
-Half of the witness's roots make minorminer succeed where it fails from scratch, and roots
-agreeing with one particular witness are not the point: minorminer needs a globally
-consistent layout, which a locally trained scorer does not give. So the layout is learned
-against the only signal that matters. An episode: PLACE-only construction from an empty
-embedding, one root per variable sampled from the prioritiser's softmax over the offered
-PLACE candidates; then minorminer with those roots as initial chains, restarted until a
-short deadline; reward 1 if a valid embedding came back, else 0. REINFORCE with the mean
-over K episodes of the instance as baseline. Evaluation is the deployment protocol on
-held-out instances: greedy roots, then minorminer until the full deadline.
+Validity training uses a completion reward and a bounded partial-overlap shaping signal.
+Quality training uses bounded residual improvement over a training-only measured witness
+reference. REINFORCE uses summed trajectory log probabilities and a leave-one-out baseline.
+Validation holds out whole lineages. Both learned and unhinted arms restart, measure and
+select under one deployment deadline; fresh assessment reads are reporting-only. A witness
+fill is a corpus property, not occupancy of these root-construction episodes.
 """
-import argparse, json, os, sys, time
+import argparse, hashlib, json, os, sys, time
 from collections import defaultdict
 from pathlib import Path
 
@@ -64,12 +60,117 @@ def place_roots(task, model, fc, temperature, rng, train):
 
 
 def complete(task, roots, deadline, tries, seed, budget=None):
-    t0, ok, n = time.time(), None, 0
-    while ok is None and time.time() - t0 < deadline:
+    """Cooperative router deadline; late completions never count as success."""
+    t0, ok, n = time.monotonic(), None, 0
+    complete.last = None
+    while ok is None and time.monotonic() - t0 < deadline:
         n += 1
-        ok = attempt(task, roots, seed + n, tries, budget=budget)
+        left = deadline - (time.monotonic() - t0)
+        ok = attempt(task, roots, seed + n, tries, budget=budget, timeout=left)
+    elapsed = time.monotonic() - t0
+    if elapsed > deadline:
+        ok = None
     complete.last = ok
-    return ok is not None, time.time() - t0, n
+    return ok is not None, elapsed, n
+
+
+def experiment_seed(seed, phase, *parts):
+    """Stable, phase-separated sampler streams, without arithmetic seed collisions."""
+    payload = json.dumps([int(seed), phase, *parts], separators=(",", ":"))
+    return int.from_bytes(hashlib.blake2s(payload.encode(), digest_size=4).digest(), "little") % (2 ** 31)
+
+
+def split_by_lineage(tasks, fraction, seed):
+    if not 0 < fraction < 1:
+        raise ValueError("holdout fraction must lie strictly between zero and one")
+    groups = sorted({t.lineage or t.name for t in tasks})
+    if len(groups) < 2:
+        raise ValueError("at least two independent lineages are required")
+    rng = np.random.default_rng(seed)
+    size = min(len(groups) - 1, max(1, int(len(groups) * fraction)))
+    held = set(rng.choice(groups, size=size, replace=False))
+    return ([t for t in tasks if (t.lineage or t.name) not in held],
+            [t for t in tasks if (t.lineage or t.name) in held])
+
+
+def quality_reward(residual, reference, weight):
+    """Bounded monotone quality reward; every valid completion exceeds partial failure.
+
+    A missing measurement receives the valid floor, not an invented neutral quality label.
+    This scalar surrogate is not a lexicographic feasibility guarantee in expectation.
+    """
+    if residual is None or reference is None:
+        return 0.6
+    return float(np.clip(1.0 + weight * (reference - residual), 0.6, 3.0))
+
+
+def validation_checkpoint_key(records, objective):
+    """Validity, measurement coverage, then lower raw residual on the policy's outputs.
+
+    Explicit lexicographic checkpoint rule, not a learned resource objective. It never
+    restricts quality to the baseline-success intersection or transforms the residual.
+    """
+    valid = [r for r in records if r["valid"]]
+    coverage = len(valid) / len(records)
+    if objective == "valid":
+        return (coverage,)
+    measured = [r["residual"] for r in valid if r["residual"] is not None]
+    return (coverage, len(measured) / len(records),
+            -float(np.mean(measured)) if measured else -float("inf"))
+
+
+def evaluate_arm(task, propose, *, deadline, router_seconds, tries, budget, select_cap,
+                 objective, seed, selection_reads=256, assessment_reads=256):
+    """Matched deployment budget for proposal, routing and measured selection.
+
+    Assessment is an independent reporting-only block, outside the deployment deadline.
+    Blocking backend calls may overrun: their work is logged, their late result discarded.
+    """
+    started = time.monotonic()
+    seen, chosen, best = set(), None, float("inf")
+    attempts = selection_used = measurements = 0
+    while time.monotonic() - started < deadline:
+        attempts += 1
+        roots = propose(attempts) if propose is not None else None
+        left = deadline - (time.monotonic() - started)
+        if left <= 0:
+            break
+        ok, _, _ = complete(task, roots, min(router_seconds, left), tries,
+                            experiment_seed(seed, "router", task.name, attempts), budget=budget)
+        if time.monotonic() - started > deadline:
+            break
+        if not ok:
+            continue
+        chains = complete.last
+        key = frozenset((v, frozenset(c)) for v, c in chains.items())
+        if key in seen:
+            continue
+        seen.add(key)
+        if objective == "valid":
+            chosen = chains
+            break
+        residual = measure_residual(task, chains,
+                                    experiment_seed(seed, "selection", task.name, measurements),
+                                    reads=selection_reads)
+        selection_used += selection_reads
+        measurements += 1
+        if time.monotonic() - started > deadline:
+            break
+        if residual is not None and residual < best:
+            chosen, best = chains, residual
+        if measurements >= select_cap:
+            break
+    deployment_seconds = time.monotonic() - started
+    fresh, assessment_used = None, 0
+    if chosen is not None and objective == "quality":
+        fresh = measure_residual(task, chosen, experiment_seed(seed, "assessment", task.name),
+                                 reads=assessment_reads)
+        assessment_used = assessment_reads
+    return {"valid": chosen is not None, "residual": fresh, "attempts": attempts,
+            "candidates": len(seen), "selection_reads": selection_used,
+            "assessment_reads": assessment_used, "deployment_seconds": deployment_seconds,
+            "total_seconds": time.monotonic() - started,
+            "deadline_overrun_seconds": max(0.0, deployment_seconds - deadline)}
 
 
 _ctx_cache = {}
@@ -95,10 +196,11 @@ def measure_residual(task, chains, seed, reads=256):
     o = out[0]
     if not o.returned_valid or o.mean_energy_residual is None:
         return None
-    return float(o.mean_energy_residual)
+    residual = float(o.mean_energy_residual)
+    return residual if np.isfinite(residual) else None
 
 
-def partial_score(task, roots, seed, tries=2):
+def partial_score(task, roots, seed, tries=2, timeout=2.0):
     """A graded score for a failed completion: the router with overlaps allowed returns an
     embedding in which contested qubits are shared; the fraction of variables whose chain
     shares no qubit is how close the layout came. Without it every episode of a hard
@@ -107,7 +209,10 @@ def partial_score(task, roots, seed, tries=2):
     import minorminer
     edges = list(task.logical.edges())
     in_edges = {u for e in edges for u in e}
-    kw = {"tries": tries, "random_seed": seed % (2 ** 31), "return_overlap": True}
+    if not edges or timeout <= 0:
+        return 0.0
+    kw = {"tries": tries, "random_seed": seed % (2 ** 31), "return_overlap": True,
+          "timeout": timeout}
     if roots:
         kw["initial_chains"] = {v: list(c) for v, c in roots.items() if v in in_edges}
     emb, _ = minorminer.find_embedding(edges, list(task.host.edges()), **kw)
@@ -117,7 +222,7 @@ def partial_score(task, roots, seed, tries=2):
     for v, c in emb.items():
         for q in c:
             owners.setdefault(q, set()).add(v)
-    clean = sum(1 for v, c in emb.items() if all(len(owners[q]) == 1 for q in c))
+    clean = sum(1 for v, c in emb.items() if c and all(len(owners[q]) == 1 for q in c))
     return clean / max(1, len(in_edges))
 
 
@@ -148,40 +253,49 @@ def main() -> int:
                          "only pays for wrong ones")
     ap.add_argument("--layout-tries", type=int, default=2)
     ap.add_argument("--objective", default="valid", choices=("valid", "quality"),
-                    help="quality: a valid completion is rewarded by its measured energy "
-                         "residual against the router-alone embedding of the same instance, "
-                         "which is the objective; validity stays the gate")
+                    help="quality: bounded residual improvement over a measured training "
+                         "witness reference; no resource-minimization reward")
     ap.add_argument("--quality-weight", type=float, default=10.0)
     ap.add_argument("--select-cap", type=int, default=6,
                     help="valid candidates measured per arm at evaluation, the read budget both arms get")
+    ap.add_argument("--qubit-cap", type=int, default=0,
+                    help="deployment qubit budget for both arms; 0 allows the full host")
+    ap.add_argument("--witness-budget", action="store_true",
+                    help="legacy experiment: cap at 1.1 times witness occupancy; privileged "
+                         "budget metadata, not the deployment default")
     a = ap.parse_args()
+    if (a.episodes_per_instance < 2 or a.select_cap < 1 or a.eval_every < 1
+            or a.temperature <= 0 or a.quality_weight < 0 or a.qubit_cap < 0
+            or min(a.train_deadline, a.eval_deadline, a.layout_router_secs) <= 0):
+        ap.error("positive deadlines/temperature/caps and at least two episodes are required")
+    if a.witness_budget and a.qubit_cap:
+        ap.error("choose explicit --qubit-cap or legacy --witness-budget")
     tasks = load_instances(a.corpus)
     rng = np.random.default_rng(a.seed)
     torch.manual_seed(a.seed)
-    names = sorted(t.name for t in tasks)
-    held = set(rng.choice(names, size=max(1, int(len(names) * a.holdout_fraction)), replace=False))
-    train_tasks = [t for t in tasks if t.name not in held]
-    eval_tasks = [t for t in tasks if t.name in held]
+    train_tasks, eval_tasks = split_by_lineage(tasks, a.holdout_fraction, a.seed)
     if a.hard_only:
         train_tasks = [t for t in train_tasks if not t.name.split("-")[1].startswith("fill70")]
+    if not train_tasks:
+        ap.error("no training instances remain after filtering")
     model = Prioritiser(a.width)
     if a.init:
         model.load_state_dict(torch.load(a.init, map_location="cpu")["state"])
     opt = torch.optim.Adam(model.parameters(), lr=a.learning_rate)
     fcs = {}
 
+    def budget_of(task):
+        cap = task.host.number_of_nodes()
+        if a.witness_budget:
+            return min(cap, qubit_budget(task.witness))
+        return min(cap, a.qubit_cap) if a.qubit_cap else cap
+
     def fc_for(task):
         if task.name not in fcs:
-            fcs[task.name] = FeatureContext(task, qubit_budget({v: frozenset(c) for v, c in task.witness.items()}))
+            fcs[task.name] = FeatureContext(task, budget_of(task))
         return fcs[task.name]
 
-    budgets = {}
     base_eval = {}
-
-    def budget_of(task):
-        if task.name not in budgets:
-            budgets[task.name] = qubit_budget({v: frozenset(c) for v, c in task.witness.items()})
-        return budgets[task.name]
 
     ref_res = {}
 
@@ -191,27 +305,34 @@ def main() -> int:
         meaning on the hardest instances."""
         if task.name not in ref_res:
             w = {v: frozenset(c) for v, c in task.witness.items()}
-            ref_res[task.name] = measure_residual(task, w, 300 + k)
+            ref_res[task.name] = measure_residual(task, w, experiment_seed(a.seed, "reference", task.name))
         return ref_res[task.name]
 
-    def reward_of(task, roots, ok, k, e):
+    def reward_of(task, roots, ok, k, e, iteration):
         """Invalid: at most 0.5, by how close the completion came. Valid: at least 0.6, so a
         valid embedding always outranks an invalid one, plus the quality term against the
         witness reference, clipped."""
         if not ok:
-            return 0.5 * partial_score(task, roots, 91_000 + 7 * e + 100 * k)
+            return 0.5 * partial_score(task, roots,
+                                       experiment_seed(a.seed, "partial", task.name, iteration, e),
+                                       timeout=min(a.train_deadline, a.layout_router_secs))
         if a.objective == "valid":
             return 1.0
-        res = measure_residual(task, complete.last, 400 + 7 * e + 100 * k)
+        res = measure_residual(task, complete.last,
+                               experiment_seed(a.seed, "reward", task.name, iteration, e))
         ref = reference_residual(task, k)
-        if res is None or ref is None:
-            return 1.0
-        return float(np.clip(1.0 + a.quality_weight * (ref - res), 0.6, 3.0))
+        return quality_reward(res, ref, a.quality_weight)
 
     layout = sample_layout if a.fast else place_roots
     print(json.dumps({"corpus": a.corpus, "train": len(train_tasks), "held_out": len(eval_tasks),
                       "init": a.init or None, "train_deadline": a.train_deadline,
-                      "eval_deadline": a.eval_deadline, "fast": a.fast}), flush=True)
+                      "eval_deadline": a.eval_deadline, "fast": a.fast,
+                      "protocol": "hybrid-matched-deployment-v2",
+                      "split_unit": "lineage", "evaluation_role": "validation",
+                      "train_lineages": sorted({t.lineage or t.name for t in train_tasks}),
+                      "validation_lineages": sorted({t.lineage or t.name for t in eval_tasks}),
+                      "qubit_cap": a.qubit_cap, "legacy_witness_budget": a.witness_budget,
+                      "deadline_scope": "proposal+router+selection; reporting assessment separate"}), flush=True)
 
     def evaluate(tag):
         """ADR-004's comparison. Both arms get the same deadline, the same qubit budget and
@@ -221,56 +342,36 @@ def main() -> int:
         the best is assessed on a fresh block. Validity and the paired residual are reported."""
         model.eval()
         cells = defaultdict(list)
-        pairs, reads_used = [], {"policy": 0, "router": 0}
-
-        def collect(t, k, use_policy):
-            t0, cands, tried = time.time(), [], 0
-            while time.time() - t0 < a.eval_deadline:
-                tried += 1
-                left = a.eval_deadline - (time.time() - t0)
-                if use_policy:
-                    roots, _ = layout(t, model, fc_for(t), a.temperature, rng, train=True)
-                    got, _, _ = complete(t, roots, min(a.layout_router_secs, max(0.5, left)),
-                                         a.layout_tries, 70_000 + 1000 * k + 13 * tried, budget=budget_of(t))
-                else:
-                    got, _, _ = complete(t, None, min(a.layout_router_secs, max(0.5, left)),
-                                         a.layout_tries, 80_000 + 1000 * k + 13 * tried, budget=budget_of(t))
-                if got:
-                    key = tuple(sorted((str(v), tuple(sorted(c, key=str))) for v, c in complete.last.items()))
-                    if key not in {c[0] for c in cands}:
-                        cands.append((key, complete.last))
-                if a.objective == "valid" and cands:
-                    break
-                if len(cands) >= a.select_cap:
-                    break
-            return cands, tried
-
+        pairs, records = [], []
         for k, t in enumerate(eval_tasks):
             arms = {}
             for name, use_policy in (("policy", True), ("router", False)):
                 if name == "router" and t.name in base_eval:
-                    arms[name] = base_eval[t.name]; continue
-                cands, tried = collect(t, k, use_policy)
-                chosen, chosen_sel = None, None
-                if cands and a.objective == "quality":
-                    scored = []
-                    for i, (_, ch) in enumerate(cands[: a.select_cap]):
-                        sel = measure_residual(t, ch, 500 + 31 * i + 1000 * k)
-                        reads_used[name] += 256
-                        if sel is not None:
-                            scored.append((sel, ch))
-                    if scored:
-                        chosen_sel, chosen = min(scored, key=lambda x: x[0])
-                elif cands:
-                    chosen = cands[0][1]
-                fresh = measure_residual(t, chosen, 900 + 1000 * k) if (chosen is not None and a.objective == "quality") else None
-                arms[name] = (bool(cands), fresh, tried, len(cands))
+                    arms[name] = base_eval[t.name]
+                    records.append({"instance": t.name, "arm": name, "cached": True, **arms[name]})
+                    continue
+                # Validation must not advance training's numpy or torch random stream.
+                proposal_rng = np.random.default_rng(experiment_seed(a.seed, "proposal", t.name))
+                def propose(attempt_number):
+                    with torch.random.fork_rng(devices=[]), torch.no_grad():
+                        torch.manual_seed(experiment_seed(a.seed, "layout", t.name, attempt_number))
+                        return layout(t, model, fc_for(t), a.temperature, proposal_rng, train=True)[0]
+                arms[name] = evaluate_arm(
+                    t, propose if use_policy else None, deadline=a.eval_deadline,
+                    router_seconds=a.layout_router_secs, tries=a.layout_tries,
+                    budget=budget_of(t), select_cap=a.select_cap, objective=a.objective,
+                    seed=experiment_seed(a.seed, "validation", t.name))
+                records.append({"instance": t.name, "arm": name, "cached": False, **arms[name]})
                 if name == "router":
                     base_eval[t.name] = arms[name]
-            (ok, q, tried, n_c), (ok0, q0, _, n_c0) = arms["policy"], arms["router"]
+            learned, baseline = arms["policy"], arms["router"]
+            ok, q, tried, n_c = (learned["valid"], learned["residual"],
+                                  learned["attempts"], learned["candidates"])
+            ok0, q0, n_c0 = baseline["valid"], baseline["residual"], baseline["candidates"]
             if q is not None and q0 is not None:
                 pairs.append(q - q0)
             cells[t.lineage.rsplit("-", 1)[0].split("-", 1)[1].rsplit("-", 1)[0]].append((ok, ok0, tried, n_c, n_c0))
+        print(json.dumps({"evaluation": tag, "role": "validation", "arms": records}), flush=True)
         model.train()
         allr = [r for rs in cells.values() for r in rs]
         print("  %s held-out within %.0fs: policy+search %.2f  router+search %.2f  layouts %.1f  valid candidates %.1f/%.1f  over %d"
@@ -284,13 +385,15 @@ def main() -> int:
             bs = [d[rng2.integers(0, len(d), len(d))].mean() for _ in range(2000)]
             print("    residual, policy minus router, both selected by measurement, fresh block, where both valid: %+.4f [%+.4f, %+.4f] over %d"
                   % (d.mean(), np.percentile(bs, 2.5), np.percentile(bs, 97.5), len(d)), flush=True)
-        score = float(np.mean([r[0] for r in allr]))
-        if pairs:
-            score -= float(np.mean(pairs))
+        score = validation_checkpoint_key([r for r in records if r["arm"] == "policy"], a.objective)
+        print("    checkpoint key: %s (validity, measured coverage, negative mean policy residual)"
+              % (score,), flush=True)
         return score
 
-    best = -1.0
-    evaluate("init")
+    Path(a.out).parent.mkdir(parents=True, exist_ok=True)
+    best = evaluate("init")
+    torch.save({"state": model.state_dict(), "width": a.width, "config": vars(a),
+                "validation_score": best}, a.out)
     for it in range(a.iterations):
         batch = rng.choice(len(train_tasks), size=min(a.instances_per_iteration, len(train_tasks)), replace=False)
         loss, n, wins, secs = 0.0, 0, [], []
@@ -299,14 +402,16 @@ def main() -> int:
             eps = []
             for e in range(a.episodes_per_instance):
                 roots, logps = layout(t, model, fc_for(t), a.temperature, rng, train=True)
-                ok, s, _ = complete(t, roots, a.layout_router_secs, a.layout_tries,
-                                    90_000 + 7 * e + 100 * it, budget=budget_of(t))
-                r = reward_of(t, roots, ok, int(idx), e)
+                ok, s, _ = complete(t, roots, min(a.train_deadline, a.layout_router_secs), a.layout_tries,
+                                    experiment_seed(a.seed, "train-router", t.name, it, e), budget=budget_of(t))
+                r = reward_of(t, roots, ok, int(idx), e, it)
                 eps.append((r, logps)); wins.append(ok); secs.append(s)
-            base = np.mean([r for r, _ in eps])
+            reward_sum = sum(r for r, _ in eps)
             for r, logps in eps:
-                if logps and abs(r - base) > 1e-9:
-                    loss = loss - (r - base) * torch.stack(logps).sum() / len(logps)
+                # Leave-one-out is independent of this trajectory's sampled actions.
+                baseline = (reward_sum - r) / (len(eps) - 1)
+                if logps:
+                    loss = loss - (r - baseline) * torch.stack(logps).sum()
                     n += 1
         if n:
             opt.zero_grad(); (loss / n).backward()
@@ -317,8 +422,9 @@ def main() -> int:
             v = evaluate("iter %d" % it)
             if v > best:
                 best = v
-                torch.save({"state": model.state_dict(), "width": a.width}, a.out)
-    torch.save({"state": model.state_dict(), "width": a.width}, a.out + ".last")
+                torch.save({"state": model.state_dict(), "width": a.width, "config": vars(a),
+                            "validation_score": best}, a.out)
+    torch.save({"state": model.state_dict(), "width": a.width, "config": vars(a)}, a.out + ".last")
     print("\nHYBRID RL DONE", flush=True)
     return 0
 

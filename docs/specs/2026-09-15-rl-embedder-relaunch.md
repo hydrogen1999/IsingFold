@@ -159,3 +159,12 @@ within two and three steps, the unmet demands, the other chains bordering that s
 the contact and coefficient context (`probes/candidate_features.py:frontier_features`).
 Occupancy is traced along every trajectory. A mask removes overlap and disconnection; it
 does not remove dead ends, which the policy has to learn to avoid.
+
+### Deployment boundary
+
+The cases above are controlled learning/continuation tests. The deployed embedder starts from
+empty chains given the logical problem, host and declared budgets. A supplied witness is training
+supervision or a diagnostic start only, never a selectable deployment fallback. COMMIT requires
+a valid embedding generated during the run. The contact-growth probe reports its supplied-start
+scope explicitly; its gain does not establish empty-start construction performance. Full-deployment
+evaluation must include the construction cost and every failed attempt.

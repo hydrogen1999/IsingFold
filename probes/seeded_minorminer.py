@@ -22,6 +22,7 @@ sys.meta_path[:] = [f for f in sys.meta_path
                     if not ("editable" in (getattr(type(f), "__module__", "") or "").lower()
                             and "isingfold" in (getattr(type(f), "__module__", "") or "").lower())]
 import minorminer
+import networkx as nx
 import numpy as np
 from isingfold.rl.data.generate import load_instances
 
@@ -33,24 +34,36 @@ def valid(chains, logical, host):
         return False
     seen = set()
     for c in chains.values():
-        if seen & set(c):
+        if not set(c) <= set(host) or seen & set(c):
+            return False
+        if not nx.is_connected(host.subgraph(c)):
             return False
         seen |= set(c)
     return all(any(host.has_edge(a, b) for a in chains[u] for b in chains[v]) for u, v in logical.edges())
 
 
-def attempt(task, hint, seed, tries, budget=None):
+def attempt(task, hint, seed, tries, budget=None, timeout=None):
     """minorminer takes an edge list, so isolated logical nodes get no chain from it; they
     are placed afterwards on any free qubit, and the hint is restricted to nodes it knows.
     ``budget`` is the qubit cap the embedding must respect: an embedding beyond it is a
     failure, for the hinted and the unhinted arm alike."""
+    if timeout is not None and timeout <= 0:
+        return None
+    if budget is not None and task.logical.number_of_nodes() > budget:
+        return None
+    started = time.monotonic()
     edges = list(task.logical.edges())
     in_edges = {u for e in edges for u in e}
     kw = {"tries": tries, "random_seed": seed % (2 ** 31)}
+    if timeout is not None:
+        kw["timeout"] = float(timeout)
     if hint:
         kw["initial_chains"] = {v: list(c) for v, c in hint.items() if v in in_edges}
-    emb = minorminer.find_embedding(edges, list(task.host.edges()), **kw)
-    if not emb:
+    emb = minorminer.find_embedding(edges, list(task.host.edges()), **kw) if edges else {}
+    if edges and not emb:
+        return None
+    # minorminer's timeout is cooperative: never accept a late answer as an on-time win.
+    if timeout is not None and time.monotonic() - started > timeout:
         return None
     emb = {v: frozenset(c) for v, c in emb.items()}
     used = {q for c in emb.values() for q in c}
@@ -63,7 +76,11 @@ def attempt(task, hint, seed, tries, budget=None):
                 return None
     if budget is not None and sum(len(c) for c in emb.values()) > budget:
         return None
-    return emb if valid(emb, task.logical, task.host) else None
+    if not valid(emb, task.logical, task.host):
+        return None
+    if timeout is not None and time.monotonic() - started > timeout:
+        return None
+    return emb
 
 
 def main() -> int:
@@ -107,11 +124,14 @@ def main() -> int:
         hints = {arm: hints_all[arm] for arm in a.arms.split(",")}
         row = []
         for arm, hint in hints.items():
-            t0, ok, n = time.time(), None, 0
-            while ok is None and time.time() - t0 < a.deadline:
+            t0, ok, n = time.monotonic(), None, 0
+            while ok is None and time.monotonic() - t0 < a.deadline:
                 n += 1
-                ok = attempt(task, hint, 50_000 + 1000 * k + n, a.tries)
-            secs = time.time() - t0
+                left = a.deadline - (time.monotonic() - t0)
+                ok = attempt(task, hint, 50_000 + 1000 * k + n, a.tries, timeout=left)
+            secs = time.monotonic() - t0
+            if secs > a.deadline:
+                ok = None
             cells[family][arm].append((ok is not None, secs, n,
                                        (sum(len(c) for c in ok.values()) / cap) if ok else None))
             row.append("%s %s %4.0fs" % (arm, "valid" if ok else "no   ", secs))

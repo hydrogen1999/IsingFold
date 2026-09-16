@@ -6,12 +6,20 @@ and local: what the qubit's neighbourhood looks like on the residual host, where
 stands in the logical graph, and how the two relate. Nothing here needs the full observation.
 """
 import numpy as np
+from collections import deque
 
 from space_features import residual_graph
 from successor_scorer import native_coordinates, parse_host_name
 
 OPCODES = ("PLACE", "ROUTE", "REWRITE_ONE", "COMMIT", "OTHER")
-WIDTH = 5 + 4 + 5 + 5 + 5 + 6 + 2 + 3
+# Keep the original nonempty-candidate ordering and checkpoint width. The original
+# width expression included five unused channels; they remain reserved at the end.
+FEATURE_SLICES = {
+    "opcode": slice(0, 5), "variable": slice(5, 9), "space": slice(9, 14),
+    "contacts": slice(14, 19), "coordinates": slice(19, 25),
+    "budget": slice(25, 27), "physics": slice(27, 30), "reserved": slice(30, 35),
+}
+WIDTH = 35
 
 
 class FeatureContext:
@@ -19,7 +27,9 @@ class FeatureContext:
 
     def __init__(self, task, budget=None):
         self.task = task
-        self.budget = float(budget) if budget else float(task.host.number_of_nodes())
+        self.budget = float(task.host.number_of_nodes() if budget is None else budget)
+        if not np.isfinite(self.budget) or self.budget <= 0:
+            raise ValueError("qubit budget must be finite and positive")
         self.host = task.host
         self.logical = task.logical
         try:
@@ -30,7 +40,7 @@ class FeatureContext:
             # feature vector reports as zeros rather than as an invented position.
             self.coords = {}
         self.degree = {v: self.logical.degree(v) for v in self.logical.nodes()}
-        self.max_degree = max(self.degree.values()) if self.degree else 1
+        self.max_degree = max(self.degree.values(), default=1) or 1
         self.host_degree = {q: self.host.degree(q) for q in self.host.nodes()}
         # the instance's coefficients, per variable: field magnitude, total and largest
         # incident coupling, so the actor can tell a heavily coupled variable from a light one
@@ -52,16 +62,29 @@ class FeatureContext:
         self._placed = None
 
     def state(self, chains):
-        key = tuple(sorted((str(v), len(c)) for v, c in chains.items() if c))
+        # Rewrites can change membership without changing lengths. Preserve node
+        # identity as well: integer 1 and string "1" are distinct graph nodes.
+        key = frozenset((v, frozenset(c)) for v, c in chains.items() if c)
         if key != self._state_key:
             self._state_key = key
             self._allowed = residual_graph(self.host, chains)
             self._placed = {v: set(c) for v, c in chains.items() if c}
         return self._allowed, self._placed
 
+    def _tail(self, variable, qubits, placed):
+        """Budget, coefficients and reserved channels, identical for every opcode."""
+        occupied = {q for c in placed.values() for q in c}
+        after = len(occupied | set(qubits))
+        n_vars = max(1, self.logical.number_of_nodes())
+        return [after / self.budget, (self.budget - after) / n_vars,
+                self.h_abs.get(variable, 0.0) / self.h_scale,
+                self.j_sum.get(variable, 0.0) / self.j_scale,
+                self.j_max.get(variable, 0.0) / self.j_scale] + [0.0] * 5
+
     def pair(self, variable, qubits, chains, opcode="PLACE"):
         """Feature vector for one candidate: variable, qubits it adds, current chains."""
         allowed, placed = self.state(chains)
+        qubits = set(qubits)
         q0 = sorted(qubits, key=str)[0] if qubits else None
         f = [1.0 if opcode == o else 0.0 for o in OPCODES[:4]]
         f.append(1.0 if opcode not in OPCODES[:4] else 0.0)
@@ -73,11 +96,9 @@ class FeatureContext:
               (len(nbrs) - len(placed_nb)) / max(1, self.max_degree),
               len(placed.get(variable, ())) / 6.0]
         if q0 is None:
-            f += [0.0] * (WIDTH - 3 - len(f))
-            f += [self.h_abs.get(variable, 0.0) / self.h_scale if variable is not None else 0.0,
-                  self.j_sum.get(variable, 0.0) / self.j_scale if variable is not None else 0.0,
-                  self.j_max.get(variable, 0.0) / max(1e-9, self.j_scale) if variable is not None else 0.0]
-            return np.asarray(f[:WIDTH], dtype=np.float32)
+            f += [0.0] * (FEATURE_SLICES["budget"].start - len(f))
+            f += self._tail(variable, qubits, placed)
+            return np.asarray(f, dtype=np.float32)
         # qubit on the residual host, by neighbour counts. The first version used BFS free
         # volumes to radius two and the free component; called for hundreds of pairs a step
         # it made an episode on 144 qubits take forty seconds, and the counts carry the same
@@ -116,13 +137,7 @@ class FeatureContext:
             off = 0.0
         f += c0[:5] + [off / 4.0]
         # budget: what this candidate spends against what is left
-        used = sum(len(c) for c in placed.values())
-        n_vars = max(1, self.logical.number_of_nodes())
-        f += [(used + len(qubits)) / self.budget, (self.budget - used - len(qubits)) / n_vars]
-        # coefficients of the variable
-        f += [self.h_abs.get(variable, 0.0) / self.h_scale, self.j_sum.get(variable, 0.0) / self.j_scale,
-              self.j_max.get(variable, 0.0) / max(1e-9, self.j_scale)]
-        f = f[:WIDTH] + [0.0] * (WIDTH - len(f))
+        f += self._tail(variable, qubits, placed)
         return np.asarray(f, dtype=np.float32)
 
     def candidate(self, cand_tuple, chains):
@@ -143,32 +158,35 @@ def frontier_features(host, logical, chains, variable, qubit, radius=3, cap=512)
     and three steps on the residual host, how many other chains border that space (the
     corridors it competes for), and how many unmet logical demands of the variable it would
     serve. These are the quantities a policy needs to avoid taking the only corridor of
-    another chain while gaining one contact for its own."""
+    another chain while gaining one contact for its own. The anchor is excluded from
+    free-space counts. At most ``cap`` other free nodes are discovered; counts from a
+    capped walk are lower bounds, not proofs of a dead end. The four-channel contract
+    is retained for existing checkpoints."""
+    if radius < 0 or cap < 0:
+        raise ValueError("radius and cap must be nonnegative")
     occupied = {q for c in chains.values() for q in c}
     owner = {q: v for v, c in chains.items() for q in c}
     seen = {qubit}
-    frontier = [qubit]
+    frontier = deque([(qubit, 0)])
     reach2 = 0
     competitors = set()
-    depth = 0
-    while frontier and depth < radius:
-        depth += 1
-        nxt = []
-        for q in frontier:
-            for r in host.neighbors(q):
-                if r in seen:
-                    continue
-                if r in occupied:
-                    if owner[r] != variable:
-                        competitors.add(owner[r])
-                    continue
-                seen.add(r)
-                nxt.append(r)
-                if len(seen) > cap:
-                    break
-        frontier = nxt
-        if depth == 2:
-            reach2 = len(seen) - 1
+    while frontier:
+        q, depth = frontier.popleft()
+        if depth >= radius:
+            continue
+        for r in host.neighbors(q):
+            if r in seen:
+                continue
+            if r in occupied:
+                if owner[r] != variable:
+                    competitors.add(owner[r])
+                continue
+            if len(seen) - 1 >= cap:
+                continue
+            seen.add(r)
+            frontier.append((r, depth + 1))
+            if depth + 1 <= 2:
+                reach2 += 1
     reach3 = len(seen) - 1
     served = 0
     for u in logical.neighbors(variable):
