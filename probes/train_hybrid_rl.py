@@ -210,7 +210,7 @@ def main() -> int:
         cells = defaultdict(list)
         pairs = []
         for k, t in enumerate(eval_tasks):
-            t0, ok, layouts, found = time.time(), False, 0, None
+            t0, ok, layouts, found, best = time.time(), False, 0, None, None
             while time.time() - t0 < a.eval_deadline:
                 roots, _ = layout(t, model, fc_for(t), a.temperature, rng, train=True)
                 layouts += 1
@@ -225,20 +225,16 @@ def main() -> int:
                     # quality: keep searching for a better valid embedding until the deadline,
                     # choosing by a selection block; the reported residual is a fresh block
                     res = measure_residual(t, found, 500 + layouts)
-                    if res is not None and (not pairs or True):
-                        if getattr(t, "_best", None) is None or res < t._best[0]:
-                            t._best = (res, found)
+                    if res is not None and (best is None or res < best[0]):
+                        best = (res, found)
             ok0, _, _ = complete(t, None, a.eval_deadline, a.tries, 80_000 + 1000 * k)
             q, q0 = None, None
             if a.objective == "quality" and ok and ok0:
-                best = getattr(t, "_best", None)
                 chosen = best[1] if best else found
                 q = measure_residual(t, chosen, 900 + k)
                 q0 = measure_residual(t, complete.last, 950 + k)
                 if q is not None and q0 is not None:
                     pairs.append(q - q0)
-            if hasattr(t, "_best"):
-                del t._best
             cells[t.lineage.rsplit("-", 1)[0].split("-", 1)[1].rsplit("-", 1)[0]].append((ok, ok0, layouts))
         model.train()
         allr = [r for rs in cells.values() for r in rs]
