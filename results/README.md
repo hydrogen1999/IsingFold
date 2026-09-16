@@ -365,6 +365,7 @@ environment. These are the reproductions after the fixes.
 | `audit/sampler_scale_registered.log` | with a registered schedule the same shrink costs -0.4195, which is the effect a fixed-temperature argument is about |
 | `audit/rank_actions.log` | ranking the actions at one state, measured on Q rather than V: oracle 0.7165, quality head 0.5687, random 0.5530, resource 0.5410 |
 | `audit/corpus_report.log` | what the corpus contains: 3.00 isolated spins per instance, 4.48 independent components, largest component 11.06 of a nominal 16 |
+| `rules/` | selection rules over the same eight router draws (first, random, fewest qubits, shortest chain, measured, oracle), Pegasus 6 and Zephyr 4, registered schedule; `probes/selection_rules.py` | current; the platform's central number |
 
 The sampler pair is the one to read first. It says that every claim this project has made about
 energy-scale compression was measured by an instrument that cancels it.
@@ -389,5 +390,3 @@ each, on the v1 cache; the four-arm representation ablation on the hard corpus; 
 ceiling probe on Pegasus 6 and Zephyr 4 in three versions: `pool_2k_biased.log` is the first
 run whose mixed pool held sixteen candidates and is kept as the record of a withdrawn number,
 `pool_equalk.log` is the corrected three-pool run, `pool.log` adds the diversity-chosen pool.
-
-- `rules/`: selection rules over the same eight router draws (first, random, fewest qubits, shortest chain, measured, oracle), Pegasus 6 and Zephyr 4, registered schedule; `probes/selection_rules.py`.
