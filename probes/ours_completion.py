@@ -20,7 +20,7 @@ from isingfold.rl.data.generate import load_instances
 
 from _context import qubit_budget
 from placement_completion import witness_roots
-from route_search import negotiate
+from route_search import negotiate_restarts
 from seeded_minorminer import attempt, valid
 
 
@@ -63,7 +63,7 @@ def main() -> int:
                     break
                 chains[v] = frozenset({best}); occupied.add(best)
             t0 = time.time()
-            ours = negotiate(task.host, task.logical, chains, budget, deadline=a.deadline) if len(chains) == len(variables) else None
+            ours = negotiate_restarts(task.host, task.logical, chains, budget, deadline=a.deadline, seed=k) if len(chains) == len(variables) else None
             ours_ok = ours is not None and valid(ours, task.logical, task.host)
             ours_secs = time.time() - t0
             t0, mm, n = time.time(), None, 0

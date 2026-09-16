@@ -181,7 +181,7 @@ def _dijkstra_route(host, sources, targets, cost, limit_cost=1e9):
 
 
 def negotiate(host, logical, roots, budget, deadline=10.0, max_rounds=200, pressure=2.0,
-              history_step=1.0):
+              history_step=1.0, rng=None):
     """Complete an embedding from roots by negotiated congestion.
 
     Every unmet demand is routed by the cheapest path on the host where a free qubit costs
@@ -198,6 +198,12 @@ def negotiate(host, logical, roots, budget, deadline=10.0, max_rounds=200, press
         if v not in root_of:
             return None
     demands = [(u, v) for u, v in logical.edges()]
+    jitter = {}
+    if rng is not None:
+        # random demand order and a small random cost per qubit break the ties that make
+        # two contested routes trade places round after round
+        rng.shuffle(demands)
+        jitter = {q: float(rng.random()) * 0.3 for q in host.nodes()}
     seg = {}                      # demand -> (owner, [qubits])
     history = {}                  # qubit -> accumulated congestion history
 
@@ -220,7 +226,7 @@ def negotiate(host, logical, roots, budget, deadline=10.0, max_rounds=200, press
 
         def cost(r):
             holders = own.get(r, set()) - {u, v}
-            return 1.0 + pressure * len(holders) + history.get(r, 0.0)
+            return 1.0 + jitter.get(r, 0.0) + pressure * len(holders) + history.get(r, 0.0)
 
         path, _ = _dijkstra_route(host, cu, cv, cost)
         if path is None:
@@ -249,53 +255,87 @@ def negotiate(host, logical, roots, budget, deadline=10.0, max_rounds=200, press
                         if not s:
                             del own[q]
 
+    def cascade(ch, own):
+        """Drop every segment no longer connected to its owner's root. A segment routed
+        from another segment's qubit loses its footing when that one is ripped up, and a
+        chain must stay connected at all times."""
+        changed = True
+        while changed:
+            changed = False
+            for var in list(ch):
+                comp = set()
+                frontier = [root_of[var]]
+                comp.add(root_of[var])
+                while frontier:
+                    q = frontier.pop()
+                    for r in host.neighbors(q):
+                        if r in ch[var] and r not in comp:
+                            comp.add(r); frontier.append(r)
+                loose = ch[var] - comp
+                if loose:
+                    for key, (owner, qs) in list(seg.items()):
+                        if owner == var and any(q in loose for q in qs):
+                            drop(key[0], key[1], ch, own)
+                            changed = True
+
     rounds = 0
     ch = chains_now()
     own = owners_of(ch)
-    # first pass: every unmet demand, against whatever is there
-    for (u, v) in demands:
-        if not _touch(host, ch[u], ch[v]):
-            if not route_one(u, v, ch, own):
-                negotiate.last = {"rounds": 0, "secs": time.time() - t0, "why": "unroutable"}
-                return None
     while time.time() - t0 < deadline and rounds < max_rounds:
+        # route every unmet demand against the current occupancy, overlaps allowed
+        unmet = [(u, v) for (u, v) in demands if not _touch(host, ch[u], ch[v])]
+        for (u, v) in unmet:
+            if _touch(host, ch[u], ch[v]):
+                continue
+            if not route_one(u, v, ch, own):
+                negotiate.last = {"rounds": rounds, "secs": time.time() - t0, "why": "unroutable"}
+                return None
         shared = {q for q, s in own.items() if len(s) > 1}
         if not shared:
             total = sum(len(c) for c in ch.values())
             if total <= budget:
                 negotiate.last = {"rounds": rounds, "secs": time.time() - t0, "why": "done"}
                 return {v: frozenset(c) for v, c in ch.items()}
-            # over budget: reroute the longest segments under more pressure
             longest = sorted(((k, o, qs) for k, (o, qs) in seg.items()), key=lambda t: -len(t[2]))
             for key, _, _ in longest[: max(1, len(longest) // 8)]:
                 drop(key[0], key[1], ch, own)
-                if not route_one(key[0], key[1], ch, own):
-                    negotiate.last = {"rounds": rounds, "secs": time.time() - t0, "why": "unroutable"}
-                    return None
+            cascade(ch, own)
             pressure *= 1.5
             rounds += 1
             continue
         for q in shared:
             history[q] = history.get(q, 0.0) + history_step
-        # rip up and reroute one demand at a time, the others staying in place
         conflicted = []
         for key, (owner, qs) in list(seg.items()):
-            if len(key) == 2 and any(q in shared for q in qs):
-                conflicted.append(key)
-            elif len(key) == 3 and any(q in shared for q in qs) and key[:2] not in conflicted:
+            if any(q in shared for q in qs) and key[:2] not in conflicted:
                 conflicted.append(key[:2])
-        # a root shared with a segment: the segment's demand is rerouted
         for q in shared:
-            for var in own.get(q, ()):
+            for var in list(own.get(q, ())):
                 if root_of[var] == q:
                     for key, (owner, qs) in list(seg.items()):
                         if q in qs and key[:2] not in conflicted:
                             conflicted.append(key[:2])
         for (u, v) in conflicted:
             drop(u, v, ch, own)
-            if not _touch(host, ch[u], ch[v]) and not route_one(u, v, ch, own):
-                negotiate.last = {"rounds": rounds, "secs": time.time() - t0, "why": "unroutable"}
-                return None
+        cascade(ch, own)
         rounds += 1
     negotiate.last = {"rounds": rounds, "secs": time.time() - t0}
+    return None
+
+
+def negotiate_restarts(host, logical, roots, budget, deadline=10.0, seed=0):
+    """negotiate() with randomised restarts until the deadline; the first success wins."""
+    import random
+    t0 = time.time()
+    rng = random.Random(seed)
+    attempt = 0
+    while time.time() - t0 < deadline:
+        attempt += 1
+        left = deadline - (time.time() - t0)
+        res = negotiate(host, logical, roots, budget, deadline=left, max_rounds=400,
+                        pressure=2.0 + rng.random(), history_step=0.5 + rng.random(), rng=rng)
+        if res is not None:
+            negotiate_restarts.last = {"attempts": attempt, "secs": time.time() - t0}
+            return res
+    negotiate_restarts.last = {"attempts": attempt, "secs": time.time() - t0}
     return None
