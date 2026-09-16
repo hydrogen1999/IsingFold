@@ -15,7 +15,9 @@ never depends on memory.
 | Task 9 | quality endpoint at the fill regime under the registered schedule, paired with intervals. Decides feasibility-only or not | apollo `runs/fill/*_witness_registered.log` -> `results/fill/` | **done** both hosts: residual discriminates, -0.021 [-0.030, -0.010] Zephyr and -0.032 [-0.047, -0.017] Pegasus at 80 percent |
 | Task 10 | anytime minorminer with a wall-time deadline, 30 to 300 s. Names the regime where the tool fails at the intended budget | goose `runs/fill/*_anytime.log` | running |
 | budget x20 | minorminer at 200 tries on the fill corpora | apollo `runs/fill/*_budget.log` | running |
-| Task 12 | witness replay through the construction API | `tests/unit/test_witness_replay.py`, apollo `runs/fill/*_replay.log` | fixed and green on 16 and 100 qubits; corpus-scale replay running |
+| Task 12 | witness replay through the construction API | `tests/unit/test_witness_replay.py`, apollo `runs/fill/*_replay_{nohint,hint}.log` | grammar sufficient at scale with the witness as prioritiser (first Zephyr instance, 366 variables: valid in 445 decisions, 267 s); unhinted heuristic order covers almost nothing; full corpus replay running |
+| direction 3 | adaptive allocation of reads vs uniform, real evaluator, disjoint assessment | goose `runs/adaptive/zephyr4.log` | running |
+| direction 5 | labels on the 2400-instance Pegasus 6 corpus for the data-scale test | goose corpus `runs/large/`, apollo `runs/large/labels.log` | corpus done in 5 minutes; labelling running |
 
 Checkpoints and gates are in `docs/plans/2026-09-15-plan.md`; decisions in `docs/decisions/`;
 the two reviews in `docs/review/`. When a row above finishes, its log is copied to `results/`
@@ -289,6 +291,20 @@ witness minus minorminer best of four on the energy residual, lower is better: 8
 quality endpoint at the fill regime exists and it is the residual under the registered
 schedule; the cells are small and the thirty-per-cell corpus of Task 10 is where it gets its
 final interval.
+
+Task 12 at corpus scale: the first replay on Pegasus 6 stalled within four decisions, for two
+reasons found by direct diagnosis, both invisible at 100 qubits. One is structural: a ROUTE may
+only add qubits that realise a demand between placed chains, so a chain's further qubits
+could never appear before the neighbours that need to touch them, and those neighbours could
+not be placed first. REWRITE_ONE accepts a superset chain, so construction gained a "grow"
+family. The other is coverage: a witness root is one qubit among about fifty adjacent free
+qubits, and a budget of a few roots per variable in name order covers it about half the time
+per step. The registered cap of 64 candidates applies to a decision, not to the generator's
+internal ranking, so the generator gained a preference hook consulted before truncation. With
+the witness as the preference, the replay reaches a valid COMMIT on a 366-variable Zephyr 4
+instance in 445 decisions; without it, the heuristic order stalls at once
+(`results/fill/*_replay_nohint.log`). That is the design for the constructive policy: the
+learned scorer is the prioritiser of its own shortlist.
 
 Task 12 done in the environment (`src/isingfold/rl/proposal.py`, `probes/_context.py`): PLACE
 follows placed logical neighbours and offers a spread of roots for the first placement; the
