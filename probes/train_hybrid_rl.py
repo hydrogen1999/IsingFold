@@ -70,6 +70,29 @@ def complete(task, roots, deadline, tries, seed):
     return ok is not None, time.time() - t0, n
 
 
+def partial_score(task, roots, seed, tries=2):
+    """A graded score for a failed completion: the router with overlaps allowed returns an
+    embedding in which contested qubits are shared; the fraction of variables whose chain
+    shares no qubit is how close the layout came. Without it every episode of a hard
+    instance scores zero and REINFORCE has no gradient at all, which is what the first run
+    showed: no update in nine iterations."""
+    import minorminer
+    edges = list(task.logical.edges())
+    in_edges = {u for e in edges for u in e}
+    kw = {"tries": tries, "random_seed": seed % (2 ** 31), "return_overlap": True}
+    if roots:
+        kw["initial_chains"] = {v: list(c) for v, c in roots.items() if v in in_edges}
+    emb, _ = minorminer.find_embedding(edges, list(task.host.edges()), **kw)
+    if not emb:
+        return 0.0
+    owners = {}
+    for v, c in emb.items():
+        for q in c:
+            owners.setdefault(q, set()).add(v)
+    clean = sum(1 for v, c in emb.items() if all(len(owners[q]) == 1 for q in c))
+    return clean / max(1, len(in_edges))
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--corpus", required=True)
@@ -143,7 +166,8 @@ def main() -> int:
             for e in range(a.episodes_per_instance):
                 roots, logps = place_roots(t, model, fc_for(t), a.temperature, rng, train=True)
                 ok, s, _ = complete(t, roots, a.train_deadline, a.tries, 90_000 + 7 * e + 100 * it)
-                eps.append((1.0 if ok else 0.0, logps)); wins.append(ok); secs.append(s)
+                r = 1.0 if ok else 0.5 * partial_score(t, roots, 91_000 + 7 * e + 100 * it)
+                eps.append((r, logps)); wins.append(ok); secs.append(s)
             base = np.mean([r for r, _ in eps])
             for r, logps in eps:
                 if logps and abs(r - base) > 1e-9:
