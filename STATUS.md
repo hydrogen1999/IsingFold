@@ -10,7 +10,7 @@ never depends on memory.
 
 | task | what it decides | host, log | state |
 |---|---|---|---|
-| Task 7 | old vs corrected encoding on identical labels, 3 seeds each, both hosts. Decides whether the improvement surrogate lives (>= +0.03 with interval above zero) or is retired | apollo `runs/corrected/*_seed*.log` -> `results/corrected/` | running, ~400 steps each |
+| Task 7 | old vs corrected encoding on identical labels, 3 seeds each, both hosts | `results/corrected/*_seed*.log` | **done, Checkpoint 2 failed**: corrected +0.003 Pegasus, +0.035 Zephyr; legacy +0.012, +0.041; no corrected interval above zero; the improvement surrogate is retired as a method |
 | Task 8 | label reliability, learnable ceiling | `results/corrected/*_reliability.log` | **done**: ceiling +0.109 / +0.122 |
 | Task 9 | quality endpoint at the fill regime under the registered schedule, paired with intervals. Decides feasibility-only or not | apollo `runs/fill/*_witness_registered.log` -> `results/fill/` | **done** both hosts: residual discriminates, -0.021 [-0.030, -0.010] Zephyr and -0.032 [-0.047, -0.017] Pegasus at 80 percent |
 | Task 10 | anytime minorminer with a wall-time deadline, 30 to 300 s. Names the regime where the tool fails at the intended budget | goose `runs/fill/*_anytime.log` | running |
@@ -251,6 +251,22 @@ Fill regime, further facts: with chains of length one, where minimal fill is exa
 finds nothing from 70 percent up on either host at 60 to 155 seconds a draw
 (`results/fill/*_exact.log`). Pegasus 6 at fifty tries: 80 percent with medium chains rises
 from 0.33 to 0.83 and 85 percent from 0 to 0.17; everything else stays at zero.
+
+## Checkpoint 2: the corrected surrogate does not transfer either (Task 7)
+
+Six trainings per host on the registered-schedule labels, three seeds with the corrected
+encoding and three with the legacy one, identical labels, picks and assessment seeds, 36
+held-out lineages per host (`results/corrected/*_seed*.log`):
+
+    held-out gain      corrected                      legacy
+    Pegasus 6          +0.006  -0.002  +0.006         +0.039  -0.007  +0.002
+    Zephyr 4           +0.029  +0.037  +0.040         +0.042  +0.037  +0.043
+
+The two encodings differ by less than 0.01 where the seed spread is 0.04, and no corrected
+interval lies above zero. The ceiling measured on the same labels is +0.11 to +0.12 (Task 8).
+D1 was a real defect and not the cause. By the rule written in the spec before the run, the
+improvement surrogate is retired as a method; what remains of the prediction direction is the
+data-scale closure on the 2400-instance corpus, which decides whether it is closed for good.
 
 ## Label reliability under the registered schedule (Task 8)
 
