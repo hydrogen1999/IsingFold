@@ -19,8 +19,8 @@ never depends on memory.
 | direction 3 | adaptive allocation of reads vs uniform, real evaluator, disjoint assessment | `results/adaptive/*.log` | **done, replicated**: successive halving matches uniform at half the reads on both hosts, -0.002 [-0.008, +0.004] Zephyr and +0.002 [-0.004, +0.009] Pegasus; UCB slightly worse; random -0.11 to -0.12 |
 | curriculum baseline | anytime minorminer on Pegasus 3 and Zephyr 2 fill corpora, 12 a cell, deadlines 10 to 120 s | `results/small/*_anytime.log` | **done**: short chains from 80 percent 0 to 0.17 at 120 s with 20 to 40 attempts; medium chains 0.42 / 0.17 (Pegasus 3) and 0.75 / 0.08 (Zephyr 2) at 90 / 95 percent |
 | hybrid | policy roots then minorminer; seeded-minorminer tolerance arms | apollo `runs/seeded/*.log`, `runs/hybrid/*.log` | witness roots turn 0 into 12/12 at 80 percent short chains on both small hosts and 2/2 so far on both big hosts; policy roots and tolerance running; big-host seeded tables done: witness roots 1.00 to 85 percent on Pegasus 6 and Zephyr 4, plain router 0 on short chains from 80 percent |
-| hybrid v3, validity | fair protocol: both arms search until 60 s and select by measurement, full-host budget, curriculum hosts | apollo `runs/hybrid/v3_valid_*.log` | iter 19: policy+search 0.53 vs router+search 0.47 (Pegasus 3, init), 0.50 vs 0.47 (scratch), 0.40 vs 0.40 (Zephyr 2); short chains 0 on both; no learned gain yet |
-| hybrid v3, quality | same, paired residual on a fresh block where both valid | apollo `runs/hybrid/v3_quality_*.log` | iter 19: +0.0071 [-0.0112, +0.0253] over 14 (Pegasus 3), +0.0089 [-0.0016, +0.0198] over 12 (Zephyr 2), positive is worse; no learned gain |
+| hybrid v3, validity | fair protocol: both arms search until 60 s and select by measurement, full-host budget, curriculum hosts | apollo `runs/hybrid/v3_valid_*.log`, copies in `results/hybrid/` | 60 iterations: policy+search 0.50 vs router+search 0.47 at every checkpoint (Pegasus 3, init and scratch), 0.37 to 0.40 vs 0.40 (Zephyr 2); valid candidates equal in both arms at every checkpoint, so the layouts change no instance's completability. Null, closed |
+| hybrid v3, quality | same, paired residual on a fresh block where both valid | apollo `runs/hybrid/v3_quality_*.log`, copies in `results/hybrid/` | iter 39: +0.0081 [-0.0129, +0.0277] over 14 (Pegasus 3), +0.0065 [-0.0064, +0.0176] over 12 (Zephyr 2), positive is worse; null, closed |
 | contact policy, low fill | contact growth vs random growth vs the start vs four fresh router draws, all with measured selection | goose `runs/contact/pegasus6.log`, `zephyr4.log` | Pegasus 6: restart minus start +0.141; random growth -0.075, policy -0.104 below it. Zephyr 4: restart +0.139; random -0.060, policy -0.063 below it. Both hosts: growing one draw loses to drawing again |
 | contact policy, high fill | same, starting from the planted witness at 80 to 95 percent occupancy, budget = the space left, objective = energy residual, frontier features, occupancy traced | goose `runs/contact/*_fill.log` | running (post-merge) |
 | direction 4, RL | REINFORCE on the constructive policy (policy = prioritiser), dense progress reward, STOP and RESTART masked, evaluation samples until the deadline; from scratch and initialised from the imitation prioritiser; Pegasus 3 and Zephyr 2 | apollo `runs/rl/*_scratch.log`, `runs/rl/*_init.log` | running; before the mask the imitation-initialised policy reached demand fraction 0.70 / 0.63 and validity 0, ending episodes by sampling STOP |
@@ -381,6 +381,24 @@ training-lineage provenance. The audit's evidence boundaries stand: registered c
 intervals include zero; the large scorer is validation evidence against random, not a gain
 over halving; the selection reference is finite-read. Every run in flight was restarted on
 the merged code; numbers from before the merge are history.
+
+## Hybrid v3 is a null: policy layouts do not change what the router can complete
+
+Five runs on the merged code with the fair protocol (both arms search until the 60 s deadline,
+up to six valid candidates each, selection by measurement, assessment on a fresh block, full
+host as the budget; `results/hybrid/v3_*.log`). Validity, held out over 30 instances, at
+iterations 0, 19, 39, 59: policy+search 0.50, 0.53, 0.50, 0.50 against router+search 0.47 at
+every checkpoint on Pegasus 3 (init from the imitation prioritiser and from scratch alike);
+0.40, 0.40, 0.37 against 0.40 on Zephyr 2. Quality, paired residual where both arms are
+valid: +0.008 [-0.013, +0.028] and +0.007 [-0.006, +0.018] at iteration 39, positive is
+worse. The diagnostic is the candidate count: both arms find the same number of valid
+candidates per instance at every checkpoint (0.5/0.5, 2.7/2.7, 2.3/2.3), so a policy layout
+never turns an instance the router cannot complete in 60 s into one it can, and never adds
+a candidate the measurement could prefer. With the roots result (witness roots turn 0 into
+1.00; half-right roots suffice at 80 percent) the gap is the policy's roots, which after 60
+iterations of reward from completion and measured quality are still worth nothing more than
+the router's own restarts. Closed as a null; the learned-roots direction needs a different
+learning signal than completion reward, if it is to be pursued at all.
 
 ## Contact growth with measured selection: the gain was the selection, withdrawn by its control
 
