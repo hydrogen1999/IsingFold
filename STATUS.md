@@ -337,8 +337,8 @@ agreeing with the witness on almost none.
 Tolerance of the completion (`runs/seeded/*_tolerance.log`, 80 percent short chains): with
 the witness roots of a random half of the variables, 10/10 on Pegasus 3 and 7/8 on Zephyr 2;
 with a quarter, 5/10 and 2/8; with every root moved one step, 5/10 and 2/8; unseeded 2/10 and
-1/8. Half of the roots right is enough. The imitation prioritiser's PLACE-only roots are
-worth nothing (`runs/hybrid/*.log`: 1/10 against 2/10 unseeded), and agreement with one
+1/8. Half of the roots right is enough. The imitation prioritiser's PLACE-only roots, one greedy layout, are
+worth nothing (`results/hybrid/pegasus3.log`, `zephyr2.log`: per cell equal to the unseeded router, with the witness roots at 1.00 in every cell), and agreement with one
 witness is the wrong measure since the witness is one of many symmetric layouts: minorminer
 needs a globally consistent layout, which a locally trained scorer does not give. So the
 layout is learned against the deployment signal itself: PLACE-only episodes, minorminer

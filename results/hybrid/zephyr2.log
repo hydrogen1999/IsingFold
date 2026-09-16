@@ -1,0 +1,135 @@
+{"corpus": "runs/small/zephyr2/corpus", "instances": 120, "scorer": "runs/imitation/pegasus6_budget.pt", "deadline": 60.0, "prefer": true}
+    1/120 zephyr2-fill70-a3.0-0      placed 1.00 agree 0.00 in   20s | policy valid    3s | none valid    1s | witness valid    0s
+    2/120 zephyr2-fill70-a3.0-1      placed 1.00 agree 0.05 in   17s | policy valid    0s | none valid    0s | witness valid    0s
+    3/120 zephyr2-fill70-a3.0-2      placed 1.00 agree 0.00 in   18s | policy valid    0s | none valid    0s | witness valid    0s
+    4/120 zephyr2-fill70-a3.0-3      placed 1.00 agree 0.02 in   16s | policy valid    0s | none valid    0s | witness valid    0s
+    5/120 zephyr2-fill70-a3.0-4      placed 1.00 agree 0.00 in   15s | policy valid    0s | none valid    0s | witness valid    0s
+    6/120 zephyr2-fill70-a3.0-5      placed 1.00 agree 0.00 in   16s | policy valid    0s | none valid    0s | witness valid    0s
+    7/120 zephyr2-fill70-a3.0-6      placed 1.00 agree 0.00 in   14s | policy valid    1s | none valid    0s | witness valid    0s
+    8/120 zephyr2-fill70-a3.0-7      placed 1.00 agree 0.00 in   15s | policy valid    2s | none valid    1s | witness valid    0s
+    9/120 zephyr2-fill70-a3.0-8      placed 1.00 agree 0.04 in   12s | policy valid    0s | none valid    0s | witness valid    0s
+   10/120 zephyr2-fill70-a3.0-9      placed 1.00 agree 0.02 in   12s | policy valid    0s | none valid    0s | witness valid    0s
+   11/120 zephyr2-fill70-a3.0-10     placed 1.00 agree 0.00 in   12s | policy valid    0s | none valid    0s | witness valid    0s
+   12/120 zephyr2-fill70-a3.0-11     placed 1.00 agree 0.00 in   18s | policy valid    1s | none valid    0s | witness valid    0s
+   13/120 zephyr2-fill70-a2.0-0      placed 1.00 agree 0.00 in    9s | policy valid    0s | none valid    0s | witness valid    0s
+   14/120 zephyr2-fill70-a2.0-1      placed 1.00 agree 0.01 in    9s | policy valid    0s | none valid    0s | witness valid    0s
+   15/120 zephyr2-fill70-a2.0-2      placed 1.00 agree 0.01 in   12s | policy valid    0s | none valid    0s | witness valid    0s
+   16/120 zephyr2-fill70-a2.0-3      placed 1.00 agree 0.01 in    9s | policy valid    0s | none valid    0s | witness valid    0s
+   17/120 zephyr2-fill70-a2.0-4      placed 1.00 agree 0.03 in    9s | policy valid    0s | none valid    0s | witness valid    0s
+   18/120 zephyr2-fill70-a2.0-5      placed 1.00 agree 0.00 in   13s | policy valid    0s | none valid    0s | witness valid    0s
+   19/120 zephyr2-fill70-a2.0-6      placed 1.00 agree 0.01 in   11s | policy valid    0s | none valid    0s | witness valid    0s
+   20/120 zephyr2-fill70-a2.0-7      placed 1.00 agree 0.01 in    9s | policy valid    0s | none valid    0s | witness valid    0s
+   21/120 zephyr2-fill70-a2.0-8      placed 1.00 agree 0.00 in    9s | policy valid    0s | none valid    0s | witness valid    0s
+   22/120 zephyr2-fill70-a2.0-9      placed 1.00 agree 0.01 in    8s | policy valid    0s | none valid    0s | witness valid    0s
+   23/120 zephyr2-fill70-a2.0-10     placed 1.00 agree 0.03 in    8s | policy valid    0s | none valid    0s | witness valid    0s
+   24/120 zephyr2-fill70-a2.0-11     placed 1.00 agree 0.02 in    7s | policy valid    0s | none valid    0s | witness valid    0s
+   25/120 zephyr2-fill80-a3.0-0      placed 1.00 agree 0.00 in   16s | policy no      44s | none no      60s | witness valid    0s
+   26/120 zephyr2-fill80-a3.0-1      placed 1.00 agree 0.00 in   22s | policy no      39s | none no      61s | witness valid    0s
+   27/120 zephyr2-fill80-a3.0-2      placed 1.00 agree 0.00 in   23s | policy no      37s | none no      61s | witness valid    0s
+   28/120 zephyr2-fill80-a3.0-3      placed 1.00 agree 0.02 in   19s | policy no      42s | none no      60s | witness valid    0s
+   29/120 zephyr2-fill80-a3.0-4      placed 1.00 agree 0.02 in   21s | policy no      39s | none no      61s | witness valid    0s
+   30/120 zephyr2-fill80-a3.0-5      placed 1.00 agree 0.01 in   23s | policy no      38s | none no      61s | witness valid    0s
+   31/120 zephyr2-fill80-a3.0-6      placed 1.00 agree 0.02 in   18s | policy no      43s | none no      60s | witness valid    0s
+   32/120 zephyr2-fill80-a3.0-7      placed 1.00 agree 0.01 in   19s | policy no      41s | none no      60s | witness valid    0s
+   33/120 zephyr2-fill80-a3.0-8      placed 1.00 agree 0.00 in   17s | policy no      44s | none no      60s | witness valid    0s
+   34/120 zephyr2-fill80-a3.0-9      placed 1.00 agree 0.00 in   27s | policy no      34s | none no      60s | witness valid    0s
+   35/120 zephyr2-fill80-a3.0-10     placed 1.00 agree 0.00 in   22s | policy no      39s | none no      61s | witness valid    0s
+   36/120 zephyr2-fill80-a3.0-11     placed 1.00 agree 0.02 in   25s | policy no      36s | none no      61s | witness valid    0s
+   37/120 zephyr2-fill80-a2.0-0      placed 1.00 agree 0.00 in   13s | policy valid    0s | none valid    0s | witness valid    0s
+   38/120 zephyr2-fill80-a2.0-1      placed 1.00 agree 0.00 in   17s | policy valid    1s | none valid    1s | witness valid    0s
+   39/120 zephyr2-fill80-a2.0-2      placed 1.00 agree 0.00 in   15s | policy valid    0s | none valid    0s | witness valid    0s
+   40/120 zephyr2-fill80-a2.0-3      placed 1.00 agree 0.01 in   15s | policy valid    0s | none valid    1s | witness valid    0s
+   41/120 zephyr2-fill80-a2.0-4      placed 1.00 agree 0.00 in   17s | policy valid    1s | none valid    1s | witness valid    0s
+   42/120 zephyr2-fill80-a2.0-5      placed 1.00 agree 0.00 in   14s | policy valid    0s | none valid    0s | witness valid    0s
+   43/120 zephyr2-fill80-a2.0-6      placed 1.00 agree 0.00 in   14s | policy valid    0s | none valid    0s | witness valid    0s
+   44/120 zephyr2-fill80-a2.0-7      placed 1.00 agree 0.00 in   11s | policy valid    0s | none valid    0s | witness valid    0s
+   45/120 zephyr2-fill80-a2.0-8      placed 1.00 agree 0.00 in   13s | policy valid    0s | none valid    0s | witness valid    0s
+   46/120 zephyr2-fill80-a2.0-9      placed 1.00 agree 0.01 in   14s | policy valid    0s | none valid    0s | witness valid    0s
+   47/120 zephyr2-fill80-a2.0-10     placed 1.00 agree 0.01 in   14s | policy valid    0s | none valid    0s | witness valid    0s
+   48/120 zephyr2-fill80-a2.0-11     placed 1.00 agree 0.00 in   12s | policy valid    0s | none valid    0s | witness valid    0s
+   49/120 zephyr2-fill85-a3.0-0      placed 1.00 agree 0.01 in   25s | policy no      35s | none no      60s | witness valid    0s
+   50/120 zephyr2-fill85-a3.0-1      placed 1.00 agree 0.00 in   27s | policy no      33s | none no      60s | witness valid    0s
+   51/120 zephyr2-fill85-a3.0-2      placed 1.00 agree 0.02 in   27s | policy no      34s | none no      60s | witness valid    0s
+   52/120 zephyr2-fill85-a3.0-3      placed 1.00 agree 0.01 in   24s | policy no      37s | none no      61s | witness valid    0s
+   53/120 zephyr2-fill85-a3.0-4      placed 1.00 agree 0.02 in   28s | policy no      33s | none no      61s | witness valid    0s
+   54/120 zephyr2-fill85-a3.0-5      placed 1.00 agree 0.04 in   23s | policy no      38s | none no      60s | witness valid    0s
+   55/120 zephyr2-fill85-a3.0-6      placed 1.00 agree 0.01 in   30s | policy no      31s | none no      61s | witness valid    0s
+   56/120 zephyr2-fill85-a3.0-7      placed 1.00 agree 0.02 in   22s | policy no      39s | none no      61s | witness valid    0s
+   57/120 zephyr2-fill85-a3.0-8      placed 1.00 agree 0.00 in   25s | policy no      35s | none no      61s | witness valid    0s
+   58/120 zephyr2-fill85-a3.0-9      placed 1.00 agree 0.02 in   23s | policy no      37s | none no      60s | witness valid    0s
+   59/120 zephyr2-fill85-a3.0-10     placed 1.00 agree 0.00 in   28s | policy no      33s | none no      61s | witness valid    0s
+   60/120 zephyr2-fill85-a3.0-11     placed 1.00 agree 0.00 in   24s | policy no      37s | none no      60s | witness valid    0s
+   61/120 zephyr2-fill85-a2.0-0      placed 1.00 agree 0.00 in   12s | policy valid    0s | none valid    0s | witness valid    0s
+   62/120 zephyr2-fill85-a2.0-1      placed 1.00 agree 0.00 in   17s | policy valid    0s | none valid    0s | witness valid    0s
+   63/120 zephyr2-fill85-a2.0-2      placed 1.00 agree 0.00 in   16s | policy valid    0s | none valid    0s | witness valid    0s
+   64/120 zephyr2-fill85-a2.0-3      placed 1.00 agree 0.02 in   18s | policy valid    1s | none valid    4s | witness valid    0s
+   65/120 zephyr2-fill85-a2.0-4      placed 1.00 agree 0.00 in   15s | policy valid    0s | none valid    0s | witness valid    0s
+   66/120 zephyr2-fill85-a2.0-5      placed 1.00 agree 0.00 in   17s | policy valid   18s | none valid    5s | witness valid    0s
+   67/120 zephyr2-fill85-a2.0-6      placed 1.00 agree 0.00 in   14s | policy valid    0s | none valid    0s | witness valid    0s
+   68/120 zephyr2-fill85-a2.0-7      placed 1.00 agree 0.00 in   14s | policy valid    0s | none valid    0s | witness valid    0s
+   69/120 zephyr2-fill85-a2.0-8      placed 1.00 agree 0.01 in   16s | policy valid    0s | none valid    0s | witness valid    0s
+   70/120 zephyr2-fill85-a2.0-9      placed 1.00 agree 0.00 in   13s | policy valid    0s | none valid    0s | witness valid    0s
+   71/120 zephyr2-fill85-a2.0-10     placed 1.00 agree 0.03 in   14s | policy valid    0s | none valid    0s | witness valid    0s
+   72/120 zephyr2-fill85-a2.0-11     placed 1.00 agree 0.01 in   14s | policy valid    0s | none valid    0s | witness valid    0s
+   73/120 zephyr2-fill90-a3.0-0      placed 1.00 agree 0.00 in   29s | policy no      31s | none no      60s | witness valid    0s
+   74/120 zephyr2-fill90-a3.0-1      placed 1.00 agree 0.01 in   32s | policy no      29s | none no      60s | witness valid    0s
+   75/120 zephyr2-fill90-a3.0-2      placed 1.00 agree 0.00 in   25s | policy no      36s | none no      61s | witness valid    0s
+   76/120 zephyr2-fill90-a3.0-3      placed 1.00 agree 0.01 in   34s | policy no      26s | none no      61s | witness valid    0s
+   77/120 zephyr2-fill90-a3.0-4      placed 1.00 agree 0.02 in   30s | policy no      31s | none no      60s | witness valid    0s
+   78/120 zephyr2-fill90-a3.0-5      placed 1.00 agree 0.00 in   35s | policy no      25s | none no      61s | witness valid    0s
+   79/120 zephyr2-fill90-a3.0-6      placed 1.00 agree 0.00 in   32s | policy no      29s | none no      61s | witness valid    1s
+   80/120 zephyr2-fill90-a3.0-7      placed 1.00 agree 0.00 in   22s | policy no      38s | none no      61s | witness valid    0s
+   81/120 zephyr2-fill90-a3.0-8      placed 1.00 agree 0.01 in   27s | policy no      34s | none no      61s | witness valid    0s
+   82/120 zephyr2-fill90-a3.0-9      placed 1.00 agree 0.01 in   31s | policy no      29s | none no      60s | witness valid    0s
+   83/120 zephyr2-fill90-a3.0-10     placed 1.00 agree 0.03 in   33s | policy no      28s | none no      60s | witness valid    0s
+   84/120 zephyr2-fill90-a3.0-11     placed 1.00 agree 0.02 in   33s | policy no      28s | none no      61s | witness valid    0s
+   85/120 zephyr2-fill90-a2.0-0      placed 1.00 agree 0.00 in   18s | policy valid    0s | none valid    0s | witness valid    0s
+   86/120 zephyr2-fill90-a2.0-1      placed 1.00 agree 0.01 in   21s | policy no      39s | none no      60s | witness valid    0s
+   87/120 zephyr2-fill90-a2.0-2      placed 1.00 agree 0.01 in   13s | policy valid    0s | none valid    0s | witness valid    0s
+   88/120 zephyr2-fill90-a2.0-3      placed 1.00 agree 0.01 in   19s | policy valid   27s | none no      60s | witness valid    0s
+   89/120 zephyr2-fill90-a2.0-4      placed 1.00 agree 0.01 in   14s | policy valid    0s | none valid    0s | witness valid    0s
+   90/120 zephyr2-fill90-a2.0-5      placed 1.00 agree 0.00 in   17s | policy valid    0s | none valid    0s | witness valid    0s
+   91/120 zephyr2-fill90-a2.0-6      placed 1.00 agree 0.00 in   18s | policy valid   27s | none valid   11s | witness valid    0s
+   92/120 zephyr2-fill90-a2.0-7      placed 1.00 agree 0.01 in   20s | policy no      41s | none no      60s | witness valid    0s
+   93/120 zephyr2-fill90-a2.0-8      placed 1.00 agree 0.02 in   16s | policy valid   20s | none valid    1s | witness valid    0s
+   94/120 zephyr2-fill90-a2.0-9      placed 1.00 agree 0.01 in   19s | policy valid    1s | none valid    2s | witness valid    0s
+   95/120 zephyr2-fill90-a2.0-10     placed 1.00 agree 0.00 in   15s | policy valid    0s | none valid    0s | witness valid    0s
+   96/120 zephyr2-fill90-a2.0-11     placed 1.00 agree 0.01 in   19s | policy valid    3s | none valid    7s | witness valid    0s
+   97/120 zephyr2-fill95-a3.0-0      placed 1.00 agree 0.01 in   35s | policy no      25s | none no      61s | witness valid    0s
+   98/120 zephyr2-fill95-a3.0-1      placed 1.00 agree 0.02 in   30s | policy no      31s | none no      61s | witness valid    0s
+   99/120 zephyr2-fill95-a3.0-2      placed 1.00 agree 0.00 in   35s | policy no      26s | none no      61s | witness valid    0s
+  100/120 zephyr2-fill95-a3.0-3      placed 1.00 agree 0.00 in   33s | policy no      27s | none no      60s | witness valid    0s
+  101/120 zephyr2-fill95-a3.0-4      placed 1.00 agree 0.01 in   35s | policy no      25s | none no      61s | witness valid    1s
+  102/120 zephyr2-fill95-a3.0-5      placed 1.00 agree 0.00 in   30s | policy no      30s | none no      61s | witness valid    0s
+  103/120 zephyr2-fill95-a3.0-6      placed 1.00 agree 0.01 in   28s | policy no      33s | none no      61s | witness valid    1s
+  104/120 zephyr2-fill95-a3.0-7      placed 1.00 agree 0.00 in   30s | policy no      31s | none no      61s | witness valid    0s
+  105/120 zephyr2-fill95-a3.0-8      placed 1.00 agree 0.03 in   35s | policy no      26s | none no      60s | witness valid    2s
+  106/120 zephyr2-fill95-a3.0-9      placed 1.00 agree 0.00 in   36s | policy no      24s | none no      60s | witness valid    0s
+  107/120 zephyr2-fill95-a3.0-10     placed 1.00 agree 0.02 in   33s | policy no      28s | none no      60s | witness valid    0s
+  108/120 zephyr2-fill95-a3.0-11     placed 1.00 agree 0.00 in   23s | policy no      37s | none no      61s | witness valid    1s
+  109/120 zephyr2-fill95-a2.0-0      placed 1.00 agree 0.02 in   13s | policy no      47s | none no      61s | witness valid    0s
+  110/120 zephyr2-fill95-a2.0-1      placed 1.00 agree 0.00 in   13s | policy no      47s | none no      60s | witness valid    0s
+  111/120 zephyr2-fill95-a2.0-2      placed 1.00 agree 0.01 in   11s | policy valid    8s | none no      61s | witness valid    0s
+  112/120 zephyr2-fill95-a2.0-3      placed 1.00 agree 0.02 in   26s | policy no      35s | none no      61s | witness valid    3s
+  113/120 zephyr2-fill95-a2.0-4      placed 1.00 agree 0.01 in   19s | policy no      42s | none no      61s | witness valid    0s
+  114/120 zephyr2-fill95-a2.0-5      placed 1.00 agree 0.00 in   23s | policy no      38s | none no      60s | witness valid    0s
+  115/120 zephyr2-fill95-a2.0-6      placed 1.00 agree 0.00 in   13s | policy no      47s | none no      60s | witness valid    0s
+  116/120 zephyr2-fill95-a2.0-7      placed 1.00 agree 0.01 in   15s | policy no      46s | none no      60s | witness valid    0s
+  117/120 zephyr2-fill95-a2.0-8      placed 1.00 agree 0.01 in   23s | policy no      38s | none no      60s | witness valid    7s
+  118/120 zephyr2-fill95-a2.0-9      placed 1.00 agree 0.01 in   20s | policy no      41s | none no      60s | witness valid    0s
+  119/120 zephyr2-fill95-a2.0-10     placed 1.00 agree 0.00 in   19s | policy no      42s | none valid   12s | witness valid    0s
+  120/120 zephyr2-fill95-a2.0-11     placed 1.00 agree 0.00 in   20s | policy no      41s | none no      61s | witness valid    0s
+
+  cell               n   policy     none  witness  s:policy    s:none
+  fill70-a2.0       12     1.00     1.00     1.00         9         0
+  fill70-a3.0       12     1.00     1.00     1.00        16         0
+  fill80-a2.0       12     1.00     1.00     1.00        14         0
+  fill80-a3.0       12     0.00     0.00     1.00        61        60
+  fill85-a2.0       12     1.00     1.00     1.00        17         1
+  fill85-a3.0       12     0.00     0.00     1.00        61        61
+  fill90-a2.0       12     0.83     0.75     1.00        31        17
+  fill90-a3.0       12     0.00     0.00     1.00        61        61
+  fill95-a2.0       12     0.08     0.08     1.00        57        56
+  fill95-a3.0       12     0.00     0.00     1.00        61        61
+
+POLICY ROOTS DONE

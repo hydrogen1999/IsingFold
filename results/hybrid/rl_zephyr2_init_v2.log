@@ -1,0 +1,1 @@
+{"corpus": "runs/small/zephyr2/corpus", "train": 71, "held_out": 30, "init": "runs/imitation/pegasus6_budget.pt", "train_deadline": 10.0, "eval_deadline": 60.0}

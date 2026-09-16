@@ -1,0 +1,135 @@
+{"corpus": "runs/small/pegasus3/corpus", "instances": 120, "scorer": "runs/imitation/pegasus6_budget.pt", "deadline": 60.0, "prefer": true}
+    1/120 pegasus3-fill70-a3.0-0     placed 1.00 agree 0.01 in    9s | policy valid    1s | none valid    0s | witness valid    0s
+    2/120 pegasus3-fill70-a3.0-1     placed 1.00 agree 0.00 in    8s | policy valid    0s | none valid    0s | witness valid    0s
+    3/120 pegasus3-fill70-a3.0-2     placed 1.00 agree 0.00 in   10s | policy valid    0s | none valid    1s | witness valid    0s
+    4/120 pegasus3-fill70-a3.0-3     placed 1.00 agree 0.01 in    8s | policy valid    0s | none valid    0s | witness valid    0s
+    5/120 pegasus3-fill70-a3.0-4     placed 1.00 agree 0.01 in    8s | policy valid    0s | none valid    0s | witness valid    0s
+    6/120 pegasus3-fill70-a3.0-5     placed 1.00 agree 0.01 in   10s | policy valid    1s | none valid    0s | witness valid    0s
+    7/120 pegasus3-fill70-a3.0-6     placed 1.00 agree 0.00 in   10s | policy valid    2s | none valid    2s | witness valid    0s
+    8/120 pegasus3-fill70-a3.0-7     placed 1.00 agree 0.01 in    9s | policy valid    0s | none valid    0s | witness valid    0s
+    9/120 pegasus3-fill70-a3.0-8     placed 1.00 agree 0.00 in    6s | policy valid    0s | none valid    0s | witness valid    0s
+   10/120 pegasus3-fill70-a3.0-9     placed 1.00 agree 0.01 in   11s | policy valid   16s | none valid    3s | witness valid    0s
+   11/120 pegasus3-fill70-a3.0-10    placed 1.00 agree 0.00 in    9s | policy valid    0s | none valid    0s | witness valid    0s
+   12/120 pegasus3-fill70-a3.0-11    placed 1.00 agree 0.01 in    9s | policy valid    0s | none valid    0s | witness valid    0s
+   13/120 pegasus3-fill70-a2.0-0     placed 1.00 agree 0.00 in    5s | policy valid    0s | none valid    0s | witness valid    0s
+   14/120 pegasus3-fill70-a2.0-1     placed 1.00 agree 0.02 in    4s | policy valid    0s | none valid    0s | witness valid    0s
+   15/120 pegasus3-fill70-a2.0-2     placed 1.00 agree 0.00 in    5s | policy valid    0s | none valid    0s | witness valid    0s
+   16/120 pegasus3-fill70-a2.0-3     placed 1.00 agree 0.03 in    8s | policy valid    0s | none valid    0s | witness valid    0s
+   17/120 pegasus3-fill70-a2.0-4     placed 1.00 agree 0.02 in    5s | policy valid    0s | none valid    0s | witness valid    0s
+   18/120 pegasus3-fill70-a2.0-5     placed 1.00 agree 0.02 in    6s | policy valid    0s | none valid    0s | witness valid    0s
+   19/120 pegasus3-fill70-a2.0-6     placed 1.00 agree 0.00 in    5s | policy valid    0s | none valid    0s | witness valid    0s
+   20/120 pegasus3-fill70-a2.0-7     placed 1.00 agree 0.00 in    8s | policy valid    0s | none valid    0s | witness valid    0s
+   21/120 pegasus3-fill70-a2.0-8     placed 1.00 agree 0.02 in    6s | policy valid    0s | none valid    0s | witness valid    0s
+   22/120 pegasus3-fill70-a2.0-9     placed 1.00 agree 0.03 in    7s | policy valid    0s | none valid    0s | witness valid    0s
+   23/120 pegasus3-fill70-a2.0-10    placed 1.00 agree 0.00 in    7s | policy valid    0s | none valid    0s | witness valid    0s
+   24/120 pegasus3-fill70-a2.0-11    placed 1.00 agree 0.00 in    7s | policy valid    0s | none valid    0s | witness valid    0s
+   25/120 pegasus3-fill80-a3.0-0     placed 1.00 agree 0.00 in   14s | policy no      46s | none no      60s | witness valid    0s
+   26/120 pegasus3-fill80-a3.0-1     placed 1.00 agree 0.00 in   12s | policy no      48s | none valid   31s | witness valid    0s
+   27/120 pegasus3-fill80-a3.0-2     placed 1.00 agree 0.07 in   12s | policy no      49s | none no      60s | witness valid    0s
+   28/120 pegasus3-fill80-a3.0-3     placed 1.00 agree 0.00 in   12s | policy no      48s | none no      60s | witness valid    0s
+   29/120 pegasus3-fill80-a3.0-4     placed 1.00 agree 0.01 in    9s | policy no      52s | none no      60s | witness valid    0s
+   30/120 pegasus3-fill80-a3.0-5     placed 1.00 agree 0.01 in   12s | policy no      49s | none no      60s | witness valid    0s
+   31/120 pegasus3-fill80-a3.0-6     placed 1.00 agree 0.00 in   11s | policy no      49s | none no      60s | witness valid    0s
+   32/120 pegasus3-fill80-a3.0-7     placed 1.00 agree 0.01 in   12s | policy no      48s | none no      60s | witness valid    0s
+   33/120 pegasus3-fill80-a3.0-8     placed 1.00 agree 0.03 in   11s | policy valid    5s | none valid    2s | witness valid    0s
+   34/120 pegasus3-fill80-a3.0-9     placed 1.00 agree 0.00 in   13s | policy no      47s | none no      61s | witness valid    0s
+   35/120 pegasus3-fill80-a3.0-10    placed 1.00 agree 0.00 in   14s | policy no      47s | none no      60s | witness valid    0s
+   36/120 pegasus3-fill80-a3.0-11    placed 1.00 agree 0.00 in   11s | policy valid    6s | none valid    5s | witness valid    0s
+   37/120 pegasus3-fill80-a2.0-0     placed 1.00 agree 0.02 in    6s | policy valid    0s | none valid    0s | witness valid    0s
+   38/120 pegasus3-fill80-a2.0-1     placed 1.00 agree 0.04 in    9s | policy valid   11s | none valid    4s | witness valid    0s
+   39/120 pegasus3-fill80-a2.0-2     placed 1.00 agree 0.01 in   10s | policy valid    1s | none valid   10s | witness valid    0s
+   40/120 pegasus3-fill80-a2.0-3     placed 1.00 agree 0.04 in   10s | policy valid    0s | none valid    5s | witness valid    0s
+   41/120 pegasus3-fill80-a2.0-4     placed 1.00 agree 0.03 in    7s | policy valid    0s | none valid    0s | witness valid    0s
+   42/120 pegasus3-fill80-a2.0-5     placed 1.00 agree 0.00 in    9s | policy valid    6s | none valid    4s | witness valid    0s
+   43/120 pegasus3-fill80-a2.0-6     placed 1.00 agree 0.04 in    9s | policy valid    1s | none valid    0s | witness valid    0s
+   44/120 pegasus3-fill80-a2.0-7     placed 1.00 agree 0.00 in    6s | policy valid    0s | none valid    0s | witness valid    0s
+   45/120 pegasus3-fill80-a2.0-8     placed 1.00 agree 0.00 in   12s | policy no      49s | none no      60s | witness valid    0s
+   46/120 pegasus3-fill80-a2.0-9     placed 1.00 agree 0.00 in   11s | policy no      50s | none no      60s | witness valid    0s
+   47/120 pegasus3-fill80-a2.0-10    placed 1.00 agree 0.00 in    5s | policy valid    0s | none valid    0s | witness valid    0s
+   48/120 pegasus3-fill80-a2.0-11    placed 1.00 agree 0.03 in    9s | policy valid    0s | none valid    7s | witness valid    0s
+   49/120 pegasus3-fill85-a3.0-0     placed 1.00 agree 0.00 in   15s | policy no      45s | none no      60s | witness valid    0s
+   50/120 pegasus3-fill85-a3.0-1     placed 1.00 agree 0.00 in   13s | policy no      47s | none no      60s | witness valid    0s
+   51/120 pegasus3-fill85-a3.0-2     placed 1.00 agree 0.01 in   12s | policy no      48s | none no      60s | witness valid    0s
+   52/120 pegasus3-fill85-a3.0-3     placed 1.00 agree 0.05 in   13s | policy no      47s | none no      60s | witness valid    0s
+   53/120 pegasus3-fill85-a3.0-4     placed 1.00 agree 0.02 in   16s | policy no      45s | none no      60s | witness valid    0s
+   54/120 pegasus3-fill85-a3.0-5     placed 1.00 agree 0.00 in   16s | policy no      44s | none no      60s | witness valid    0s
+   55/120 pegasus3-fill85-a3.0-6     placed 1.00 agree 0.05 in   14s | policy no      47s | none no      60s | witness valid    0s
+   56/120 pegasus3-fill85-a3.0-7     placed 1.00 agree 0.01 in   13s | policy no      47s | none no      60s | witness valid    0s
+   57/120 pegasus3-fill85-a3.0-8     placed 1.00 agree 0.00 in   17s | policy no      44s | none no      60s | witness valid    0s
+   58/120 pegasus3-fill85-a3.0-9     placed 1.00 agree 0.00 in   14s | policy no      47s | none no      61s | witness valid    0s
+   59/120 pegasus3-fill85-a3.0-10    placed 1.00 agree 0.02 in   14s | policy no      46s | none no      60s | witness valid    0s
+   60/120 pegasus3-fill85-a3.0-11    placed 1.00 agree 0.04 in   16s | policy no      44s | none no      60s | witness valid    0s
+   61/120 pegasus3-fill85-a2.0-0     placed 1.00 agree 0.02 in    8s | policy valid    0s | none valid    1s | witness valid    0s
+   62/120 pegasus3-fill85-a2.0-1     placed 1.00 agree 0.00 in   10s | policy valid    2s | none valid    3s | witness valid    0s
+   63/120 pegasus3-fill85-a2.0-2     placed 1.00 agree 0.00 in   11s | policy valid   14s | none valid   12s | witness valid    0s
+   64/120 pegasus3-fill85-a2.0-3     placed 1.00 agree 0.00 in   10s | policy no      50s | none no      60s | witness valid    0s
+   65/120 pegasus3-fill85-a2.0-4     placed 1.00 agree 0.03 in    9s | policy valid    3s | none valid    1s | witness valid    0s
+   66/120 pegasus3-fill85-a2.0-5     placed 1.00 agree 0.01 in    9s | policy valid    0s | none valid    0s | witness valid    0s
+   67/120 pegasus3-fill85-a2.0-6     placed 1.00 agree 0.00 in    8s | policy valid    0s | none valid    0s | witness valid    0s
+   68/120 pegasus3-fill85-a2.0-7     placed 1.00 agree 0.00 in    9s | policy valid   12s | none valid   17s | witness valid    0s
+   69/120 pegasus3-fill85-a2.0-8     placed 1.00 agree 0.00 in    7s | policy valid    0s | none valid    0s | witness valid    0s
+   70/120 pegasus3-fill85-a2.0-9     placed 1.00 agree 0.03 in    9s | policy valid    0s | none valid    0s | witness valid    0s
+   71/120 pegasus3-fill85-a2.0-10    placed 1.00 agree 0.00 in    8s | policy valid    0s | none valid    0s | witness valid    0s
+   72/120 pegasus3-fill85-a2.0-11    placed 1.00 agree 0.05 in    7s | policy valid    0s | none valid    0s | witness valid    0s
+   73/120 pegasus3-fill90-a3.0-0     placed 1.00 agree 0.01 in   16s | policy no      45s | none no      60s | witness valid    0s
+   74/120 pegasus3-fill90-a3.0-1     placed 1.00 agree 0.00 in   16s | policy no      44s | none no      60s | witness valid    0s
+   75/120 pegasus3-fill90-a3.0-2     placed 1.00 agree 0.00 in   16s | policy no      44s | none no      60s | witness valid    0s
+   76/120 pegasus3-fill90-a3.0-3     placed 1.00 agree 0.00 in   18s | policy no      43s | none no      60s | witness valid    0s
+   77/120 pegasus3-fill90-a3.0-4     placed 1.00 agree 0.05 in   13s | policy no      47s | none no      61s | witness valid    0s
+   78/120 pegasus3-fill90-a3.0-5     placed 1.00 agree 0.01 in   13s | policy no      48s | none no      60s | witness valid    0s
+   79/120 pegasus3-fill90-a3.0-6     placed 1.00 agree 0.05 in   19s | policy no      41s | none no      60s | witness valid    0s
+   80/120 pegasus3-fill90-a3.0-7     placed 1.00 agree 0.01 in   18s | policy no      42s | none no      60s | witness valid    0s
+   81/120 pegasus3-fill90-a3.0-8     placed 1.00 agree 0.01 in   17s | policy no      44s | none no      60s | witness valid    0s
+   82/120 pegasus3-fill90-a3.0-9     placed 1.00 agree 0.02 in   15s | policy no      45s | none no      60s | witness valid    0s
+   83/120 pegasus3-fill90-a3.0-10    placed 1.00 agree 0.00 in   16s | policy no      45s | none no      60s | witness valid    0s
+   84/120 pegasus3-fill90-a3.0-11    placed 1.00 agree 0.01 in   16s | policy no      45s | none no      61s | witness valid    0s
+   85/120 pegasus3-fill90-a2.0-0     placed 1.00 agree 0.00 in   10s | policy no      50s | none no      60s | witness valid    0s
+   86/120 pegasus3-fill90-a2.0-1     placed 1.00 agree 0.01 in   11s | policy no      49s | none no      60s | witness valid    0s
+   87/120 pegasus3-fill90-a2.0-2     placed 1.00 agree 0.00 in   10s | policy no      51s | none no      60s | witness valid    0s
+   88/120 pegasus3-fill90-a2.0-3     placed 1.00 agree 0.00 in    9s | policy valid    1s | none valid    0s | witness valid    0s
+   89/120 pegasus3-fill90-a2.0-4     placed 1.00 agree 0.02 in    8s | policy valid    0s | none valid    0s | witness valid    0s
+   90/120 pegasus3-fill90-a2.0-5     placed 1.00 agree 0.03 in   10s | policy valid    0s | none valid    1s | witness valid    0s
+   91/120 pegasus3-fill90-a2.0-6     placed 1.00 agree 0.01 in   10s | policy no      51s | none no      60s | witness valid    4s
+   92/120 pegasus3-fill90-a2.0-7     placed 1.00 agree 0.00 in    9s | policy valid   35s | none no      60s | witness valid    0s
+   93/120 pegasus3-fill90-a2.0-8     placed 1.00 agree 0.00 in   11s | policy no      49s | none no      60s | witness valid    0s
+   94/120 pegasus3-fill90-a2.0-9     placed 1.00 agree 0.04 in   11s | policy no      50s | none no      60s | witness valid    0s
+   95/120 pegasus3-fill90-a2.0-10    placed 1.00 agree 0.01 in    7s | policy valid    0s | none valid    0s | witness valid    0s
+   96/120 pegasus3-fill90-a2.0-11    placed 1.00 agree 0.01 in   10s | policy valid    8s | none valid    6s | witness valid    0s
+   97/120 pegasus3-fill95-a3.0-0     placed 1.00 agree 0.01 in   21s | policy no      40s | none no      60s | witness valid    0s
+   98/120 pegasus3-fill95-a3.0-1     placed 1.00 agree 0.01 in   17s | policy no      43s | none no      60s | witness valid    0s
+   99/120 pegasus3-fill95-a3.0-2     placed 1.00 agree 0.00 in   10s | policy no      50s | none no      61s | witness valid    0s
+  100/120 pegasus3-fill95-a3.0-3     placed 1.00 agree 0.00 in   21s | policy no      40s | none no      60s | witness valid    0s
+  101/120 pegasus3-fill95-a3.0-4     placed 1.00 agree 0.01 in   17s | policy no      44s | none no      61s | witness valid    0s
+  102/120 pegasus3-fill95-a3.0-5     placed 1.00 agree 0.02 in   14s | policy no      47s | none no      60s | witness valid    0s
+  103/120 pegasus3-fill95-a3.0-6     placed 1.00 agree 0.03 in   15s | policy no      45s | none no      60s | witness valid    0s
+  104/120 pegasus3-fill95-a3.0-7     placed 1.00 agree 0.00 in   18s | policy no      43s | none no      60s | witness valid    0s
+  105/120 pegasus3-fill95-a3.0-8     placed 1.00 agree 0.00 in   13s | policy no      47s | none no      60s | witness valid    0s
+  106/120 pegasus3-fill95-a3.0-9     placed 1.00 agree 0.03 in   15s | policy no      45s | none no      60s | witness valid    0s
+  107/120 pegasus3-fill95-a3.0-10    placed 1.00 agree 0.01 in   18s | policy no      43s | none no      60s | witness valid    0s
+  108/120 pegasus3-fill95-a3.0-11    placed 1.00 agree 0.01 in   16s | policy no      44s | none no      60s | witness valid    0s
+  109/120 pegasus3-fill95-a2.0-0     placed 1.00 agree 0.03 in   14s | policy no      47s | none no      60s | witness valid    0s
+  110/120 pegasus3-fill95-a2.0-1     placed 1.00 agree 0.00 in   12s | policy no      48s | none no      60s | witness valid    0s
+  111/120 pegasus3-fill95-a2.0-2     placed 1.00 agree 0.00 in   12s | policy no      48s | none no      60s | witness valid    0s
+  112/120 pegasus3-fill95-a2.0-3     placed 1.00 agree 0.01 in   10s | policy no      51s | none valid   29s | witness valid    0s
+  113/120 pegasus3-fill95-a2.0-4     placed 1.00 agree 0.02 in    8s | policy valid    8s | none valid    8s | witness valid    0s
+  114/120 pegasus3-fill95-a2.0-5     placed 1.00 agree 0.00 in   12s | policy no      48s | none no      60s | witness valid    0s
+  115/120 pegasus3-fill95-a2.0-6     placed 1.00 agree 0.00 in    8s | policy no      52s | none no      60s | witness valid    0s
+  116/120 pegasus3-fill95-a2.0-7     placed 1.00 agree 0.00 in   13s | policy no      47s | none no      60s | witness valid    0s
+  117/120 pegasus3-fill95-a2.0-8     placed 1.00 agree 0.02 in    7s | policy no      53s | none no      60s | witness valid    0s
+  118/120 pegasus3-fill95-a2.0-9     placed 1.00 agree 0.03 in    5s | policy valid    6s | none valid    4s | witness valid    0s
+  119/120 pegasus3-fill95-a2.0-10    placed 1.00 agree 0.01 in    8s | policy no      52s | none no      61s | witness valid    0s
+  120/120 pegasus3-fill95-a2.0-11    placed 1.00 agree 0.00 in    7s | policy no      54s | none no      60s | witness valid    0s
+
+  cell               n   policy     none  witness  s:policy    s:none
+  fill70-a2.0       12     1.00     1.00     1.00         6         0
+  fill70-a3.0       12     1.00     1.00     1.00        11         1
+  fill80-a2.0       12     0.83     0.83     1.00        18        13
+  fill80-a3.0       12     0.17     0.25     1.00        53        48
+  fill85-a2.0       12     0.92     0.92     1.00        16         8
+  fill85-a3.0       12     0.00     0.00     1.00        60        60
+  fill90-a2.0       12     0.50     0.42     1.00        38        36
+  fill90-a3.0       12     0.00     0.00     1.00        60        60
+  fill95-a2.0       12     0.17     0.25     1.00        53        49
+  fill95-a3.0       12     0.00     0.00     1.00        60        60
+
+POLICY ROOTS DONE
