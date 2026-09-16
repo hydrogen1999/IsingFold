@@ -18,6 +18,7 @@ never depends on memory.
 | Task 12 | witness replay through the construction API | `results/fill/*_replay_{hint,nohint}.log` | **done**: with the witness as the generator's preference, a valid COMMIT on 48/48 instances per host, every cell, 400 to 620 decisions, 200 to 530 s; with the unhinted heuristic order, none. Imitation records collected; prioritiser training |
 | direction 3 | adaptive allocation of reads vs uniform, real evaluator, disjoint assessment | `results/adaptive/*.log` | **done, replicated**: successive halving matches uniform at half the reads on both hosts, -0.002 [-0.008, +0.004] Zephyr and +0.002 [-0.004, +0.009] Pegasus; UCB slightly worse; random -0.11 to -0.12 |
 | curriculum baseline | anytime minorminer on Pegasus 3 and Zephyr 2 fill corpora, 12 a cell, deadlines 10 to 120 s | `results/small/*_anytime.log` | **done**: short chains from 80 percent 0 to 0.17 at 120 s with 20 to 40 attempts; medium chains 0.42 / 0.17 (Pegasus 3) and 0.75 / 0.08 (Zephyr 2) at 90 / 95 percent |
+| hybrid | policy roots then minorminer; seeded-minorminer tolerance arms | apollo `runs/seeded/*.log`, `runs/hybrid/*.log` | witness roots turn 0 into 12/12 at 80 percent short chains on both small hosts and 2/2 so far on both big hosts; policy roots and tolerance running |
 | direction 4, RL | REINFORCE on the constructive policy (policy = prioritiser), dense progress reward, STOP and RESTART masked, evaluation samples until the deadline; from scratch and initialised from the imitation prioritiser; Pegasus 3 and Zephyr 2 | apollo `runs/rl/*_scratch.log`, `runs/rl/*_init.log` | running; before the mask the imitation-initialised policy reached demand fraction 0.70 / 0.63 and validity 0, ending episodes by sampling STOP |
 | imitation, deployed | the imitation prioritiser as a policy on the full fill corpora, sample until 600 s | apollo `runs/rl/*_imitation_deploy.log`; baseline at 300 and 600 s on goose `runs/fill/*_anytime600.log` | running |
 | direction 5 | labels on the 2400-instance Pegasus 6 corpus for the data-scale test | `results/relabel/pegasus6_large_labels.log`; apollo `runs/large/train_seed*.log` | labels **done**: 3298 training states, 696 held-out, 24,123 candidates, 3 h; oracle minus random +0.108 and +0.099 on 696 held-out states; three trainings running |
@@ -288,6 +289,28 @@ deployment question is different, whether the policy sampled until a deadline re
 valid embedding, and that is measured by the RL evaluation protocol: running on the
 curriculum hosts with the prioritiser as initialisation, and on the full fill corpora at
 300 s (`runs/rl/*_imitation_deploy.log`).
+
+## The roots are the missing information: minorminer seeded with witness roots (partial)
+
+minorminer accepts initial chains. Seeded with one qubit per variable taken from the
+witness, restarted with fresh seeds until the deadline (`runs/seeded/*.log`, tables partial
+while the runs finish):
+
+    cell                              no hint    random roots    witness roots
+    Pegasus 3, 80 percent short        3/12         3/12            12/12
+    Zephyr 2, 80 percent short         1/12         0/12            12/12
+    Pegasus 6, 80 percent short        0/2          0/2             2/2      (300 s; plain is 0 at 20x budget)
+    Zephyr 4, 80 percent short         0/2          0/2             2/2
+
+Random roots do nothing, so the effect is the information in the roots, not the act of
+seeding; and with the right roots the completion takes under a second at 680 qubits. The
+constructive policy places well and cannot finish; minorminer finishes and cannot place. The
+learned embedder is therefore the hybrid: a policy that predicts roots, minorminer's search as
+the completion, measured against unseeded minorminer at the same deadline. Two runs decide
+the shape of the learning problem: how accurate the roots must be (`*_tolerance.log`: half,
+quarter, one-step-noisy witness roots) and what the current PLACE-only policy's roots are
+worth (`runs/hybrid/*.log`); its first lines show it placing every variable in seconds and
+agreeing with the witness on almost none.
 
 ## The constructive policy so far: it places, it does not finish
 
