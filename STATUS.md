@@ -18,7 +18,7 @@ never depends on memory.
 | Task 12 | witness replay through the construction API | `results/fill/*_replay_{hint,nohint}.log` | **done**: with the witness as the generator's preference, a valid COMMIT on 48/48 instances per host, every cell, 400 to 620 decisions, 200 to 530 s; with the unhinted heuristic order, none. Imitation records collected; prioritiser training |
 | direction 3 | adaptive allocation of reads vs uniform, real evaluator, disjoint assessment | `results/adaptive/*.log` | **done, replicated**: successive halving matches uniform at half the reads on both hosts, -0.002 [-0.008, +0.004] Zephyr and +0.002 [-0.004, +0.009] Pegasus; UCB slightly worse; random -0.11 to -0.12 |
 | curriculum baseline | anytime minorminer on Pegasus 3 and Zephyr 2 fill corpora, 12 a cell, deadlines 10 to 120 s | `results/small/*_anytime.log` | **done**: short chains from 80 percent 0 to 0.17 at 120 s with 20 to 40 attempts; medium chains 0.42 / 0.17 (Pegasus 3) and 0.75 / 0.08 (Zephyr 2) at 90 / 95 percent |
-| hybrid | policy roots then minorminer; seeded-minorminer tolerance arms | apollo `runs/seeded/*.log`, `runs/hybrid/*.log` | witness roots turn 0 into 12/12 at 80 percent short chains on both small hosts and 2/2 so far on both big hosts; policy roots and tolerance running |
+| hybrid | policy roots then minorminer; seeded-minorminer tolerance arms | apollo `runs/seeded/*.log`, `runs/hybrid/*.log` | witness roots turn 0 into 12/12 at 80 percent short chains on both small hosts and 2/2 so far on both big hosts; policy roots and tolerance running; big-host seeded tables done: witness roots 1.00 to 85 percent on Pegasus 6 and Zephyr 4, plain router 0 on short chains from 80 percent |
 | hybrid v3, validity | fair protocol: both arms search until 60 s and select by measurement, full-host budget, curriculum hosts | apollo `runs/hybrid/v3_valid_*.log` | iter 19: policy+search 0.53 vs router+search 0.47 (Pegasus 3, init), 0.50 vs 0.47 (scratch), 0.40 vs 0.40 (Zephyr 2); short chains 0 on both; no learned gain yet |
 | hybrid v3, quality | same, paired residual on a fresh block where both valid | apollo `runs/hybrid/v3_quality_*.log` | iter 19: +0.0071 [-0.0112, +0.0253] over 14 (Pegasus 3), +0.0089 [-0.0016, +0.0198] over 12 (Zephyr 2), positive is worse; no learned gain |
 | contact policy, low fill | contact growth vs random growth vs the start vs four fresh router draws, all with measured selection | goose `runs/contact/pegasus6.log`, `zephyr4.log` | Pegasus 6: restart minus start +0.141; random growth -0.075, policy -0.104 below it. Zephyr 4: restart +0.139; random -0.060, policy -0.063 below it. Both hosts: growing one draw loses to drawing again |
@@ -431,8 +431,7 @@ the platform deploys; it is reported beside the standard one.
 ## The roots are the missing information: minorminer seeded with witness roots
 
 minorminer accepts initial chains. Seeded with one qubit per variable taken from the
-witness, restarted with fresh seeds until the deadline (`runs/seeded/*.log`, tables partial
-while the runs finish):
+witness, restarted with fresh seeds until the deadline (`results/seeded/*.log`):
 
     cell (12 a cell, 60 s)             no hint    random roots    witness roots   secs, witness
     Pegasus 3, 80 percent short         0.25         0.25            1.00           0
@@ -441,9 +440,26 @@ while the runs finish):
     Zephyr 2, 80 percent short          0.08         0.00            1.00           0
     Zephyr 2, 85 / 90 / 95 short        0 / 0 / 0    0 / 0 / 0       1 / 1 / 1      0 to 1
     Zephyr 2, 90 / 95 medium            0.67 / 0.17  0.75 / 0.17     1 / 1          0
-    Pegasus 6 and Zephyr 4, 80 short    0            0               1.00 so far    (300 s; plain is 0 at 20x budget)
 
-Full tables in `results/seeded/pegasus3.log`, `zephyr2.log`; the big-host runs are in progress.
+Target hardware, 6 a cell, 300 s budget (`results/seeded/pegasus6.log`, `zephyr4.log`):
+
+    cell                     no hint    witness roots   random roots   secs, none   secs, witness
+    Pegasus 6, 80 medium      1.00        1.00            0.33            21            0
+    Pegasus 6, 80 short       0.00        1.00            0.00           312            2
+    Pegasus 6, 85 med/short   0.17/0.00   1.00/1.00       0/0            261/315        1/1
+    Pegasus 6, 90 med/short   0/0         0.83/0.83       0/0            309/313      124/89
+    Pegasus 6, 95 med/short   0/0         0.17/0.50       0/0            309/307      270/188
+    Zephyr 4, 80 medium       1.00        1.00            0.83             2            0
+    Zephyr 4, 80 short        0.00        1.00            0.00           313            0
+    Zephyr 4, 85 med/short    0.83/0.00   1.00/1.00       0.83/0         56/311         0/1
+    Zephyr 4, 90 med/short    0.33/0.00   1.00/1.00       0.33/0        207/308        17/41
+    Zephyr 4, 95 med/short    0/0         0.50/0.33       0/0           309/309      166/235
+
+Same regime on the hardware the paper targets: the plain router is 0 on short chains from 80
+percent and times out at 300 s; witness roots complete every cell to 85 percent in seconds,
+most of 90 percent in one to two minutes, and a third to a half of 95 percent; random roots
+add nothing. Full tables in `results/seeded/pegasus3.log`, `zephyr2.log`, `pegasus6.log`,
+`zephyr4.log`.
 
 Random roots do nothing, so the effect is the information in the roots, not the act of
 seeding; and with the right roots the completion takes under a second at 680 qubits. The
