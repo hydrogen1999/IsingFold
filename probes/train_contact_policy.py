@@ -279,8 +279,8 @@ def main() -> int:
         model.eval()
         rows = []
         unavailable_starts = 0
-        candidate_failures = {"policy": 0, "random": 0}
-        arm_failures = {"policy": 0, "random": 0}
+        candidate_failures = {"policy": 0, "random": 0, "restart": 0}
+        arm_failures = {"policy": 0, "random": 0, "restart": 0}
         initial_occupancy = []
         for k, t in enumerate(eval_tasks):
             start, fc = start_of(t)
@@ -294,7 +294,7 @@ def main() -> int:
             initial_occupancy.append(sum(len(c) for c in start.values()) / t.host.number_of_nodes())
             m = spend_of(t, start)
             arms = {}
-            for name in ("policy", "random"):
+            for name in ("policy", "random", "restart"):
                 cands = []
                 for e in range(a.eval_k):
                     # Fixed validation seeds at every checkpoint; no mutation of training RNG.
@@ -302,8 +302,16 @@ def main() -> int:
                     if name == "policy":
                         with torch.no_grad():
                             ch, _ = episode(t, start, model, fc, m, a.temperature, eval_rng, train=True)
-                    else:
+                    elif name == "random":
                         ch = random_episode(t, start, m, eval_rng)
+                    else:
+                        # The control that decides the claim: the resource-first router drawn
+                        # afresh, as many times as the other arms propose, selected and
+                        # assessed the same way. Without it the start is one draw against a
+                        # search of K and the comparison is not the paper's.
+                        ch = mm(t.logical, t.host, int(block_seed(a.seed, "validation-restart", t.name, e)) % (2 ** 31))
+                        if ch is None:
+                            ch = start
                     cands.append(ch)
                 def arm_measure(chains, seed, assess):
                     return measure(t, chains, seed, a.assess_reads if assess else a.reads)
@@ -334,6 +342,9 @@ def main() -> int:
         pr = boot(lambda r: r["policy"] - r["random"]); ps = boot(lambda r: r["policy"] - r["start"]); rs = boot(lambda r: r["random"] - r["start"])
         print("  %s validation over %d: policy-random %+.4f [%+.4f, %+.4f] | policy-start %+.4f [%+.4f, %+.4f] | random-start %+.4f [%+.4f, %+.4f]"
               % (tag, len(rows), *pr, *ps, *rs), flush=True)
+        rt = boot(lambda r: r["restart"] - r["start"]); prt = boot(lambda r: r["policy"] - r["restart"]); rrt = boot(lambda r: r["random"] - r["restart"])
+        print("  %s control: restart-start %+.4f [%+.4f, %+.4f] | policy-restart %+.4f [%+.4f, %+.4f] | random-restart %+.4f [%+.4f, %+.4f]"
+              % (tag, *rt, *prt, *rrt), flush=True)
         return float(pr[0])
 
     def save_checkpoint(path):
