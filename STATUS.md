@@ -21,7 +21,7 @@ never depends on memory.
 | hybrid | policy roots then minorminer; seeded-minorminer tolerance arms | apollo `runs/seeded/*.log`, `runs/hybrid/*.log` | witness roots turn 0 into 12/12 at 80 percent short chains on both small hosts and 2/2 so far on both big hosts; policy roots and tolerance running; big-host seeded tables done: witness roots 1.00 to 85 percent on Pegasus 6 and Zephyr 4, plain router 0 on short chains from 80 percent |
 | hybrid v3, validity | fair protocol: both arms search until 60 s and select by measurement, full-host budget, curriculum hosts | apollo `runs/hybrid/v3_valid_*.log`, copies in `results/hybrid/` | 60 iterations: policy+search 0.50 vs router+search 0.47 at every checkpoint (Pegasus 3, init and scratch), 0.37 to 0.40 vs 0.40 (Zephyr 2); valid candidates equal in both arms at every checkpoint, so the layouts change no instance's completability. Null, closed |
 | hybrid v3, quality | same, paired residual on a fresh block where both valid | apollo `runs/hybrid/v3_quality_*.log`, copies in `results/hybrid/` | iter 39: +0.0081 [-0.0129, +0.0277] over 14 (Pegasus 3), +0.0065 [-0.0064, +0.0176] over 12 (Zephyr 2), positive is worse; null, closed |
-| selection rules | the same 8 router draws per instance chosen by: first draw, random, fewest qubits, shortest chain, measurement (256 reads), oracle (reads the assessment); assessed on a fresh 512-read block, registered schedule | apollo `runs/rules/pegasus6.log`, `zephyr4.log`; copies in `results/rules/` | p_solve minus first draw: fewest qubits +0.042 / +0.041 (intervals touch 0), measured +0.147 / +0.153, oracle +0.163 / +0.163 (Pegasus 6 / Zephyr 4, 30 instances each, every draw valid). Measurement takes 90 percent of the best-of-8 ceiling; the resource rule takes a quarter |
+| selection rules | the same 8 router draws per instance chosen by: first draw, random, fewest qubits, shortest chain, measurement (256 reads), oracle (reads the assessment); assessed on a fresh 512-read block, registered schedule | apollo `runs/rules/pegasus6.log`, `zephyr4.log`; copies in `results/rules/` | p_solve minus first draw: fewest qubits +0.042 / +0.041 (intervals touch 0), measured +0.147 / +0.153, oracle +0.163 / +0.163 (Pegasus 6 / Zephyr 4, 30 instances each, every draw valid). Measurement takes 90 percent of the best-of-8 ceiling; the resource rule takes a quarter. Sweep: 64 reads a draw already take 91 to 93 percent of the oracle at K = 8; measured +0.105 / +0.120 at K = 4 and +0.169 / +0.161 at K = 16; fewest qubits stays at +0.04 at every K |
 | layout v4 (PR #2, branch `7b465f3`, not merged) | all-free root support, capacity features, contextual actor-critic, witness-root warm start; arms legacy, support, capacity, warm, seed 0, Pegasus 3 and Zephyr 2 | apollo `~/prj_IsingFold_pr2/runs/hybrid_v4/{legacy,support,capacity,warm}_{pegasus3,zephyr2}_s0.log` (separate checkout of the PR) | launched and stopped 2026-09-16 at the user's request before the first training evaluation, with every other policy-then-router arm; 111 of its unit tests pass locally; not merged |
 | contact policy, low fill | contact growth vs random growth vs the start vs four fresh router draws, all with measured selection | goose `runs/contact/pegasus6.log`, `zephyr4.log` | Pegasus 6: restart minus start +0.141; random growth -0.075, policy -0.104 below it. Zephyr 4: restart +0.139; random -0.060, policy -0.063 below it. Both hosts: growing one draw loses to drawing again |
 | contact policy, high fill | same, starting from the planted witness at 80 to 95 percent occupancy, budget = the space left, objective = energy residual, frontier features, occupancy traced | goose `runs/contact/*_fill.log` | running (post-merge) |
@@ -411,6 +411,28 @@ the oracle's gain on both hosts. This is the platform's central number, on the t
 hardware, with no failure accounting to explain: the objective is measurable and the
 resource proxy is not a substitute for measuring it. It also agrees with the contact
 control (+0.141 and +0.139 for four draws with the same selection) within noise.
+
+How many draws and how many reads (`results/rules/*_k{4,8,16}_r{64,128,256}.log`, same
+instances, same draws for a given K, p_solve minus the first draw):
+
+    draws K, reads per draw     fewest qubits    measured           oracle       Pegasus 6
+    K = 4,  256                  +0.037           +0.105             +0.113
+    K = 8,   64                  +0.042           +0.151             +0.163
+    K = 8,  128                  +0.042           +0.149             +0.163
+    K = 8,  256                  +0.042           +0.147             +0.163
+    K = 16, 256                  +0.048           +0.169             +0.187
+                                                                                  Zephyr 4
+    K = 4,  256                  +0.012           +0.120             +0.131
+    K = 8,   64                  +0.041           +0.148             +0.163
+    K = 8,  128                  +0.041           +0.150             +0.163
+    K = 8,  256                  +0.041           +0.153             +0.163
+    K = 16, 256                  +0.043           +0.161             +0.173
+
+Sixty-four reads a draw already take 91 to 93 percent of the oracle's gain at K = 8, so the
+measurement that separates draws is cheap; the gain grows with K roughly like the best of K
+independent draws should, and the resource rule stays at +0.04 at every K. The full
+platform cost of best-of-8 on these hosts is eight router draws of about a second each and
+512 reads in total, against a single draw with no reads.
 
 ## Hybrid v3 is a null: policy layouts do not change what the router can complete
 
