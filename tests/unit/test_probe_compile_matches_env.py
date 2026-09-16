@@ -56,3 +56,16 @@ def test_probe_compiler_uses_the_environment_strength_registry():
     assert shown.strength == pytest.approx(expected.strength)
     assert dict(shown.h_phys) == pytest.approx(dict(expected.h_phys))
     assert {k: v for k, v in shown.j_phys.items()} == pytest.approx(dict(expected.j_phys))
+
+
+def test_legacy_flag_reproduces_the_old_mean_j_strength_and_is_not_the_default():
+    from train_successor import compile_for
+    from _context import host_context
+
+    _, problem, host, chains = _fixture()
+    ctx = host_context(8)
+    legacy = compile_for(_Task(problem, host), ctx, chains, index=1, legacy=True)
+    corrected = compile_for(_Task(problem, host), ctx, chains, index=1)
+    mean_abs_j = (1.0 + 0.25 + 2.0) / 3.0
+    assert legacy.strength == pytest.approx(mean_abs_j * ctx.strength_ratios[1])
+    assert corrected.strength != pytest.approx(legacy.strength)

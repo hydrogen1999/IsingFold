@@ -34,25 +34,31 @@ from train_quality import rank_corr
 FRESH_BASE = 95_000_000
 
 
-def compile_for(task, ctx, chains, index=1):
+def compile_for(task, ctx, chains, index=1, legacy=False):
     """The program the evaluator actually ran for this embedding at the registered index.
 
     The strength comes from the same registry the environment uses, ratio times the RMS
     coefficient scale of the instance (ADR-001). An earlier version of this function used ratio
     times mean|J|, which on the fixtures put the shown strength 1 to 44 percent above the
-    evaluated one; tests/unit/test_probe_compile_matches_env.py pins the two together.
+    evaluated one; tests/unit/test_probe_compile_matches_env.py pins the two together. The
+    old rule is kept behind ``legacy`` for one purpose: the paired comparison of the two
+    encodings on identical labels (plan, Task 7). It is never the default.
     """
     idx = min(index, len(ctx.strength_ratios) - 1)
-    strengths = strength_registry(task.problem, ctx.strength_ratios, ctx.epsilon_strength)
+    if legacy:
+        mags = [abs(v) for v in task.problem.j.values()] or [1.0]
+        strength = float(np.mean(mags)) * ctx.strength_ratios[idx]
+    else:
+        strength = strength_registry(task.problem, ctx.strength_ratios, ctx.epsilon_strength)[idx]
     try:
-        return compile_program(chains, task.host, task.problem, strengths[idx], idx,
+        return compile_program(chains, task.host, task.problem, strength, idx,
                                field_limit=ctx.field_limit, coupler_limit=ctx.coupler_limit)
     except Exception:
         return None
 
 
 def build(states, ctx, device, tag, use_coords=False, use_physics=False,
-          use_space=False):
+          use_space=False, legacy=False):
     """Compile every labelled successor once; the graphs are what the model trains on."""
     out, dropped, started = [], 0, time.time()
     coord_cache: dict[int, object] = {}
@@ -69,7 +75,7 @@ def build(states, ctx, device, tag, use_coords=False, use_physics=False,
                 missing += 1
         rows = []
         for r in st["rows"]:
-            prog = compile_for(st["task"], ctx, r["succ"])
+            prog = compile_for(st["task"], ctx, r["succ"], legacy=legacy)
             if prog is None:
                 dropped += 1
                 continue
@@ -127,6 +133,9 @@ def main() -> int:
                          "hold this one out entirely. The cache's own split holds out lineages "
                          "of every family, which tests transfer between coefficient draws; this "
                          "tests transfer between graph structures, which is the claim.")
+    ap.add_argument("--legacy-compile", action="store_true",
+                    help="encode with the pre-ADR-001 strength (ratio times mean|J|) for the "
+                         "paired old-versus-corrected comparison only")
     ap.add_argument("--allow-stale-cache", action="store_true",
                     help="accept a cache whose provenance does not match; only for reading "
                          "old results, never for a number that will be reported")
@@ -149,9 +158,12 @@ def main() -> int:
                       "width": a.width}), flush=True)
 
     train_states = build(blob["train"], ctx, device, "training lineages", a.coords,
-                         a.physics, a.space)
+                         a.physics, a.space, legacy=a.legacy_compile)
     eval_states = build(blob["eval"], ctx, device, "held-out lineages", a.coords,
-                        a.physics, a.space)
+                        a.physics, a.space, legacy=a.legacy_compile)
+    if a.legacy_compile:
+        print("  LEGACY ENCODING: strength is ratio times mean|J|, not the evaluated program",
+              flush=True)
     if a.holdout_family:
         def family_of(st):
             # lineage ids read host-family<size>-<cell>-l<k>; the family is the second token
