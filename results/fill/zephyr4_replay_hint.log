@@ -1,0 +1,61 @@
+{"corpus": "runs/fill/zephyr4/corpus", "instances": 48, "hint": true}
+    1/48 zephyr4-fill80-a3.0-0      valid   steps   445   248.9s  placed 1.00
+    2/48 zephyr4-fill80-a3.0-1      valid   steps   445   245.4s  placed 1.00
+    3/48 zephyr4-fill80-a3.0-2      valid   steps   447   244.0s  placed 1.00
+    4/48 zephyr4-fill80-a3.0-3      valid   steps   439   243.9s  placed 1.00
+    5/48 zephyr4-fill80-a3.0-4      valid   steps   436   247.9s  placed 1.00
+    6/48 zephyr4-fill80-a3.0-5      valid   steps   441   250.0s  placed 1.00
+    7/48 zephyr4-fill80-a2.0-0      valid   steps   418   206.2s  placed 1.00
+    8/48 zephyr4-fill80-a2.0-1      valid   steps   413   196.4s  placed 1.00
+    9/48 zephyr4-fill80-a2.0-2      valid   steps   429   223.8s  placed 1.00
+   10/48 zephyr4-fill80-a2.0-3      valid   steps   418   202.8s  placed 1.00
+   11/48 zephyr4-fill80-a2.0-4      valid   steps   398   183.6s  placed 1.00
+   12/48 zephyr4-fill80-a2.0-5      valid   steps   419   207.5s  placed 1.00
+   13/48 zephyr4-fill85-a3.0-0      valid   steps   472   296.8s  placed 1.00
+   14/48 zephyr4-fill85-a3.0-1      valid   steps   478   300.7s  placed 1.00
+   15/48 zephyr4-fill85-a3.0-2      valid   steps   470   283.8s  placed 1.00
+   16/48 zephyr4-fill85-a3.0-3      valid   steps   473   299.9s  placed 1.00
+   17/48 zephyr4-fill85-a3.0-4      valid   steps   474   301.3s  placed 1.00
+   18/48 zephyr4-fill85-a3.0-5      valid   steps   477   303.0s  placed 1.00
+   19/48 zephyr4-fill85-a2.0-0      valid   steps   439   229.1s  placed 1.00
+   20/48 zephyr4-fill85-a2.0-1      valid   steps   459   250.6s  placed 1.00
+   21/48 zephyr4-fill85-a2.0-2      valid   steps   442   223.2s  placed 1.00
+   22/48 zephyr4-fill85-a2.0-3      valid   steps   428   216.2s  placed 1.00
+   23/48 zephyr4-fill85-a2.0-4      valid   steps   447   238.3s  placed 1.00
+   24/48 zephyr4-fill85-a2.0-5      valid   steps   442   229.5s  placed 1.00
+   25/48 zephyr4-fill90-a3.0-0      valid   steps   501   339.9s  placed 1.00
+   26/48 zephyr4-fill90-a3.0-1      valid   steps   498   347.9s  placed 1.00
+   27/48 zephyr4-fill90-a3.0-2      valid   steps   498   341.7s  placed 1.00
+   28/48 zephyr4-fill90-a3.0-3      valid   steps   505   341.0s  placed 1.00
+   29/48 zephyr4-fill90-a3.0-4      valid   steps   500   340.4s  placed 1.00
+   30/48 zephyr4-fill90-a3.0-5      valid   steps   498   341.2s  placed 1.00
+   31/48 zephyr4-fill90-a2.0-0      valid   steps   482   280.3s  placed 1.00
+   32/48 zephyr4-fill90-a2.0-1      valid   steps   466   256.7s  placed 1.00
+   33/48 zephyr4-fill90-a2.0-2      valid   steps   467   264.0s  placed 1.00
+   34/48 zephyr4-fill90-a2.0-3      valid   steps   475   272.0s  placed 1.00
+   35/48 zephyr4-fill90-a2.0-4      valid   steps   455   247.6s  placed 1.00
+   36/48 zephyr4-fill90-a2.0-5      valid   steps   459   249.6s  placed 1.00
+   37/48 zephyr4-fill95-a3.0-0      valid   steps   517   375.5s  placed 1.00
+   38/48 zephyr4-fill95-a3.0-1      valid   steps   532   403.2s  placed 1.00
+   39/48 zephyr4-fill95-a3.0-2      valid   steps   521   370.6s  placed 1.00
+   40/48 zephyr4-fill95-a3.0-3      valid   steps   532   401.4s  placed 1.00
+   41/48 zephyr4-fill95-a3.0-4      valid   steps   532   383.2s  placed 1.00
+   42/48 zephyr4-fill95-a3.0-5      valid   steps   528   385.9s  placed 1.00
+   43/48 zephyr4-fill95-a2.0-0      valid   steps   491   296.7s  placed 1.00
+   44/48 zephyr4-fill95-a2.0-1      valid   steps   492   291.0s  placed 1.00
+   45/48 zephyr4-fill95-a2.0-2      valid   steps   502   308.0s  placed 1.00
+   46/48 zephyr4-fill95-a2.0-3      valid   steps   499   297.2s  placed 1.00
+   47/48 zephyr4-fill95-a2.0-4      valid   steps   498   309.4s  placed 1.00
+   48/48 zephyr4-fill95-a2.0-5      valid   steps   490   291.3s  placed 1.00
+
+  cell               n  reached    steps     secs stops
+  fill80-a2.0        6     1.00      416    203.4 {}
+  fill80-a3.0        6     1.00      442    246.7 {}
+  fill85-a2.0        6     1.00      443    231.1 {}
+  fill85-a3.0        6     1.00      474    297.6 {}
+  fill90-a2.0        6     1.00      467    261.7 {}
+  fill90-a3.0        6     1.00      500    342.0 {}
+  fill95-a2.0        6     1.00      495    298.9 {}
+  fill95-a3.0        6     1.00      527    386.6 {}
+
+WITNESS REPLAY DONE

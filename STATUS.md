@@ -15,7 +15,7 @@ never depends on memory.
 | Task 9 | quality endpoint at the fill regime under the registered schedule, paired with intervals. Decides feasibility-only or not | apollo `runs/fill/*_witness_registered.log` -> `results/fill/` | **done** both hosts: residual discriminates, -0.021 [-0.030, -0.010] Zephyr and -0.032 [-0.047, -0.017] Pegasus at 80 percent |
 | Task 10 | anytime minorminer with a wall-time deadline, 30 to 300 s | `results/fill/*_anytime.log` | **done** both hosts: Zephyr at 300 s medium chains 1.00 / 0.83 / 0.33 / 0 at 80 / 85 / 90 / 95 percent, short chains 0; Pegasus only 80 percent medium reaches 1.00, every other cell 0 at every deadline. ADR-003's three gates are passed on both hosts |
 | budget x20 | minorminer at 200 tries on the fill corpora | `results/fill/*_budget.log` | **done** both hosts: Pegasus 80 percent medium 0.33 -> 0.83 -> 1.00 at 10, 50, 200 tries, 85 percent 0 -> 0.17 -> 0.17, everything else 0 at 300 to 480 s a draw; Zephyr done: 85 percent medium chains 0.50 -> 0.67 -> 0.83 at 10, 50, 200 tries; 90 percent stays 0.33; short chains stay 0 at 260 to 350 s a draw |
-| Task 12 | witness replay through the construction API | `tests/unit/test_witness_replay.py`, apollo `runs/fill/*_replay_{nohint,hint}.log` | grammar sufficient at scale with the witness as prioritiser (first Zephyr instance, 366 variables: valid in 445 decisions, 267 s); unhinted heuristic order covers almost nothing; full corpus replay running |
+| Task 12 | witness replay through the construction API | `results/fill/*_replay_{hint,nohint}.log` | **done**: with the witness as the generator's preference, a valid COMMIT on 48/48 instances per host, every cell, 400 to 620 decisions, 200 to 530 s; with the unhinted heuristic order, none. Imitation records collected; prioritiser training |
 | direction 3 | adaptive allocation of reads vs uniform, real evaluator, disjoint assessment | `results/adaptive/*.log` | **done, replicated**: successive halving matches uniform at half the reads on both hosts, -0.002 [-0.008, +0.004] Zephyr and +0.002 [-0.004, +0.009] Pegasus; UCB slightly worse; random -0.11 to -0.12 |
 | curriculum baseline | anytime minorminer on Pegasus 3 and Zephyr 2 fill corpora, 12 a cell, deadlines 10 to 120 s | `results/small/*_anytime.log` | **done**: short chains from 80 percent 0 to 0.17 at 120 s with 20 to 40 attempts; medium chains 0.42 / 0.17 (Pegasus 3) and 0.75 / 0.08 (Zephyr 2) at 90 / 95 percent |
 | direction 4, RL | REINFORCE on the constructive policy (policy = prioritiser), from scratch, Pegasus 3 and Zephyr 2 fill corpora, deadline 60 s an episode; anytime baseline on the same corpora at 10 to 120 s | apollo `runs/rl/*_scratch.log`, goose `runs/small/*_anytime.log` | running |
@@ -351,7 +351,14 @@ quality endpoint at the fill regime exists and it is the residual under the regi
 schedule; the cells are small and the thirty-per-cell corpus of Task 10 is where it gets its
 final interval.
 
-Task 12 at corpus scale: the first replay on Pegasus 6 stalled within four decisions, for two
+Task 12 at corpus scale, final: with the witness as the generator's preference the
+construction environment reaches a valid COMMIT on every instance of both fill corpora,
+48 of 48 per host, every cell from 80 to 95 percent with short and medium chains, in 400 to
+620 decisions and 200 to 530 seconds (`results/fill/*_replay_hint.log`). With the unhinted
+heuristic order it reaches none (`*_replay_nohint.log`). The grammar is sufficient; the
+prioritiser is the whole question, and its imitation records are 125 and 94 MB.
+
+Task 12 at corpus scale, how it got there: the first replay on Pegasus 6 stalled within four decisions, for two
 reasons found by direct diagnosis, both invisible at 100 qubits. One is structural: a ROUTE may
 only add qubits that realise a demand between placed chains, so a chain's further qubits
 could never appear before the neighbours that need to touch them, and those neighbours could
