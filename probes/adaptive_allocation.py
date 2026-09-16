@@ -51,11 +51,19 @@ def main() -> int:
                          "arms prior (its argmax, no reads) and halving+prior (its bottom half "
                          "dropped unread, halving on the rest at the same total reads)")
     ap.add_argument("--width", type=int, default=64)
+    ap.add_argument("--allow-stale-cache", action="store_true",
+                    help="accept a cache whose recorded code hash differs; only when the change "
+                         "is known not to touch labelling, and it is printed")
     a = ap.parse_args()
     with open(a.cache, "rb") as fh:
         blob = pickle.load(fh)
     ctx = host_context(a.qubit_cap)
-    check_provenance(blob, blob["key"][0], ctx)
+    try:
+        check_provenance(blob, blob["key"][0], ctx)
+    except Exception as e:
+        if not a.allow_stale_cache:
+            raise
+        print("  WARNING, stale cache accepted by request: %s" % str(e).splitlines()[0], flush=True)
     states = blob[a.split]
     roots = sorted({st["lineage"] for st in states})[: a.lineages]
     states = [st for st in states if st["lineage"] in set(roots)]
