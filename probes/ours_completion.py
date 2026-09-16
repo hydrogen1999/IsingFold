@@ -1,4 +1,4 @@
-"""Our completion search against minorminer's, both from the same roots.
+"""Our completion search (negotiated congestion) against minorminer's, both from the same roots.
 
 Arms, each from witness roots and from a random half of them: our backtracking completion
 (route_search.complete) under the instance's qubit budget and a deadline, and minorminer
@@ -20,7 +20,7 @@ from isingfold.rl.data.generate import load_instances
 
 from _context import qubit_budget
 from placement_completion import witness_roots
-from route_search import complete
+from route_search import negotiate
 from seeded_minorminer import attempt, valid
 
 
@@ -63,7 +63,7 @@ def main() -> int:
                     break
                 chains[v] = frozenset({best}); occupied.add(best)
             t0 = time.time()
-            ours = complete(task.host, task.logical, chains, budget, deadline=a.deadline) if len(chains) == len(variables) else None
+            ours = negotiate(task.host, task.logical, chains, budget, deadline=a.deadline) if len(chains) == len(variables) else None
             ours_ok = ours is not None and valid(ours, task.logical, task.host)
             ours_secs = time.time() - t0
             t0, mm, n = time.time(), None, 0

@@ -143,3 +143,159 @@ def complete(host, logical, roots, budget, deadline=10.0, max_options=4, max_bac
     ok = solve(demands)
     complete.last = {"backtracks": backtracks[0], "secs": time.time() - t0, "demands": len(demands)}
     return {v: frozenset(c) for v, c in chains.items()} if ok else None
+
+
+# ---------------------------------------------------------------------------------------
+# Negotiated-congestion completion (rip up and reroute), the completion the embedder uses.
+# ---------------------------------------------------------------------------------------
+import heapq
+
+
+def _dijkstra_route(host, sources, targets, cost, limit_cost=1e9):
+    """Cheapest path from any source to any target; returns the interior qubits."""
+    dist = {q: 0.0 for q in sources}
+    prev = {q: None for q in sources}
+    heap = [(0.0, str(q), q) for q in sources]
+    heapq.heapify(heap)
+    while heap:
+        d, _, q = heapq.heappop(heap)
+        if d > dist.get(q, 1e18):
+            continue
+        if q in targets and q not in sources:
+            path = []
+            x = prev[q]
+            while x is not None and x not in sources:
+                path.append(x)
+                x = prev[x]
+            return list(reversed(path)), d
+        if d > limit_cost:
+            return None, d
+        for r in host.neighbors(q):
+            c = 0.0 if r in targets else cost(r)
+            nd = d + c
+            if nd < dist.get(r, 1e18):
+                dist[r] = nd
+                prev[r] = q
+                heapq.heappush(heap, (nd, str(r), r))
+    return None, float("inf")
+
+
+def negotiate(host, logical, roots, budget, deadline=10.0, max_rounds=200, pressure=2.0,
+              history_step=1.0):
+    """Complete an embedding from roots by negotiated congestion.
+
+    Every unmet demand is routed by the cheapest path on the host where a free qubit costs
+    one and a qubit already held by another chain costs more, rising each round it stays
+    contested. Overlaps are allowed while routing and removed by rerouting the demands that
+    caused them, until no qubit is shared, the qubit budget is respected, or the deadline
+    passes. Chains are the root plus every interior segment routed for them. This is the
+    scheme behind minorminer and PathFinder, written for the case where the roots are
+    given, which is what the learned part supplies.
+    """
+    t0 = time.time()
+    root_of = {v: next(iter(c)) for v, c in roots.items()}
+    for v in logical.nodes():
+        if v not in root_of:
+            return None
+    demands = [(u, v) for u, v in logical.edges()]
+    seg = {}                      # demand -> (owner, [qubits])
+    history = {}                  # qubit -> accumulated congestion history
+
+    def chains_now():
+        ch = {v: {root_of[v]} for v in logical.nodes()}
+        for key, (owner, qs) in seg.items():
+            ch[owner].update(qs)
+        return ch
+
+    def owners_of(ch):
+        own = {}
+        for v, qs in ch.items():
+            for q in qs:
+                own.setdefault(q, set()).add(v)
+        return own
+
+    def route_one(u, v, ch, own):
+        """Route demand (u, v) against the current occupancy; interior split between them."""
+        cu, cv = ch[u], ch[v]
+
+        def cost(r):
+            holders = own.get(r, set()) - {u, v}
+            return 1.0 + pressure * len(holders) + history.get(r, 0.0)
+
+        path, _ = _dijkstra_route(host, cu, cv, cost)
+        if path is None:
+            return False
+        k = (len(path) + 1) // 2
+        seg[(u, v)] = (u, path[:k])
+        if path[k:]:
+            seg[(u, v, "tail")] = (v, path[k:])
+        else:
+            seg.pop((u, v, "tail"), None)
+        for q in path[:k]:
+            own.setdefault(q, set()).add(u); ch[u].add(q)
+        for q in path[k:]:
+            own.setdefault(q, set()).add(v); ch[v].add(q)
+        return True
+
+    def drop(u, v, ch, own):
+        for key in ((u, v), (u, v, "tail")):
+            if key in seg:
+                owner, qs = seg.pop(key)
+                for q in qs:
+                    ch[owner].discard(q)
+                    s = own.get(q)
+                    if s:
+                        s.discard(owner)
+                        if not s:
+                            del own[q]
+
+    rounds = 0
+    ch = chains_now()
+    own = owners_of(ch)
+    # first pass: every unmet demand, against whatever is there
+    for (u, v) in demands:
+        if not _touch(host, ch[u], ch[v]):
+            if not route_one(u, v, ch, own):
+                negotiate.last = {"rounds": 0, "secs": time.time() - t0, "why": "unroutable"}
+                return None
+    while time.time() - t0 < deadline and rounds < max_rounds:
+        shared = {q for q, s in own.items() if len(s) > 1}
+        if not shared:
+            total = sum(len(c) for c in ch.values())
+            if total <= budget:
+                negotiate.last = {"rounds": rounds, "secs": time.time() - t0, "why": "done"}
+                return {v: frozenset(c) for v, c in ch.items()}
+            # over budget: reroute the longest segments under more pressure
+            longest = sorted(((k, o, qs) for k, (o, qs) in seg.items()), key=lambda t: -len(t[2]))
+            for key, _, _ in longest[: max(1, len(longest) // 8)]:
+                drop(key[0], key[1], ch, own)
+                if not route_one(key[0], key[1], ch, own):
+                    negotiate.last = {"rounds": rounds, "secs": time.time() - t0, "why": "unroutable"}
+                    return None
+            pressure *= 1.5
+            rounds += 1
+            continue
+        for q in shared:
+            history[q] = history.get(q, 0.0) + history_step
+        # rip up and reroute one demand at a time, the others staying in place
+        conflicted = []
+        for key, (owner, qs) in list(seg.items()):
+            if len(key) == 2 and any(q in shared for q in qs):
+                conflicted.append(key)
+            elif len(key) == 3 and any(q in shared for q in qs) and key[:2] not in conflicted:
+                conflicted.append(key[:2])
+        # a root shared with a segment: the segment's demand is rerouted
+        for q in shared:
+            for var in own.get(q, ()):
+                if root_of[var] == q:
+                    for key, (owner, qs) in list(seg.items()):
+                        if q in qs and key[:2] not in conflicted:
+                            conflicted.append(key[:2])
+        for (u, v) in conflicted:
+            drop(u, v, ch, own)
+            if not _touch(host, ch[u], ch[v]) and not route_one(u, v, ch, own):
+                negotiate.last = {"rounds": rounds, "secs": time.time() - t0, "why": "unroutable"}
+                return None
+        rounds += 1
+    negotiate.last = {"rounds": rounds, "secs": time.time() - t0}
+    return None
