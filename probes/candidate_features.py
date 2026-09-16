@@ -133,3 +133,48 @@ class FeatureContext:
             b = self.pair(affected[1], [q for q in added if q not in chains.get(affected[0], ())], chains, opcode)
             return (a + b) / 2.0
         return self.pair(variable, list(added), chains, opcode)
+
+
+FRONTIER_WIDTH = 4
+
+
+def frontier_features(host, logical, chains, variable, qubit, radius=3, cap=512):
+    """What a candidate qubit opens or closes: the free space reachable from it within two
+    and three steps on the residual host, how many other chains border that space (the
+    corridors it competes for), and how many unmet logical demands of the variable it would
+    serve. These are the quantities a policy needs to avoid taking the only corridor of
+    another chain while gaining one contact for its own."""
+    occupied = {q for c in chains.values() for q in c}
+    owner = {q: v for v, c in chains.items() for q in c}
+    seen = {qubit}
+    frontier = [qubit]
+    reach2 = 0
+    competitors = set()
+    depth = 0
+    while frontier and depth < radius:
+        depth += 1
+        nxt = []
+        for q in frontier:
+            for r in host.neighbors(q):
+                if r in seen:
+                    continue
+                if r in occupied:
+                    if owner[r] != variable:
+                        competitors.add(owner[r])
+                    continue
+                seen.add(r)
+                nxt.append(r)
+                if len(seen) > cap:
+                    break
+        frontier = nxt
+        if depth == 2:
+            reach2 = len(seen) - 1
+    reach3 = len(seen) - 1
+    served = 0
+    for u in logical.neighbors(variable):
+        cu = chains.get(u, ())
+        if cu and not any(host.has_edge(a, b) for a in chains.get(variable, ()) for b in cu):
+            if any(host.has_edge(qubit, b) for b in cu):
+                served += 1
+    return [min(reach2, 64) / 64.0, min(reach3, 256) / 256.0, min(len(competitors), 8) / 8.0,
+            min(served, 4) / 4.0]

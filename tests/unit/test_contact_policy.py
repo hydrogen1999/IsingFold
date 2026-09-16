@@ -44,7 +44,8 @@ def test_contact_episode_adds_touching_qubits_only():
                          ground_energy=None, lineage="toy-l0", witness=witness)
     start = {v: frozenset(c) for v, c in witness.items() if v in problem.graph}
     torch.manual_seed(0)
-    model = Prioritiser(16)
+    from candidate_features import FRONTIER_WIDTH, WIDTH
+    model = Prioritiser(16, in_dim=WIDTH + FRONTIER_WIDTH)
     grown, logps = episode(task, start, model, FeatureContext(task), 3, 1.0, np.random.default_rng(0))
     added = sum(len(grown[v]) - len(start[v]) for v in start)
     assert 1 <= added <= 3 and len(logps) == added

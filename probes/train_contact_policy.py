@@ -32,7 +32,7 @@ from isingfold.rl.evaluate import first_commit_controller, run_controller
 
 from _context import host_context
 from _initializers import minorminer_initializer
-from candidate_features import FeatureContext
+from candidate_features import FRONTIER_WIDTH, WIDTH, FeatureContext, frontier_features
 from train_prioritiser import Prioritiser
 
 SELECT_BASE, ASSESS_BASE = 41_000_000, 42_000_000
@@ -75,7 +75,9 @@ def episode(task, start, model, fc, m, temperature, rng, train=True):
         if not moves:
             break
         frozen = {v: frozenset(c) for v, c in chains.items()}
-        feats = np.stack([fc.pair(v, [r], frozen, "ROUTE") for v, r, _ in moves])
+        feats = np.stack([np.concatenate([fc.pair(v, [r], frozen, "ROUTE"),
+                                          frontier_features(task.host, task.logical, frozen, v, r)])
+                          for v, r, _ in moves]).astype(np.float32)
         scores = model(torch.as_tensor(feats)) / temperature
         if train:
             dist = torch.distributions.Categorical(logits=scores)
@@ -119,6 +121,16 @@ def main() -> int:
     ap.add_argument("--eval-k", type=int, default=4)
     ap.add_argument("--width", type=int, default=64)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--start", default="router", choices=("router", "witness"),
+                    help="witness: begin from the planted valid embedding, which on the fill "
+                         "corpora occupies 80 to 95 percent of the host; the budget is then "
+                         "the space that is left")
+    ap.add_argument("--objective", default="utility", choices=("utility", "residual"),
+                    help="residual: the mean energy residual, lower is better, for scales "
+                         "where solve probability reads zero")
+    ap.add_argument("--fail-penalty", type=float, default=0.05,
+                    help="an episode that exceeds the budget or cannot be measured counts as the "
+                         "start's value minus this, not as missing")
     a = ap.parse_args()
     tasks = load_instances(a.corpus)
     lineages = sorted({t.lineage for t in tasks})
@@ -130,12 +142,13 @@ def main() -> int:
     ctx = host_context(a.qubit_cap)
     mm = minorminer_initializer(20)
     torch.manual_seed(a.seed)
-    model = Prioritiser(a.width)
+    model = Prioritiser(a.width, in_dim=WIDTH + FRONTIER_WIDTH)
     if a.init:
         model.load_state_dict(torch.load(a.init, map_location="cpu")["state"])
     opt = torch.optim.Adam(model.parameters(), lr=a.learning_rate)
     print(json.dumps({"corpus": a.corpus, "train": len(train_tasks), "held_out": len(eval_tasks),
-                      "spend": a.spend, "beta_range": list(ctx.beta_range)}), flush=True)
+                      "spend": a.spend, "start": a.start, "objective": a.objective,
+                      "beta_range": list(ctx.beta_range)}), flush=True)
 
     def measure(task, chains, seed, reads):
         def fixed(l, h, s):
@@ -147,19 +160,28 @@ def main() -> int:
         except Exception:
             return None
         o = out[0]
-        return float(o.utility) if o.returned_valid and o.utility is not None else None
+        if not o.returned_valid:
+            return None
+        if a.objective == "residual":
+            # sign flipped so that higher is better everywhere below
+            return -float(o.mean_energy_residual) if o.mean_energy_residual is not None else None
+        return float(o.utility) if o.utility is not None else None
 
     starts, fcs = {}, {}
 
     def start_of(task, k):
         if task.name not in starts:
-            ch = mm(task.logical, task.host, 5000 + k)
+            if a.start == "witness":
+                ch = {v: frozenset(c) for v, c in task.witness.items()}
+            else:
+                ch = mm(task.logical, task.host, 5000 + k)
             starts[task.name] = ch
             fcs[task.name] = FeatureContext(task, a.qubit_cap)
         return starts[task.name], fcs[task.name]
 
     def spend_of(start):
-        return max(1, int(round(a.spend * sum(len(c) for c in start.values()))))
+        used = sum(len(c) for c in start.values())
+        return max(1, min(int(round(a.spend * used)), a.qubit_cap - used))
 
     def evaluate(tag):
         model.eval()
@@ -205,7 +227,7 @@ def main() -> int:
     evaluate("init")
     for it in range(a.iterations):
         batch = rng.choice(len(train_tasks), size=min(a.instances_per_iteration, len(train_tasks)), replace=False)
-        loss, n, gains = 0.0, 0, []
+        loss, n, gains, rho = 0.0, 0, [], []
         for idx in batch:
             t = train_tasks[idx]
             start, fc = start_of(t, int(idx))
@@ -218,12 +240,16 @@ def main() -> int:
             eps = []
             for e in range(a.episodes_per_instance):
                 ch, logps = episode(t, start, model, fc, m, a.temperature, rng, train=True)
-                if sum(len(c) for c in ch.values()) > a.qubit_cap or not logps:
+                if not logps:
                     continue
+                used = sum(len(c) for c in ch.values())
+                if used > a.qubit_cap:
+                    eps.append((-a.fail_penalty, logps)); gains.append(-a.fail_penalty); continue
                 u = measure(t, ch, SELECT_BASE + 100 * it + 3 * int(idx) + 11 * (e + 1), a.reads)
                 if u is None:
-                    continue
+                    eps.append((-a.fail_penalty, logps)); gains.append(-a.fail_penalty); continue
                 eps.append((u - u0, logps)); gains.append(u - u0)
+                rho.append(used / t.host.number_of_nodes())
             if len(eps) < 2:
                 continue
             base = np.mean([g for g, _ in eps])
@@ -232,7 +258,7 @@ def main() -> int:
         if n:
             opt.zero_grad(); (loss / n).backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0); opt.step()
-        print("  iter %4d  mean gain %+.4f  updates %d" % (it, np.mean(gains) if gains else 0.0, n), flush=True)
+        print("  iter %4d  mean gain %+.4f  updates %d  occupancy %.2f" % (it, np.mean(gains) if gains else 0.0, n, np.mean(rho) if rho else 0.0), flush=True)
         if (it + 1) % a.eval_every == 0:
             v = evaluate("iter %d" % it)
             if v > best:

@@ -25,9 +25,9 @@ from candidate_features import WIDTH, FeatureContext
 
 
 class Prioritiser(nn.Module):
-    def __init__(self, width=64):
+    def __init__(self, width=64, in_dim=WIDTH):
         super().__init__()
-        self.net = nn.Sequential(nn.Linear(WIDTH, width), nn.SiLU(), nn.Linear(width, width),
+        self.net = nn.Sequential(nn.Linear(in_dim, width), nn.SiLU(), nn.Linear(width, width),
                                  nn.SiLU(), nn.Linear(width, 1))
 
     def forward(self, x):
