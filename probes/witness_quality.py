@@ -58,15 +58,16 @@ def main() -> int:
                                   if o.mean_energy_residual is not None else float("nan"))
 
     cells = defaultdict(lambda: {"witness": [], "mm_best": [], "mm_valid": 0, "n": 0,
-                                 "witness_res": [], "mm_best_res": []})
+                                 "witness_res": [], "mm_best_res": [], "pairs": []})
     for k, task in enumerate(tasks):
         family = task.lineage.rsplit("-", 1)[0].split("-", 1)[1].rsplit("-", 1)[0]
         cell = cells[family]
         cell["n"] += 1
+        w = None
         if task.witness:
-            u = measure(task, task.witness, 90_000_000 + k, a.assess_reads)
-            if u is not None:
-                cell["witness"].append(u[0]); cell["witness_res"].append(u[1])
+            w = measure(task, task.witness, 90_000_000 + k, a.assess_reads)
+            if w is not None:
+                cell["witness"].append(w[0]); cell["witness_res"].append(w[1])
         draws = []
         for j in range(a.k):
             ch = mm(task.logical, task.host, 5_000 + 97 * j + 1000 * k)
@@ -83,6 +84,8 @@ def main() -> int:
             u = measure(task, best, 90_000_000 + 13 * k + 7, a.assess_reads)
             if u is not None:
                 cell["mm_best"].append(u[0]); cell["mm_best_res"].append(u[1])
+                if w is not None:
+                    cell["pairs"].append((w[0] - u[0], w[1] - u[1]))
         print("  %3d/%d %s" % (k + 1, len(tasks), task.name), flush=True)
 
     print("\n  %-16s %3s %10s %9s %10s %12s %12s"
@@ -96,6 +99,21 @@ def main() -> int:
                  ("%.4f" % np.mean(c["mm_best"])) if c["mm_best"] else "-",
                  ("%.3f" % np.nanmean(c["witness_res"])) if c["witness_res"] else "-",
                  ("%.3f" % np.nanmean(c["mm_best_res"])) if c["mm_best_res"] else "-"))
+    print("\n  paired, witness minus minorminer best, on instances where both exist")
+    print("  %-16s %3s %22s %22s" % ("cell", "n", "solve probability", "energy residual"))
+    rng = np.random.default_rng(0)
+    for family in sorted(cells):
+        pairs = cells[family]["pairs"]
+        if len(pairs) < 2:
+            continue
+        d = np.array(pairs)
+        cols = []
+        for j in range(2):
+            bs = [d[rng.integers(0, len(d), len(d)), j].mean() for _ in range(4000)]
+            cols.append("%+.4f [%+.4f, %+.4f]" % (d[:, j].mean(), np.percentile(bs, 2.5),
+                                                  np.percentile(bs, 97.5)))
+        print("  %-16s %3d %22s %22s" % (family, len(d), cols[0], cols[1]))
+    print("  schedule: %s" % (ctx.beta_range if ctx.beta_range is not None else "auto"))
     print("\nWITNESS QUALITY DONE", flush=True)
     return 0
 
