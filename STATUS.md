@@ -13,7 +13,7 @@ never depends on memory.
 | Task 7 | old vs corrected encoding on identical labels, 3 seeds each, both hosts | `results/corrected/*_seed*.log` | **done, Checkpoint 2 failed**: corrected +0.003 Pegasus, +0.035 Zephyr; legacy +0.012, +0.041; no corrected interval above zero; the improvement surrogate is retired as a method |
 | Task 8 | label reliability, learnable ceiling | `results/corrected/*_reliability.log` | **done**: ceiling +0.109 / +0.122 |
 | Task 9 | quality endpoint at the fill regime under the registered schedule, paired with intervals. Decides feasibility-only or not | apollo `runs/fill/*_witness_registered.log` -> `results/fill/` | **done** both hosts: residual discriminates, -0.021 [-0.030, -0.010] Zephyr and -0.032 [-0.047, -0.017] Pegasus at 80 percent |
-| Task 10 | anytime minorminer with a wall-time deadline, 30 to 300 s. Names the regime where the tool fails at the intended budget | `results/fill/zephyr4_anytime.log`; Pegasus 44/48 | Zephyr **done**: at 300 s, medium chains 1.00 / 0.83 / 0.33 / 0 at 80 / 85 / 90 / 95 percent; short chains 0 everywhere |
+| Task 10 | anytime minorminer with a wall-time deadline, 30 to 300 s | `results/fill/*_anytime.log` | **done** both hosts: Zephyr at 300 s medium chains 1.00 / 0.83 / 0.33 / 0 at 80 / 85 / 90 / 95 percent, short chains 0; Pegasus only 80 percent medium reaches 1.00, every other cell 0 at every deadline. ADR-003's three gates are passed on both hosts |
 | budget x20 | minorminer at 200 tries on the fill corpora | `results/fill/*_budget.log` | **done** both hosts: Pegasus 80 percent medium 0.33 -> 0.83 -> 1.00 at 10, 50, 200 tries, 85 percent 0 -> 0.17 -> 0.17, everything else 0 at 300 to 480 s a draw; Zephyr done: 85 percent medium chains 0.50 -> 0.67 -> 0.83 at 10, 50, 200 tries; 90 percent stays 0.33; short chains stay 0 at 260 to 350 s a draw |
 | Task 12 | witness replay through the construction API | `tests/unit/test_witness_replay.py`, apollo `runs/fill/*_replay_{nohint,hint}.log` | grammar sufficient at scale with the witness as prioritiser (first Zephyr instance, 366 variables: valid in 445 decisions, 267 s); unhinted heuristic order covers almost nothing; full corpus replay running |
 | direction 3 | adaptive allocation of reads vs uniform, real evaluator, disjoint assessment | `results/adaptive/zephyr4.log`; Pegasus running on goose | Zephyr **done**: successive halving matches uniform at half the reads, -0.002 [-0.008, +0.004]; UCB -0.007; random -0.123 |
@@ -266,7 +266,9 @@ instances a cell (`results/fill/zephyr4_anytime.log`):
     short chains, any     0.00     0.00     0.00      0.00       2 to 5
 
 At five minutes the standard tool is at zero on every short-chain fill and at a third or
-less from 90 percent with medium chains. That is the regime a learned constructor is measured
+less from 90 percent with medium chains. Pegasus 6 is harder (`results/fill/pegasus6_anytime.log`):
+only 80 percent with medium chains reaches 1.00 at 300 s, and every other cell is at zero at
+every deadline. That is the regime a learned constructor is measured
 in, at the same deadline. With the quality endpoint (Task 9) and the encoding comparison
 (Task 7) done, the three gates of ADR-003 are passed on Zephyr; Pegasus is four instances
 from done.
