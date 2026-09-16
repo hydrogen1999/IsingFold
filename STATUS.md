@@ -235,6 +235,18 @@ finds nothing from 70 percent up on either host at 60 to 155 seconds a draw
 (`results/fill/*_exact.log`). Pegasus 6 at fifty tries: 80 percent with medium chains rises
 from 0.33 to 0.83 and 85 percent from 0 to 0.17; everything else stays at zero.
 
+Construction API, measured before any policy: on a 16-qubit toy host the environment in
+construction mode reaches COMMIT with exactly the planted witness in 12 decisions when each
+step picks a witness-consistent candidate (`tests/unit/test_witness_replay.py`). On a 100-qubit
+host with 76 variables it fails at step 0: PLACE offers 24 roots, the lexicographically first
+ones, for the first unplaced variable only, and the witness root is not among them. That, and
+the 32-decision horizon, is what Task 12 has to change before imitation is possible.
+
+The energy residual discriminates where solve probability reads zero: on Zephyr 4, under the
+auto schedule, the witness sits at 0.122 to 0.132 and minorminer's best of four at 0.142 to
+0.147 in the three cells where both exist (`results/fill/zephyr4_witness_res.log`); six
+instances a cell, no interval. The registered-schedule run with paired intervals is Task 9.
+
 ## Three facts about the fill regime, measured before anything is built for it
 
 - **The in-tree constructor is at zero.** `router_initializer`, the greedy degree-order
