@@ -171,6 +171,12 @@ def main() -> int:
         v = np.mean([r["valid"] for r in rows]); f = np.mean([r["frac"] for r in rows])
         print("  %s held-out within %.0fs: valid %.2f  demands %.3f  episodes tried %.1f  over %d instances"
               % (tag, a.deadline, v, f, np.mean([r["tries"] for r in rows]), len(rows)), flush=True)
+        # Per cell, so the number lines up with the anytime baseline's table on this corpus.
+        cells = defaultdict(list)
+        for t, r in zip(eval_tasks, rows):
+            cells[t.lineage.rsplit("-", 1)[0].split("-", 1)[1].rsplit("-", 1)[0]].append(r)
+        print("    " + "  ".join("%s %.2f/%d" % (c, np.mean([r["valid"] for r in rs]), len(rs))
+                                 for c, rs in sorted(cells.items())), flush=True)
         return v, f
 
     best = -1.0
