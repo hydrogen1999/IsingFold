@@ -36,11 +36,15 @@ class Scorer:
     """Deterministic candidate ranking from the prioritiser, or from the generator's own
     order when no model is given (the unlearned control)."""
 
-    def __init__(self, model, fc):
-        self.model, self.fc = model, fc
+    def __init__(self, model, fc, use_prefer=True):
+        self.model, self.fc, self.use_prefer = model, fc, use_prefer
 
     def prefer(self, env):
-        if self.model is None:
+        # Ranking the sixty-four offered candidates is one batched model call a step; the
+        # generator's preference is hundreds of calls a step, one per (variable, qubit)
+        # pair it considers. The two are separable, and the search can only afford the
+        # first at this host size.
+        if self.model is None or not self.use_prefer:
             return None
         def f(v, q):
             with torch.no_grad():
@@ -90,10 +94,10 @@ def run(task, scorer, ctx, forced, max_steps, deadline_at):
     return valid, steps, steps, demands_realised(task, env.state.chains)
 
 
-def search(task, scorer, deadline, max_steps, window=12, max_rank=3):
+def search(task, scorer, deadline, max_steps, window=12, max_rank=3, quotas=None):
     witness = {v: frozenset(c) for v, c in task.witness.items()}
     ctx = construction_context(qubit_budget(witness), task.logical.number_of_nodes(),
-                               task.logical.number_of_edges())
+                               task.logical.number_of_edges(), quotas=quotas)
     t0 = time.time()
     deadline_at = t0 + deadline
     attempts = 0
@@ -142,6 +146,10 @@ def main() -> int:
     ap.add_argument("--deadline", type=float, default=60.0)
     ap.add_argument("--max-steps", type=int, default=4000)
     ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--no-prefer", action="store_true",
+                    help="rank the offered candidates only; leave the generator's own order")
+    ap.add_argument("--lean", action="store_true",
+                    help="small construction quotas (22 candidates a decision) so a pass is cheap")
     a = ap.parse_args()
     tasks = load_instances(a.corpus)
     if a.limit:
@@ -150,14 +158,17 @@ def main() -> int:
     if a.scorer:
         blob = torch.load(a.scorer, map_location="cpu")
         model = Prioritiser(blob["width"]); model.load_state_dict(blob["state"]); model.eval()
+    from _context import LEAN_QUOTAS
+    quotas = LEAN_QUOTAS if a.lean else None
     print(json.dumps({"corpus": a.corpus, "instances": len(tasks), "scorer": a.scorer or None,
-                      "deadline": a.deadline}), flush=True)
+                      "deadline": a.deadline, "prefer": not a.no_prefer, "lean": a.lean}), flush=True)
     cells = defaultdict(list)
     for k, task in enumerate(tasks):
         family = task.lineage.rsplit("-", 1)[0].split("-", 1)[1].rsplit("-", 1)[0]
         witness = {v: frozenset(c) for v, c in task.witness.items()}
         fc = FeatureContext(task, qubit_budget(witness))
-        r = search(task, Scorer(model, fc), a.deadline, a.max_steps)
+        r = search(task, Scorer(model, fc, use_prefer=not a.no_prefer), a.deadline, a.max_steps,
+                   quotas=quotas)
         cells[family].append(r)
         print("  %3d/%d %-26s %s  attempts %3d  %5.0fs  demands %.3f"
               % (k + 1, len(tasks), task.name, "valid" if r["valid"] else "no   ", r["attempts"],

@@ -27,7 +27,10 @@ def host_context(qubit_cap: int, beta_range=_UNSET, **kw) -> Context:
                    beta_range=beta_range, **kw)
 
 
-def construction_context(qubit_cap: int, n_vars: int, n_edges: int, **kw) -> Context:
+LEAN_QUOTAS = {"place": 8, "route": 8, "grow": 4, "shrink": 2}
+
+
+def construction_context(qubit_cap: int, n_vars: int, n_edges: int, quotas=None, **kw) -> Context:
     """A Context whose horizon fits building an embedding of this instance from nothing.
 
     The registered default of 32 decisions was sized for improving a finished embedding. A
@@ -43,8 +46,9 @@ def construction_context(qubit_cap: int, n_vars: int, n_edges: int, **kw) -> Con
                    compiler_calls=int(DEFAULT_CAPS.compiler_calls * factor),
                    validator_calls=int(DEFAULT_CAPS.validator_calls * factor),
                    feature_work=int(DEFAULT_CAPS.feature_work * factor))
-    quotas = {"place": 32, "route": 16, "grow": 12, "shrink": 4}
-    return host_context(qubit_cap, caps=caps, construction_quotas=quotas, **kw)
+    if quotas is None:
+        quotas = {"place": 32, "route": 16, "grow": 12, "shrink": 4}
+    return host_context(qubit_cap, caps=caps, construction_quotas=dict(quotas), **kw)
 
 
 def qubit_budget(witness, slack: float = 1.10) -> int:
