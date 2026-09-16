@@ -21,7 +21,7 @@ never depends on memory.
 | hybrid | policy roots then minorminer; seeded-minorminer tolerance arms | apollo `runs/seeded/*.log`, `runs/hybrid/*.log` | witness roots turn 0 into 12/12 at 80 percent short chains on both small hosts and 2/2 so far on both big hosts; policy roots and tolerance running |
 | hybrid v3, validity | fair protocol: both arms search until 60 s and select by measurement, full-host budget, curriculum hosts | apollo `runs/hybrid/v3_valid_*.log` | iter 19: policy+search 0.53 vs router+search 0.47 (Pegasus 3, init), 0.50 vs 0.47 (scratch), 0.40 vs 0.40 (Zephyr 2); short chains 0 on both; no learned gain yet |
 | hybrid v3, quality | same, paired residual on a fresh block where both valid | apollo `runs/hybrid/v3_quality_*.log` | iter 19: +0.0071 [-0.0112, +0.0253] over 14 (Pegasus 3), +0.0089 [-0.0016, +0.0198] over 12 (Zephyr 2), positive is worse; no learned gain |
-| contact policy, low fill | contact growth vs random growth vs the start vs four fresh router draws, all with measured selection | goose `runs/contact/pegasus6.log`, `zephyr4.log` | Pegasus 6 control: restart minus start +0.141; random growth -0.075 and policy -0.104 below the restart control; Zephyr pending |
+| contact policy, low fill | contact growth vs random growth vs the start vs four fresh router draws, all with measured selection | goose `runs/contact/pegasus6.log`, `zephyr4.log` | Pegasus 6: restart minus start +0.141; random growth -0.075, policy -0.104 below it. Zephyr 4: restart +0.139; random -0.060, policy -0.063 below it. Both hosts: growing one draw loses to drawing again |
 | contact policy, high fill | same, starting from the planted witness at 80 to 95 percent occupancy, budget = the space left, objective = energy residual, frontier features, occupancy traced | goose `runs/contact/*_fill.log` | running (post-merge) |
 | direction 4, RL | REINFORCE on the constructive policy (policy = prioritiser), dense progress reward, STOP and RESTART masked, evaluation samples until the deadline; from scratch and initialised from the imitation prioritiser; Pegasus 3 and Zephyr 2 | apollo `runs/rl/*_scratch.log`, `runs/rl/*_init.log` | running; before the mask the imitation-initialised policy reached demand fraction 0.70 / 0.63 and validity 0, ending episodes by sampling STOP |
 | anytime 600 s | minorminer restarted until 300 and 600 s on the big fill corpora | `results/fill/*_anytime600.log` | **done**: at 600 s nothing changes but Pegasus 85 percent medium chains 0 -> 0.17; short chains stay 0 in every cell on both hosts |
@@ -400,7 +400,9 @@ minus start +0.0061 on Pegasus 6; +0.0077 and +0.0066 on Zephyr 4.
 The control decides it (`results/contact/pegasus6_control.log`, Pegasus 6, same protocol):
 four fresh router draws selected by measurement beat the single start by +0.141 [+0.068,
 +0.213]; random contact growth is -0.075 [-0.139, -0.009] below that control and the policy
--0.104 [-0.181, -0.026] below it. The apparent gain of contact growth was the measured
+-0.104 [-0.181, -0.026] below it. Zephyr 4 (`results/contact/zephyr4_control.log`) says the
+same: restart minus start +0.139 [+0.084, +0.192], random -0.060 [-0.102, -0.019] and policy
+-0.063 [-0.111, -0.016] below the restart control. The apparent gain of contact growth was the measured
 selection over four candidates, and growing one draw is worth less than drawing again,
 which the pool-ceiling result had already said. This is the twelfth withdrawn number, caught
 by the control before it was reported as a claim. The learned policy adds nothing over
