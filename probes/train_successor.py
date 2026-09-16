@@ -17,12 +17,13 @@ sys.meta_path[:] = [f for f in sys.meta_path
                     if not ("editable" in (getattr(type(f), "__module__", "") or "").lower()
                             and "isingfold" in (getattr(type(f), "__module__", "") or "").lower())]
 import numpy as np
+from _context import host_context
 import torch
 import torch.nn.functional as F
 from isingfold.rl.contracts import Context
 from isingfold.rl.env import fixed_strength_selector
 from isingfold.rl.evaluate import first_commit_controller, run_controller
-from isingfold.rl.program import compile_program
+from isingfold.rl.program import compile_program, strength_registry
 
 from space_features import SPACE_WIDTH
 from successor_scorer import (COORD_WIDTH, PHYS_WIDTH, SuccessorScorer,
@@ -33,13 +34,17 @@ FRESH_BASE = 95_000_000
 
 
 def compile_for(task, ctx, chains, index=1):
-    """The program the evaluator would actually run for this embedding at the registered index."""
-    ratios = ctx.strength_ratios
-    idx = min(index, len(ratios) - 1)
-    mags = [abs(v) for v in task.problem.j.values()] or [1.0]
-    unit = float(np.mean(mags))
+    """The program the evaluator actually ran for this embedding at the registered index.
+
+    The strength comes from the same registry the environment uses, ratio times the RMS
+    coefficient scale of the instance (ADR-001). An earlier version of this function used ratio
+    times mean|J|, which on the fixtures put the shown strength 1 to 44 percent above the
+    evaluated one; tests/unit/test_probe_compile_matches_env.py pins the two together.
+    """
+    idx = min(index, len(ctx.strength_ratios) - 1)
+    strengths = strength_registry(task.problem, ctx.strength_ratios, ctx.epsilon_strength)
     try:
-        return compile_program(chains, task.host, task.problem, unit * ratios[idx], idx,
+        return compile_program(chains, task.host, task.problem, strengths[idx], idx,
                                field_limit=ctx.field_limit, coupler_limit=ctx.coupler_limit)
     except Exception:
         return None
@@ -127,7 +132,7 @@ def main() -> int:
 
     with open(a.cache, "rb") as fh:
         blob = pickle.load(fh)
-    ctx = Context(qubit_cap=a.qubit_cap)
+    ctx = host_context(a.qubit_cap)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(json.dumps({"cache": a.cache, "key": blob["key"], "device": str(device),
                       "width": a.width}), flush=True)
