@@ -368,6 +368,20 @@ and do not isolate qubit count from geometry. The result motivates learning wher
 than assuming any extra qubit helps. The supplied start is a training/diagnostic reference;
 end-to-end deployment starts empty and must construct its own valid output.
 
+## Merged: `fix/quality-contracts-20260916` (audit of `7c5d225`)
+
+An implementation audit of the five probes the relaunch depends on, merged fast-forward as
+`426f55c` with 76 passing contract tests: router time counts against the deadline and late
+results do not count; both arms consume one declared deployment budget; the qubit cap is a
+declared constraint and a witness-derived cap must be requested by name; a witness is never a
+deployment output; failed measurements are counted under a declared convention; the policy
+gradient uses a leave-one-out baseline over independent episodes; selection and assessment
+use separate sampler streams; a learned prior's checkpoint is checked for architecture and
+training-lineage provenance. The audit's evidence boundaries stand: registered contact-growth
+intervals include zero; the large scorer is validation evidence against random, not a gain
+over halving; the selection reference is finite-read. Every run in flight was restarted on
+the merged code; numbers from before the merge are history.
+
 ## The objective is quality; validity is the gate
 
 minorminer optimises resource first, and its hundred percent from witness roots is

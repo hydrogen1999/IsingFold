@@ -14,7 +14,7 @@ for H in pegasus6 zephyr4; do
 done
 wait
 export OMP_NUM_THREADS=2
-COMMON="--fast --iterations 300 --episodes-per-instance 8 --eval-every 20 --seed 0"
+COMMON="--fast --iterations 300 --episodes-per-instance 8 --eval-every 20 --seed 0 --qubit-cap 0"
 python -u probes/train_hybrid_rl.py --corpus runs/small/pegasus3/corpus --init runs/imitation/pegasus6_v3.pt $COMMON --hard-only \
   --out runs/hybrid/v3_valid_pegasus3_init.pt > runs/hybrid/v3_valid_pegasus3_init.log 2>&1 &
 python -u probes/train_hybrid_rl.py --corpus runs/small/pegasus3/corpus $COMMON --hard-only \
