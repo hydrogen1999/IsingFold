@@ -7,6 +7,7 @@ source ~/isingfold/.venv/bin/activate
 export ISINGFOLD_SRC=$PWD/src PYTHONPATH=$PWD/src OMP_NUM_THREADS=4
 mkdir -p runs/imitation runs/rl
 for H in pegasus6 zephyr4; do
+  [ -s runs/imitation/${H}_budget.pt ] && continue
   python -u probes/train_prioritiser.py --dump runs/imitation/${H}_hint.pkl \
     --corpus runs/fill/$H/corpus --epochs 30 --width 64 --out runs/imitation/${H}_budget.pt \
     > runs/imitation/${H}_budget_train.log 2>&1 &

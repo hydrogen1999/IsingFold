@@ -569,8 +569,20 @@ class ProposalGenerator:
             for owner, target in ((left, right), (right, left)):
                 if len(out) >= budget or not meter.can_charge(1):
                     return out
+                # In construction the route runs on the residual host: free qubits and the
+                # two chains it joins. The router walks through occupied qubits on purpose,
+                # since temporary overlap is what repair works on in improvement mode; in
+                # construction an overlapping route leaves a workspace the return check
+                # rejects, so no COMMIT is ever offered, which is how policy episodes
+                # with every demand met still ended without a valid embedding.
+                if self.mode is Mode.CONSTRUCTION:
+                    keep = {q for q, o in occupied.items() if o == 0} | set(chains[owner]) | set(chains[target])
+                    keep |= {q for q in self.host.nodes() if q not in occupied}
+                    route_host = self.host.subgraph(keep)
+                else:
+                    route_host = self.host
                 attempt = route_between_sets(
-                    self.host,
+                    route_host,
                     chains[owner],
                     chains[target],
                     expansion_budget=min(4_000, meter.remaining_expansions()),
