@@ -21,8 +21,8 @@ def _paths(monkeypatch):
     monkeypatch.syspath_prepend(str(SRC))
 
 
-def _corpus(tmp_path, text):
-    d = tmp_path / "corpus"
+def _corpus(tmp_path, text, name="corpus"):
+    d = tmp_path / name
     d.mkdir(exist_ok=True)
     (d / "instances.jsonl").write_text(text)
     return d
@@ -55,11 +55,14 @@ def test_a_stale_cache_is_refused_and_a_matching_one_accepted(tmp_path):
     from _context import host_context
     from _provenance import CacheProvenanceError, check_provenance, label_provenance
 
-    corpus = _corpus(tmp_path, '{"name": "a"}\n')
+    corpus = _corpus(tmp_path, '{"name": "a"}\n', "a")
+    other = _corpus(tmp_path, '{"name": "b"}\n', "b")
     ctx = host_context(120)
     blob = {"provenance": label_provenance(corpus, ctx)}
     check_provenance(blob, corpus, ctx)
-    stale = {"provenance": label_provenance(_corpus(tmp_path, '{"name": "b"}\n'), ctx)}
+    # Built from a different corpus at a different path: the first version of this test wrote
+    # both corpora to one path, so the check compared a corpus with itself and could not fail.
+    stale = {"provenance": label_provenance(other, ctx)}
     with pytest.raises(CacheProvenanceError):
         check_provenance(stale, corpus, ctx)
     with pytest.raises(CacheProvenanceError):
