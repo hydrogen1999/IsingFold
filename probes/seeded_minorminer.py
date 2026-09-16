@@ -39,9 +39,11 @@ def valid(chains, logical, host):
     return all(any(host.has_edge(a, b) for a in chains[u] for b in chains[v]) for u, v in logical.edges())
 
 
-def attempt(task, hint, seed, tries):
+def attempt(task, hint, seed, tries, budget=None):
     """minorminer takes an edge list, so isolated logical nodes get no chain from it; they
-    are placed afterwards on any free qubit, and the hint is restricted to nodes it knows."""
+    are placed afterwards on any free qubit, and the hint is restricted to nodes it knows.
+    ``budget`` is the qubit cap the embedding must respect: an embedding beyond it is a
+    failure, for the hinted and the unhinted arm alike."""
     edges = list(task.logical.edges())
     in_edges = {u for e in edges for u in e}
     kw = {"tries": tries, "random_seed": seed % (2 ** 31)}
@@ -59,6 +61,8 @@ def attempt(task, hint, seed, tries):
                 emb[v] = frozenset({next(free)})
             except StopIteration:
                 return None
+    if budget is not None and sum(len(c) for c in emb.values()) > budget:
+        return None
     return emb if valid(emb, task.logical, task.host) else None
 
 

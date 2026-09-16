@@ -11,7 +11,7 @@ from space_features import residual_graph
 from successor_scorer import native_coordinates, parse_host_name
 
 OPCODES = ("PLACE", "ROUTE", "REWRITE_ONE", "COMMIT", "OTHER")
-WIDTH = 5 + 4 + 5 + 5 + 5 + 6 + 2
+WIDTH = 5 + 4 + 5 + 5 + 5 + 6 + 2 + 3
 
 
 class FeatureContext:
@@ -32,6 +32,21 @@ class FeatureContext:
         self.degree = {v: self.logical.degree(v) for v in self.logical.nodes()}
         self.max_degree = max(self.degree.values()) if self.degree else 1
         self.host_degree = {q: self.host.degree(q) for q in self.host.nodes()}
+        # the instance's coefficients, per variable: field magnitude, total and largest
+        # incident coupling, so the actor can tell a heavily coupled variable from a light one
+        prob = getattr(task, "problem", None)
+        h = dict(getattr(prob, "h", {}) or {}) if prob is not None else {}
+        j = dict(getattr(prob, "j", {}) or {}) if prob is not None else {}
+        self.h_abs = {v: abs(float(h.get(v, 0.0))) for v in self.logical.nodes()}
+        self.j_sum = {v: 0.0 for v in self.logical.nodes()}
+        self.j_max = {v: 0.0 for v in self.logical.nodes()}
+        for (u, w), val in j.items():
+            for x in (u, w):
+                if x in self.j_sum:
+                    self.j_sum[x] += abs(float(val))
+                    self.j_max[x] = max(self.j_max[x], abs(float(val)))
+        self.h_scale = max(self.h_abs.values(), default=1.0) or 1.0
+        self.j_scale = max(self.j_sum.values(), default=1.0) or 1.0
         self._state_key = None
         self._allowed = None
         self._placed = None
@@ -58,8 +73,11 @@ class FeatureContext:
               (len(nbrs) - len(placed_nb)) / max(1, self.max_degree),
               len(placed.get(variable, ())) / 6.0]
         if q0 is None:
-            f += [0.0] * (WIDTH - len(f))
-            return np.asarray(f, dtype=np.float32)
+            f += [0.0] * (WIDTH - 3 - len(f))
+            f += [self.h_abs.get(variable, 0.0) / self.h_scale if variable is not None else 0.0,
+                  self.j_sum.get(variable, 0.0) / self.j_scale if variable is not None else 0.0,
+                  self.j_max.get(variable, 0.0) / max(1e-9, self.j_scale) if variable is not None else 0.0]
+            return np.asarray(f[:WIDTH], dtype=np.float32)
         # qubit on the residual host, by neighbour counts. The first version used BFS free
         # volumes to radius two and the free component; called for hundreds of pairs a step
         # it made an episode on 144 qubits take forty seconds, and the counts carry the same
@@ -101,6 +119,9 @@ class FeatureContext:
         used = sum(len(c) for c in placed.values())
         n_vars = max(1, self.logical.number_of_nodes())
         f += [(used + len(qubits)) / self.budget, (self.budget - used - len(qubits)) / n_vars]
+        # coefficients of the variable
+        f += [self.h_abs.get(variable, 0.0) / self.h_scale, self.j_sum.get(variable, 0.0) / self.j_scale,
+              self.j_max.get(variable, 0.0) / max(1e-9, self.j_scale)]
         f = f[:WIDTH] + [0.0] * (WIDTH - len(f))
         return np.asarray(f, dtype=np.float32)
 

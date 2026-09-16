@@ -63,11 +63,11 @@ def place_roots(task, model, fc, temperature, rng, train):
     return roots, logps
 
 
-def complete(task, roots, deadline, tries, seed):
+def complete(task, roots, deadline, tries, seed, budget=None):
     t0, ok, n = time.time(), None, 0
     while ok is None and time.time() - t0 < deadline:
         n += 1
-        ok = attempt(task, roots, seed + n, tries)
+        ok = attempt(task, roots, seed + n, tries, budget=budget)
     complete.last = ok
     return ok is not None, time.time() - t0, n
 
@@ -152,6 +152,8 @@ def main() -> int:
                          "residual against the router-alone embedding of the same instance, "
                          "which is the objective; validity stays the gate")
     ap.add_argument("--quality-weight", type=float, default=10.0)
+    ap.add_argument("--select-cap", type=int, default=6,
+                    help="valid candidates measured per arm at evaluation, the read budget both arms get")
     a = ap.parse_args()
     tasks = load_instances(a.corpus)
     rng = np.random.default_rng(a.seed)
@@ -173,28 +175,38 @@ def main() -> int:
             fcs[task.name] = FeatureContext(task, qubit_budget({v: frozenset(c) for v, c in task.witness.items()}))
         return fcs[task.name]
 
-    base_res = {}
+    budgets = {}
     base_eval = {}
 
-    def baseline_residual(task, k):
-        """The router alone, restarted within the evaluation deadline, then measured."""
-        if task.name not in base_res:
-            ok, _, _ = complete(task, None, a.eval_deadline, a.tries, 85_000 + 1000 * k)
-            base_res[task.name] = measure_residual(task, complete.last, 300 + k) if ok else None
-        return base_res[task.name]
+    def budget_of(task):
+        if task.name not in budgets:
+            budgets[task.name] = qubit_budget({v: frozenset(c) for v, c in task.witness.items()})
+        return budgets[task.name]
+
+    ref_res = {}
+
+    def reference_residual(task, k):
+        """The planted witness embedding, measured once: a per-instance reference that does
+        not depend on whether the router alone succeeds, so the quality reward keeps its
+        meaning on the hardest instances."""
+        if task.name not in ref_res:
+            w = {v: frozenset(c) for v, c in task.witness.items()}
+            ref_res[task.name] = measure_residual(task, w, 300 + k)
+        return ref_res[task.name]
 
     def reward_of(task, roots, ok, k, e):
+        """Invalid: at most 0.5, by how close the completion came. Valid: at least 0.6, so a
+        valid embedding always outranks an invalid one, plus the quality term against the
+        witness reference, clipped."""
         if not ok:
             return 0.5 * partial_score(task, roots, 91_000 + 7 * e + 100 * k)
         if a.objective == "valid":
             return 1.0
         res = measure_residual(task, complete.last, 400 + 7 * e + 100 * k)
-        base = baseline_residual(task, k)
-        if res is None:
+        ref = reference_residual(task, k)
+        if res is None or ref is None:
             return 1.0
-        if base is None:
-            return 1.5   # valid where the router alone is not: the best a layout can do here
-        return 1.0 + a.quality_weight * (base - res)
+        return float(np.clip(1.0 + a.quality_weight * (ref - res), 0.6, 3.0))
 
     layout = sample_layout if a.fast else place_roots
     print(json.dumps({"corpus": a.corpus, "train": len(train_tasks), "held_out": len(eval_tasks),
@@ -202,57 +214,76 @@ def main() -> int:
                       "eval_deadline": a.eval_deadline, "fast": a.fast}), flush=True)
 
     def evaluate(tag):
-        """Policy plus search: layouts are sampled from the policy until the deadline, each
-        handed to the router with a short budget, and the instance counts as solved if any
-        layout completes. The baseline is the router alone restarted until the same
-        deadline. A single greedy layout would give the baseline a search the policy does
-        not get."""
+        """ADR-004's comparison. Both arms get the same deadline, the same qubit budget and
+        the same measured selection: candidates are collected until the deadline (layouts
+        from the policy completed by the router in one arm, the router restarted alone in
+        the other), each valid one is measured on a selection block up to a cap per arm,
+        the best is assessed on a fresh block. Validity and the paired residual are reported."""
         model.eval()
         cells = defaultdict(list)
-        pairs = []
-        for k, t in enumerate(eval_tasks):
-            t0, ok, layouts, found, best = time.time(), False, 0, None, None
+        pairs, reads_used = [], {"policy": 0, "router": 0}
+
+        def collect(t, k, use_policy):
+            t0, cands, tried = time.time(), [], 0
             while time.time() - t0 < a.eval_deadline:
-                roots, _ = layout(t, model, fc_for(t), a.temperature, rng, train=True)
-                layouts += 1
+                tried += 1
                 left = a.eval_deadline - (time.time() - t0)
-                got, _, _ = complete(t, roots, min(a.layout_router_secs, max(0.5, left)),
-                                     a.layout_tries, 70_000 + 1000 * k + 13 * layouts)
+                if use_policy:
+                    roots, _ = layout(t, model, fc_for(t), a.temperature, rng, train=True)
+                    got, _, _ = complete(t, roots, min(a.layout_router_secs, max(0.5, left)),
+                                         a.layout_tries, 70_000 + 1000 * k + 13 * tried, budget=budget_of(t))
+                else:
+                    got, _, _ = complete(t, None, min(a.layout_router_secs, max(0.5, left)),
+                                         a.layout_tries, 80_000 + 1000 * k + 13 * tried, budget=budget_of(t))
                 if got:
-                    ok = True
-                    found = complete.last
-                    if a.objective == "valid":
-                        break
-                    # quality: keep searching for a better valid embedding until the deadline,
-                    # choosing by a selection block; the reported residual is a fresh block
-                    res = measure_residual(t, found, 500 + layouts)
-                    if res is not None and (best is None or res < best[0]):
-                        best = (res, found)
-            # The router alone is deterministic given its seeds and does not learn: one run
-            # per instance, kept across evaluations, halves the evaluation cost.
-            if t.name not in base_eval:
-                ok0, _, _ = complete(t, None, a.eval_deadline, a.tries, 80_000 + 1000 * k)
-                base_eval[t.name] = (ok0, complete.last if ok0 else None)
-            ok0, base_chains = base_eval[t.name]
-            q, q0 = None, None
-            if a.objective == "quality" and ok and ok0:
-                chosen = best[1] if best else found
-                q = measure_residual(t, chosen, 900 + k)
-                q0 = measure_residual(t, base_chains, 950 + k)
-                if q is not None and q0 is not None:
-                    pairs.append(q - q0)
-            cells[t.lineage.rsplit("-", 1)[0].split("-", 1)[1].rsplit("-", 1)[0]].append((ok, ok0, layouts))
+                    key = tuple(sorted((str(v), tuple(sorted(c, key=str))) for v, c in complete.last.items()))
+                    if key not in {c[0] for c in cands}:
+                        cands.append((key, complete.last))
+                if a.objective == "valid" and cands:
+                    break
+                if len(cands) >= a.select_cap:
+                    break
+            return cands, tried
+
+        for k, t in enumerate(eval_tasks):
+            arms = {}
+            for name, use_policy in (("policy", True), ("router", False)):
+                if name == "router" and t.name in base_eval:
+                    arms[name] = base_eval[t.name]; continue
+                cands, tried = collect(t, k, use_policy)
+                chosen, chosen_sel = None, None
+                if cands and a.objective == "quality":
+                    scored = []
+                    for i, (_, ch) in enumerate(cands[: a.select_cap]):
+                        sel = measure_residual(t, ch, 500 + 31 * i + 1000 * k)
+                        reads_used[name] += 256
+                        if sel is not None:
+                            scored.append((sel, ch))
+                    if scored:
+                        chosen_sel, chosen = min(scored, key=lambda x: x[0])
+                elif cands:
+                    chosen = cands[0][1]
+                fresh = measure_residual(t, chosen, 900 + 1000 * k) if (chosen is not None and a.objective == "quality") else None
+                arms[name] = (bool(cands), fresh, tried, len(cands))
+                if name == "router":
+                    base_eval[t.name] = arms[name]
+            (ok, q, tried, n_c), (ok0, q0, _, n_c0) = arms["policy"], arms["router"]
+            if q is not None and q0 is not None:
+                pairs.append(q - q0)
+            cells[t.lineage.rsplit("-", 1)[0].split("-", 1)[1].rsplit("-", 1)[0]].append((ok, ok0, tried, n_c, n_c0))
         model.train()
         allr = [r for rs in cells.values() for r in rs]
-        print("  %s held-out within %.0fs: policy+search %.2f  router alone %.2f  layouts tried %.1f  over %d"
+        print("  %s held-out within %.0fs: policy+search %.2f  router+search %.2f  layouts %.1f  valid candidates %.1f/%.1f  over %d"
               % (tag, a.eval_deadline, np.mean([r[0] for r in allr]), np.mean([r[1] for r in allr]),
-                 np.mean([r[2] for r in allr]), len(allr)), flush=True)
+                 np.mean([r[2] for r in allr]), np.mean([r[3] for r in allr]), np.mean([r[4] for r in allr]), len(allr)), flush=True)
         print("    " + "  ".join("%s %.2f/%.2f" % (c, np.mean([r[0] for r in rs]), np.mean([r[1] for r in rs]))
                                  for c, rs in sorted(cells.items())), flush=True)
         if pairs:
             d = np.array(pairs)
-            print("    residual, policy minus router alone, where both valid: %+.4f over %d (negative is better)"
-                  % (d.mean(), len(d)), flush=True)
+            rng2 = np.random.default_rng(0)
+            bs = [d[rng2.integers(0, len(d), len(d))].mean() for _ in range(2000)]
+            print("    residual, policy minus router, both selected by measurement, fresh block, where both valid: %+.4f [%+.4f, %+.4f] over %d"
+                  % (d.mean(), np.percentile(bs, 2.5), np.percentile(bs, 97.5), len(d)), flush=True)
         score = float(np.mean([r[0] for r in allr]))
         if pairs:
             score -= float(np.mean(pairs))
@@ -269,7 +300,7 @@ def main() -> int:
             for e in range(a.episodes_per_instance):
                 roots, logps = layout(t, model, fc_for(t), a.temperature, rng, train=True)
                 ok, s, _ = complete(t, roots, a.layout_router_secs, a.layout_tries,
-                                    90_000 + 7 * e + 100 * it)
+                                    90_000 + 7 * e + 100 * it, budget=budget_of(t))
                 r = reward_of(t, roots, ok, int(idx), e)
                 eps.append((r, logps)); wins.append(ok); secs.append(s)
             base = np.mean([r for r, _ in eps])

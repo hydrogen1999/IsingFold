@@ -314,6 +314,22 @@ be ripped up. Matching the standard router is an
 engineering project on its own; until it does, the learned layout is measured with the
 standard router as the completion and the standard router alone as the baseline.
 
+## Review of `7044446` (external, 2026-09-17) and what changed because of it
+
+The review found the hybrid evaluator unfair to the baseline (the policy arm searched and
+selected by measurement, the router arm stopped at its first valid embedding), the qubit
+budget absent from the completion, the quality reward losing its signal where the router
+alone fails and able to rank a valid embedding below an invalid one, and the actor blind to
+the coefficients. All four are fixed in the commit that carries this note: both arms restart
+until the deadline, keep up to six valid candidates, select by a measurement block and are
+assessed on a fresh block, the paired residual with an interval; `attempt()` refuses an
+embedding beyond the instance budget for either arm; a valid completion scores at least 0.6
+plus a clipped quality term against the planted witness's residual, invalid at most 0.5; the
+candidate features carry field and coupling magnitudes. The review's ordering is adopted:
+the learned allocation prior (directions 3 plus 5) against plain halving on frozen pools is
+the first learned-win test, hybrid validity then quality is the embedder's line, and
+constructive RL alone is parked.
+
 ## The objective is quality; validity is the gate
 
 minorminer optimises resource first, and its hundred percent from witness roots is
@@ -443,8 +459,9 @@ bootstrap over lineages (`results/corrected/*_reliability.log`):
     oracle on B, inflated            +0.119                    +0.129
     spread within a state             0.24                      0.27
 
-The select-on-A row is the ceiling for anything trained on these labels: a perfect predictor
-of the 256-read label earns +0.11 to +0.12 on fresh reads. The winner's curse in the oracle
+The select-on-A row is the finite-read selection reference for anything trained on these
+labels: a perfect predictor of the 256-read label earns +0.11 to +0.12 on fresh reads at
+this read count. It is a reference, not a theoretical bound. The winner's curse in the oracle
 row is about 0.01. The labels are reliable; the gap between the learned head's +0.01 and this
 ceiling is generalisation, now with an interval.
 
