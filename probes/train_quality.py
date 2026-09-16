@@ -36,6 +36,7 @@ from isingfold.rl.evaluate import first_commit_controller, run_controller
 from isingfold.rl.model import build_model
 
 from _context import host_context
+from _provenance import check_provenance, label_provenance
 from _initializers import minorminer_initializer
 
 LABEL_BASE = 40_000_000
@@ -231,6 +232,7 @@ def main() -> int:
             blob = pickle.load(fh)
         if blob.get("key") == [a.corpus, a.train_lineages, a.eval_lineages, a.states,
                               a.max_candidates, a.reads, a.seed]:
+            check_provenance(blob, a.corpus, ctx)
             train_states, eval_states = blob["train"], blob["eval"]
             print("  reusing labels from %s" % cache_path, flush=True)
         else:
@@ -250,6 +252,7 @@ def main() -> int:
             with cache_path.open("wb") as fh:
                 pickle.dump({"key": [a.corpus, a.train_lineages, a.eval_lineages, a.states,
                                      a.max_candidates, a.reads, a.seed],
+                             "provenance": label_provenance(a.corpus, ctx),
                              "train": train_states, "eval": eval_states}, fh)
             print("  wrote labels to %s" % cache_path, flush=True)
     labels = sum(len(s["rows"]) for s in train_states + eval_states)

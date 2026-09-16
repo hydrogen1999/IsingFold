@@ -18,6 +18,7 @@ sys.meta_path[:] = [f for f in sys.meta_path
                             and "isingfold" in (getattr(type(f), "__module__", "") or "").lower())]
 import numpy as np
 from _context import host_context
+from _provenance import CacheProvenanceError, check_provenance
 import torch
 import torch.nn.functional as F
 from isingfold.rl.contracts import Context
@@ -126,6 +127,9 @@ def main() -> int:
                          "hold this one out entirely. The cache's own split holds out lineages "
                          "of every family, which tests transfer between coefficient draws; this "
                          "tests transfer between graph structures, which is the claim.")
+    ap.add_argument("--allow-stale-cache", action="store_true",
+                    help="accept a cache whose provenance does not match; only for reading "
+                         "old results, never for a number that will be reported")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out", default="")
     a = ap.parse_args()
@@ -133,6 +137,13 @@ def main() -> int:
     with open(a.cache, "rb") as fh:
         blob = pickle.load(fh)
     ctx = host_context(a.qubit_cap)
+    try:
+        check_provenance(blob, blob["key"][0], ctx)
+    except CacheProvenanceError as e:
+        if not a.allow_stale_cache:
+            print("  refusing cache: %s" % e, flush=True)
+            return 2
+        print("  WARNING, stale cache accepted by request: %s" % e, flush=True)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(json.dumps({"cache": a.cache, "key": blob["key"], "device": str(device),
                       "width": a.width}), flush=True)
