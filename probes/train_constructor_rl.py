@@ -64,7 +64,10 @@ def episode(task, model, fc, temperature, max_steps, rng, deadline, train=True):
 
     env.generator.prefer = prefer
     dec = env.reset(int(rng.integers(0, 2 ** 31)))
-    logps, steps, t0 = [], 0, time.time()
+    logps, rewards, steps, t0 = [], [], 0, time.time()
+    n_vars = max(1, task.logical.number_of_nodes())
+    placed_before = sum(1 for c in env.state.chains.values() if c)
+    met_before = demands_realised(task, env.state.chains)
     while isinstance(dec, DecisionState) and steps < max_steps and time.time() - t0 < deadline:
         chains = env.state.chains
         legal = np.asarray(dec.legal_mask, dtype=bool)
@@ -77,16 +80,34 @@ def episode(task, model, fc, temperature, max_steps, rng, deadline, train=True):
         commit = [i for i, c in enumerate(dec.candidates) if c.opcode is Opcode.COMMIT and legal[i]]
         if commit and demands_realised(task, chains) >= 1.0:
             pick = commit[0]
+            sampled = False
         else:
             dist = torch.distributions.Categorical(logits=scores)
             pick = int(dist.sample()) if train else int(torch.argmax(scores))
             logps.append(dist.log_prob(torch.tensor(pick)))
+            sampled = True
         dec = env.step(dec, pick, evaluate_training_reward=False).next_decision_or_terminal
         steps += 1
+        # Dense progress reward: a newly placed variable and a newly met demand each pay
+        # their share, so a long episode carries a gradient at every step and not only at
+        # the end. The terminal reward for a valid COMMIT is added on top.
+        placed_now = sum(1 for c in env.state.chains.values() if c)
+        met_now = demands_realised(task, env.state.chains)
+        if sampled:
+            rewards.append((placed_now - placed_before) / n_vars + (met_now - met_before))
+        placed_before, met_before = placed_now, met_now
     valid = bool(getattr(dec, "returned_valid", False)) and not isinstance(dec, DecisionState)
+    if rewards:
+        rewards[-1] += 1.0 if valid else 0.0
     frac = demands_realised(task, env.state.chains)
+    # returns to go, one per sampled step
+    togo, acc = [], 0.0
+    for r in reversed(rewards):
+        acc += r
+        togo.append(acc)
+    togo.reverse()
     return {"valid": valid, "frac": frac, "steps": steps, "secs": time.time() - t0,
-            "logps": logps, "return": (1.0 if valid else 0.0) + frac}
+            "logps": logps, "togo": togo, "return": (1.0 if valid else 0.0) + frac}
 
 
 def main() -> int:
@@ -129,16 +150,27 @@ def main() -> int:
         return fcs[task.name]
 
     def evaluate(tag):
+        """Deployment protocol: sample episodes until the deadline, return on the first
+        valid one, as the anytime baseline restarts minorminer until its deadline. Validity
+        is checkable for free, so this is the fair use of a stochastic policy."""
         model.eval()
         rows = []
         for t in eval_tasks:
-            r = episode(t, model, fc_for(t), a.temperature, a.max_steps, rng, a.deadline, train=False)
-            rows.append(r)
+            t0, best, tries = time.time(), None, 0
+            while time.time() - t0 < a.deadline:
+                left = a.deadline - (time.time() - t0)
+                r = episode(t, model, fc_for(t), a.temperature, a.max_steps, rng, left, train=True)
+                tries += 1
+                if best is None or (r["valid"], r["frac"]) > (best["valid"], best["frac"]):
+                    best = r
+                if r["valid"]:
+                    break
+            best["tries"] = tries; best["wall"] = time.time() - t0
+            rows.append(best)
         model.train()
         v = np.mean([r["valid"] for r in rows]); f = np.mean([r["frac"] for r in rows])
-        s = np.mean([r["secs"] for r in rows])
-        print("  %s held-out: valid %.2f  demands %.3f  secs/episode %.1f  over %d instances"
-              % (tag, v, f, s, len(rows)), flush=True)
+        print("  %s held-out within %.0fs: valid %.2f  demands %.3f  episodes tried %.1f  over %d instances"
+              % (tag, a.deadline, v, f, np.mean([r["tries"] for r in rows]), len(rows)), flush=True)
         return v, f
 
     best = -1.0
@@ -151,11 +183,13 @@ def main() -> int:
             t = train_tasks[idx]
             eps = [episode(t, model, fc_for(t), a.temperature, a.max_steps, rng, a.deadline)
                    for _ in range(a.episodes_per_instance)]
-            base = np.mean([e["return"] for e in eps])
+            # Baseline per instance: the mean total return of its K episodes, subtracted
+            # from every step's return to go (self-competition, as in best-of-K).
+            base = np.mean([e["togo"][0] if e["togo"] else 0.0 for e in eps])
             for e in eps:
-                adv = e["return"] - base
-                if e["logps"] and abs(adv) > 1e-9:
-                    loss = loss - adv * torch.stack(e["logps"]).sum() / len(e["logps"])
+                if e["logps"]:
+                    adv = torch.as_tensor(e["togo"], dtype=torch.float32) - base
+                    loss = loss - (adv * torch.stack(e["logps"])).sum() / len(e["logps"])
                     n += 1
                 stats["valid"].append(e["valid"]); stats["frac"].append(e["frac"])
                 stats["secs"].append(e["secs"])
