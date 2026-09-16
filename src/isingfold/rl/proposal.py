@@ -392,13 +392,26 @@ class ProposalGenerator:
         if not placed:
             return out
 
-        def unplaced_neighbours(v):
-            return sum(1 for u in self.logical.neighbors(v) if not chains.get(u))
+        def need(v):
+            """Unplaced logical neighbours, plus demands to placed neighbours still unmet:
+            both are reasons this chain will have to reach further. The first version
+            counted only unplaced neighbours, so once every variable was placed no chain
+            could grow and the last demands, which need a longer chain, stayed unmet."""
+            n = 0
+            for u in self.logical.neighbors(v):
+                other = chains.get(u)
+                if not other:
+                    n += 1
+                elif not any(
+                    q != r and self.host.has_edge(q, r) for q in chains[v] for r in other
+                ):
+                    n += 1
+            return n
 
-        placed = [v for v in placed if unplaced_neighbours(v) > 0]
+        placed = [v for v in placed if need(v) > 0]
         if not placed:
             return out
-        placed.sort(key=lambda v: (-unplaced_neighbours(v), str(v)))
+        placed.sort(key=lambda v: (-need(v), str(v)))
         start = sum(len(c) for c in chains.values()) % len(placed)
         placed = placed[start:] + placed[:start]
         if self.prefer is not None:
