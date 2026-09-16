@@ -66,6 +66,16 @@ def plant_partition(host, fill, alpha, lmin, lmax, rng):
     return chains
 
 
+def witness_occupancy(witness) -> int:
+    """Qubits the witness actually uses, after any component was dropped."""
+    return sum(len(c) for c in witness.values())
+
+
+def lower_bound_fill(n_vars: int, cap: int) -> float:
+    """No embedding of n variables uses fewer than n qubits; this is that bound as a fill."""
+    return n_vars / float(cap)
+
+
 def quotient(host, chains):
     owner = {q: i for i, c in enumerate(chains) for q in c}
     g = nx.Graph()
@@ -105,13 +115,14 @@ def main() -> int:
     alphas = [float(x) for x in a.alphas.split(",")]
     print(json.dumps({"host": "%s%d" % (a.host, a.host_size), "qubits": cap, "fills": fills,
                       "alphas": alphas, "per_cell": a.per_cell}), flush=True)
-    print("  %-5s %-5s %6s %8s %8s %9s %8s %9s" % ("fill", "alpha", "vars", "witness",
-                                                     "mmvalid", "mmqubits", "mmsecs", "mmfill"))
+    print("  %-5s %-5s %6s %8s %7s %8s %9s %8s %9s"
+          % ("fill", "alpha", "vars", "witness", "minfill", "mmvalid", "mmqubits", "mmsecs",
+             "mmfill"))
     kept = []
     local = 0
     for fill in fills:
         for alpha in alphas:
-            n_ok, n_vars, mm_ok, mm_q, mm_s = 0, [], 0, [], []
+            n_ok, n_vars, mm_ok, mm_q, mm_s, w_used = 0, [], 0, [], [], []
             for i in range(a.per_cell):
                 local += 1
                 chains = plant_partition(host, fill, alpha, a.lmin, a.lmax, rng)
@@ -127,7 +138,8 @@ def main() -> int:
                     continue
                 graph = planted.problem.graph
                 witness = {v: frozenset(chains[v]) for v in graph.nodes()}
-                used = sum(len(c) for c in witness.values())
+                used = witness_occupancy(witness)
+                w_used.append(used)
                 t0 = time.time()
                 found = mm(graph, host, a.seed + local)
                 mm_s.append(time.time() - t0)
@@ -150,9 +162,13 @@ def main() -> int:
                                                                "qubits": used, "fill": fill,
                                                                "max_chain": max(len(c) for c in witness.values())},
                                               clause_report=planted.verify()))
-            print("  %-5.2f %-5.1f %6.0f %8.0f %8.2f %9s %8.1f %9s"
+            # The witness column is what the witness uses, not the requested fill times the
+            # host size; the two differ whenever a component was dropped. minfill is n/|H|.
+            print("  %-5.2f %-5.1f %6.0f %8.0f %7.2f %8.2f %9s %8.1f %9s"
                   % (fill, alpha, np.mean(n_vars) if n_vars else 0,
-                     fill * cap, mm_ok / max(1, n_ok),
+                     np.mean(w_used) if w_used else 0,
+                     lower_bound_fill(np.mean(n_vars), cap) if n_vars else 0,
+                     mm_ok / max(1, n_ok),
                      ("%.0f" % np.mean(mm_q)) if mm_q else "-",
                      np.mean(mm_s) if mm_s else 0,
                      ("%.2f" % (np.mean(mm_q) / cap)) if mm_q else "-"), flush=True)
