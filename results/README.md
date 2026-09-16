@@ -15,7 +15,7 @@ else is described by its log's own header line.
 | `hard/`, `hard_abl/` | the clique-16 hard corpus and its four-arm representation ablation | history; within seed noise |
 | `diverse/`, `diverse_abl/` | seven-family corpus labels and the family-held-out five-arm ablation | history; within 0.02 of each other |
 | `curve/` | learning curve 25/50/100/200 lineages, two seeds | history; flat, lexicographic subsets |
-| `audit/` | sampler scale controls, auto vs registered schedule | the basis of ADR-002 |
+| `audit/` | sampler scale controls, registered schedule, and implementation regression gates | ADR-002 controls; `independent_constructor_unit.log` verifies ADR-005 contracts only, not training performance |
 | `modern/` | Pegasus 6 and Zephyr 4 corpora, the power-law budget sweeps, three pool-ceiling versions | current hardware; auto schedule |
 | `feasibility/` | minorminer validity by size and family, budget check, deterministic clique embedder | current |
 | `fill/` | fill-planted corpora, minorminer at ten and fifty tries, constructor floor, witness quality, exact and long-chain sweeps, anytime baseline | current; `*_witness_registered.log` is Task 9 |
@@ -365,6 +365,7 @@ environment. These are the reproductions after the fixes.
 | `audit/sampler_scale_registered.log` | with a registered schedule the same shrink costs -0.4195, which is the effect a fixed-temperature argument is about |
 | `audit/rank_actions.log` | ranking the actions at one state, measured on Q rather than V: oracle 0.7165, quality head 0.5687, random 0.5530, resource 0.5410 |
 | `audit/corpus_report.log` | what the corpus contains: 3.00 isolated spins per instance, 4.48 independent components, largest component 11.06 of a nominal 16 |
+| `rules/` | selection rules over the same eight router draws (first, random, fewest qubits, shortest chain, measured, oracle), Pegasus 6 and Zephyr 4, registered schedule; `probes/selection_rules.py` | current; the platform's central number |
 
 The sampler pair is the one to read first. It says that every claim this project has made about
 energy-scale compression was measured by an instrument that cancels it.

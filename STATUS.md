@@ -8,6 +8,16 @@ never depends on memory.
 
 ## Board, 2026-09-15
 
+**Author correction: independent construction is the primary method.**
+`probes/train_constructor_rl.py` now targets actor-selected construction and refinement
+from empty, with no witness budget, qubit penalty or minorminer completion. See
+`docs/decisions/ADR-005-independent-constructor.md` and
+`results/audit/independent_constructor_unit.log` for the contract and verification.
+Hybrid/layout-v4 runs below remain comparison diagnostics; they do not count as results
+for this independent constructor. The focused regression gate passes 167 tests; full
+unit-suite collection is blocked by missing `lac_minorminer._core`. No new downstream-quality
+gain is claimed here.
+
 Update from the `cf31efc` source audit: the contact restart numbers below are **initial,
 pre-training evaluations**. They withdraw the weak single-start comparison; they do not
 establish the outcome of converged training. The opt-in layout-v4 implementation removes
@@ -26,14 +36,17 @@ training-only feasible-root-set teacher. Verification is in
 | Task 12 | witness replay through the construction API | `results/fill/*_replay_{hint,nohint}.log` | **done**: with the witness as the generator's preference, a valid COMMIT on 48/48 instances per host, every cell, 400 to 620 decisions, 200 to 530 s; with the unhinted heuristic order, none. Imitation records collected; prioritiser training |
 | direction 3 | adaptive allocation of reads vs uniform, real evaluator, disjoint assessment | `results/adaptive/*.log` | **done, replicated**: successive halving matches uniform at half the reads on both hosts, -0.002 [-0.008, +0.004] Zephyr and +0.002 [-0.004, +0.009] Pegasus; UCB slightly worse; random -0.11 to -0.12 |
 | curriculum baseline | anytime minorminer on Pegasus 3 and Zephyr 2 fill corpora, 12 a cell, deadlines 10 to 120 s | `results/small/*_anytime.log` | **done**: short chains from 80 percent 0 to 0.17 at 120 s with 20 to 40 attempts; medium chains 0.42 / 0.17 (Pegasus 3) and 0.75 / 0.08 (Zephyr 2) at 90 / 95 percent |
-| hybrid | policy roots then minorminer; seeded-minorminer tolerance arms | apollo `runs/seeded/*.log`, `runs/hybrid/*.log` | witness roots turn 0 into 12/12 at 80 percent short chains on both small hosts and 2/2 so far on both big hosts; policy roots and tolerance running |
-| hybrid v3, validity | fair protocol: both arms search until 60 s and select by measurement, full-host budget, curriculum hosts | apollo `runs/hybrid/v3_valid_*.log` | iter 19: policy+search 0.53 vs router+search 0.47 (Pegasus 3, init), 0.50 vs 0.47 (scratch), 0.40 vs 0.40 (Zephyr 2); short chains 0 on both; no learned gain yet |
-| hybrid v3, quality | same, paired residual on a fresh block where both valid | apollo `runs/hybrid/v3_quality_*.log` | iter 19: +0.0071 [-0.0112, +0.0253] over 14 (Pegasus 3), +0.0089 [-0.0016, +0.0198] over 12 (Zephyr 2), positive is worse; no learned gain |
+| hybrid | policy roots then minorminer; seeded-minorminer tolerance arms | apollo `runs/seeded/*.log`, `runs/hybrid/*.log` | witness roots turn 0 into 12/12 at 80 percent short chains on both small hosts and 2/2 so far on both big hosts; policy roots and tolerance running; big-host seeded tables done: witness roots 1.00 to 85 percent on Pegasus 6 and Zephyr 4, plain router 0 on short chains from 80 percent |
+| hybrid v3, validity | fair protocol: both arms search until 60 s and select by measurement, full-host budget, curriculum hosts | apollo `runs/hybrid/v3_valid_*.log`, copies in `results/hybrid/` | 60 iterations: policy+search 0.50 vs router+search 0.47 at every checkpoint (Pegasus 3, init and scratch), 0.37 to 0.40 vs 0.40 (Zephyr 2); valid candidates equal in both arms at every checkpoint, so the layouts change no instance's completability. Null, closed |
+| hybrid v3, quality | same, paired residual on a fresh block where both valid | apollo `runs/hybrid/v3_quality_*.log`, copies in `results/hybrid/` | iter 39: +0.0081 [-0.0129, +0.0277] over 14 (Pegasus 3), +0.0065 [-0.0064, +0.0176] over 12 (Zephyr 2), positive is worse; null, closed |
+| selection rules | the same 8 router draws per instance chosen by: first draw, random, fewest qubits, shortest chain, measurement (256 reads), oracle (reads the assessment); assessed on a fresh 512-read block, registered schedule | apollo `runs/rules/pegasus6.log`, `zephyr4.log`; copies in `results/rules/` | p_solve minus first draw: fewest qubits +0.042 / +0.041 (intervals touch 0), measured +0.147 / +0.153, oracle +0.163 / +0.163 (Pegasus 6 / Zephyr 4, 30 instances each, every draw valid). Measurement takes 90 percent of the best-of-8 ceiling; the resource rule takes a quarter |
+| layout v4 (PR #2, branch `7b465f3`, not merged) | all-free root support, capacity features, contextual actor-critic, witness-root warm start; arms legacy, support, capacity, warm, seed 0, Pegasus 3 and Zephyr 2 | apollo `~/prj_IsingFold_pr2/runs/hybrid_v4/{legacy,support,capacity,warm}_{pegasus3,zephyr2}_s0.log` (separate checkout of the PR) | launched and stopped 2026-09-16 at the user's request before the first training evaluation, with every other policy-then-router arm; 111 of its unit tests pass locally; not merged |
 | contact policy, low fill | contact growth vs random growth vs the start vs four fresh router draws, all with measured selection | goose `runs/contact/pegasus6.log`, `zephyr4.log` | Pegasus 6: restart minus start +0.141; random growth -0.075, policy -0.104 below it. Zephyr 4: restart +0.139; random -0.060, policy -0.063 below it. Both hosts: growing one draw loses to drawing again |
 | contact policy, high fill | same, starting from the planted witness at 80 to 95 percent occupancy, budget = the space left, objective = energy residual, frontier features, occupancy traced | goose `runs/contact/*_fill.log` | running (post-merge) |
-| direction 4, RL | REINFORCE on the constructive policy (policy = prioritiser), dense progress reward, STOP and RESTART masked, evaluation samples until the deadline; from scratch and initialised from the imitation prioritiser; Pegasus 3 and Zephyr 2 | apollo `runs/rl/*_scratch.log`, `runs/rl/*_init.log` | running; before the mask the imitation-initialised policy reached demand fraction 0.70 / 0.63 and validity 0, ending episodes by sampling STOP |
+| direction 4, RL | REINFORCE on the constructive policy (policy = prioritiser), dense progress reward, STOP and RESTART masked, evaluation samples until the deadline; from scratch and initialised from the imitation prioritiser; Pegasus 3 and Zephyr 2 | `results/rl/pegasus3_scratch.log`, `pegasus3_init.log`, `zephyr2_init.log` | **closed, null**: valid 0.00 on 30 held-out instances at every checkpoint through iterations 119 to 129 (demand fraction 0.51 to 0.64); stopped 2026-09-16 |
 | anytime 600 s | minorminer restarted until 300 and 600 s on the big fill corpora | `results/fill/*_anytime600.log` | **done**: at 600 s nothing changes but Pegasus 85 percent medium chains 0 -> 0.17; short chains stay 0 in every cell on both hosts |
-| imitation, deployed | the imitation prioritiser as a policy on the full fill corpora, sample until 600 s | apollo `runs/rl/*_imitation_deploy.log`; baseline at 300 and 600 s on goose `runs/fill/*_anytime600.log` | running |
+| imitation, deployed | the imitation prioritiser as a policy on the full fill corpora, sample until 600 s | `results/rl/pegasus6_imitation_deploy.log`, `zephyr4_imitation_deploy.log`; baseline `results/fill/*_anytime600.log` | **closed, null**: valid 0.00 in every cell, 48 instances per host, demand fraction 0.44 / 0.39 |
+| placement completion | imitation PLACE-only roots (greedy and witness-hinted) completed by our construction search, 600 s an instance, big fill corpora | `results/fill/pegasus6_placement.log`, `zephyr4_placement.log` (33 of 48 instances each when stopped) | **closed, null**: no instance completed on either host, greedy or hinted, at demand fractions 0.90 to 0.99; stopped 2026-09-16 with the other policy-then-completion arms |
 | direction 5 | quality surrogate at ten times the lineages, registered schedule, corrected compiler | `results/large/train_seed*.log` | **done**: held-out +0.021, +0.027, +0.023 over 360 lineages, every interval above zero, against +0.003 at 160 lineages; the ceiling is +0.11. Learnable, slowly |
 
 Checkpoints and gates are in `docs/plans/2026-09-15-plan.md`; decisions in `docs/decisions/`;
@@ -390,6 +403,51 @@ intervals include zero; the large scorer is validation evidence against random, 
 over halving; the selection reference is finite-read. Every run in flight was restarted on
 the merged code; numbers from before the merge are history.
 
+## Resource count is a weak quality signal; measurement takes the ceiling (selection rules)
+
+The paper's claim had no direct test in the repo, so `probes/selection_rules.py` makes one.
+Thirty held-out instances per host (the contact runs' validation split of the modern
+corpora), eight independent router draws each (20 tries a draw), every draw valid on both
+hosts. Every rule picks among the same eight draws; every draw is assessed once on a fresh
+512-read block under the registered schedule, so the rules differ only in the pick
+(`results/rules/pegasus6.log`, `zephyr4.log`, p_solve, paired against the first draw):
+
+    rule                       Pegasus 6                     Zephyr 4
+    first draw (single)        0.405                         0.451
+    random draw                +0.031 [-0.035, +0.106]       -0.034 [-0.101, +0.029]
+    fewest qubits              +0.042 [-0.004, +0.101]       +0.041 [-0.011, +0.092]
+    shortest longest chain     +0.040 [-0.007, +0.099]       +0.041 [-0.011, +0.092]
+    measured, 256 reads        +0.147 [+0.087, +0.211]       +0.153 [+0.106, +0.201]
+    oracle on the assessment   +0.163 [+0.109, +0.222]       +0.163 [+0.117, +0.209]
+
+Within an instance the rank correlation between total qubits and assessed p_solve is -0.27
+and -0.21 (fewer qubits slightly better, the direction the strength rule predicts), and
+the fewest-qubit draw lands in the top half of its instance's draws 67 and 73 percent of the
+time. So the resource count is a weak signal, not none: it takes a quarter of the best-of-8
+gain with an interval that touches zero, while a 256-read measurement takes 90 percent of
+the oracle's gain on both hosts. This is the platform's central number, on the target
+hardware, with no failure accounting to explain: the objective is measurable and the
+resource proxy is not a substitute for measuring it. It also agrees with the contact
+control (+0.141 and +0.139 for four draws with the same selection) within noise.
+
+## Hybrid v3 is a null: policy layouts do not change what the router can complete
+
+Five runs on the merged code with the fair protocol (both arms search until the 60 s deadline,
+up to six valid candidates each, selection by measurement, assessment on a fresh block, full
+host as the budget; `results/hybrid/v3_*.log`). Validity, held out over 30 instances, at
+iterations 0, 19, 39, 59: policy+search 0.50, 0.53, 0.50, 0.50 against router+search 0.47 at
+every checkpoint on Pegasus 3 (init from the imitation prioritiser and from scratch alike);
+0.40, 0.40, 0.37 against 0.40 on Zephyr 2. Quality, paired residual where both arms are
+valid: +0.008 [-0.013, +0.028] and +0.007 [-0.006, +0.018] at iteration 39, positive is
+worse. The diagnostic is the candidate count: both arms find the same number of valid
+candidates per instance at every checkpoint (0.5/0.5, 2.7/2.7, 2.3/2.3), so a policy layout
+never turns an instance the router cannot complete in 60 s into one it can, and never adds
+a candidate the measurement could prefer. With the roots result (witness roots turn 0 into
+1.00; half-right roots suffice at 80 percent) the gap is the policy's roots, which after 60
+iterations of reward from completion and measured quality are still worth nothing more than
+the router's own restarts. Closed as a null; the learned-roots direction needs a different
+learning signal than completion reward, if it is to be pursued at all.
+
 ## Contact growth with measured selection: the gain was the selection, withdrawn by its control
 
 Contact policy, low fill, post-merge code (`results/contact/pegasus6.log`, `zephyr4.log`),
@@ -441,8 +499,7 @@ the platform deploys; it is reported beside the standard one.
 ## The roots are the missing information: minorminer seeded with witness roots
 
 minorminer accepts initial chains. Seeded with one qubit per variable taken from the
-witness, restarted with fresh seeds until the deadline (`runs/seeded/*.log`, tables partial
-while the runs finish):
+witness, restarted with fresh seeds until the deadline (`results/seeded/*.log`):
 
     cell (12 a cell, 60 s)             no hint    random roots    witness roots   secs, witness
     Pegasus 3, 80 percent short         0.25         0.25            1.00           0
@@ -451,9 +508,26 @@ while the runs finish):
     Zephyr 2, 80 percent short          0.08         0.00            1.00           0
     Zephyr 2, 85 / 90 / 95 short        0 / 0 / 0    0 / 0 / 0       1 / 1 / 1      0 to 1
     Zephyr 2, 90 / 95 medium            0.67 / 0.17  0.75 / 0.17     1 / 1          0
-    Pegasus 6 and Zephyr 4, 80 short    0            0               1.00 so far    (300 s; plain is 0 at 20x budget)
 
-Full tables in `results/seeded/pegasus3.log`, `zephyr2.log`; the big-host runs are in progress.
+Target hardware, 6 a cell, 300 s budget (`results/seeded/pegasus6.log`, `zephyr4.log`):
+
+    cell                     no hint    witness roots   random roots   secs, none   secs, witness
+    Pegasus 6, 80 medium      1.00        1.00            0.33            21            0
+    Pegasus 6, 80 short       0.00        1.00            0.00           312            2
+    Pegasus 6, 85 med/short   0.17/0.00   1.00/1.00       0/0            261/315        1/1
+    Pegasus 6, 90 med/short   0/0         0.83/0.83       0/0            309/313      124/89
+    Pegasus 6, 95 med/short   0/0         0.17/0.50       0/0            309/307      270/188
+    Zephyr 4, 80 medium       1.00        1.00            0.83             2            0
+    Zephyr 4, 80 short        0.00        1.00            0.00           313            0
+    Zephyr 4, 85 med/short    0.83/0.00   1.00/1.00       0.83/0         56/311         0/1
+    Zephyr 4, 90 med/short    0.33/0.00   1.00/1.00       0.33/0        207/308        17/41
+    Zephyr 4, 95 med/short    0/0         0.50/0.33       0/0           309/309      166/235
+
+Same regime on the hardware the paper targets: the plain router is 0 on short chains from 80
+percent and times out at 300 s; witness roots complete every cell to 85 percent in seconds,
+most of 90 percent in one to two minutes, and a third to a half of 95 percent; random roots
+add nothing. Full tables in `results/seeded/pegasus3.log`, `zephyr2.log`, `pegasus6.log`,
+`zephyr4.log`.
 
 Random roots do nothing, so the effect is the information in the roots, not the act of
 seeding; and with the right roots the completion takes under a second at 680 qubits. The

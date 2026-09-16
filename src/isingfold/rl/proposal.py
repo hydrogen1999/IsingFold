@@ -252,9 +252,12 @@ class ProposalGenerator:
         improvement_restart_protocol: str = AUTHENTICATED_RESTART_CACHE_V1,
         overfill: float = 4.0,
         jitter_scale: float = 0.15,
+        allow_satisfied_growth: bool = False,
     ) -> None:
         if improvement_restart_protocol not in _IMPROVEMENT_RESTART_PROTOCOLS:
             raise ValueError("unknown improvement restart protocol")
+        if type(allow_satisfied_growth) is not bool:
+            raise ValueError("allow_satisfied_growth must be Boolean")
         self.ctx = ctx
         self.logical = logical
         self.host = host
@@ -264,6 +267,9 @@ class ProposalGenerator:
         self.improvement_restart_protocol = improvement_restart_protocol
         self.overfill = overfill
         self.jitter_scale = jitter_scale
+        # The independent constructor can spend spare capacity to improve a valid
+        # embedding's physical program. Older proposal registries retain their support.
+        self.allow_satisfied_growth = allow_satisfied_growth
         # An optional prioritiser over (variable, qubit) pairs, higher first, consulted by
         # the construction families before their budget truncates the offer. The registered
         # cap of 64 state-changing candidates applies to what a decision sees, not to how
@@ -392,6 +398,8 @@ class ProposalGenerator:
         touch, could otherwise never appear before those neighbours are placed, and they
         cannot be placed before the qubits exist. Chains with the most unplaced logical
         neighbours come first, rotated with the state so no chain holds the budget.
+        With ``allow_satisfied_growth``, already satisfied chains remain eligible:
+        allocating another adjacent free qubit is a policy-controlled quality refinement.
         """
         out: list[tuple[Candidate, int]] = []
         occupied = _occupancy_excluding(chains, set())
@@ -415,7 +423,8 @@ class ProposalGenerator:
                     n += 1
             return n
 
-        placed = [v for v in placed if need(v) > 0]
+        if not self.allow_satisfied_growth:
+            placed = [v for v in placed if need(v) > 0]
         if not placed:
             return out
         placed.sort(key=lambda v: (-need(v), str(v)))
