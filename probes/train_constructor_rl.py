@@ -71,6 +71,14 @@ def episode(task, model, fc, temperature, max_steps, rng, deadline, train=True):
     while isinstance(dec, DecisionState) and steps < max_steps and time.time() - t0 < deadline:
         chains = env.state.chains
         legal = np.asarray(dec.legal_mask, dtype=bool)
+        # An embedder that gives up or throws its work away has nothing to offer, so STOP
+        # and RESTART are masked from the actor while any other action is legal. With
+        # sixty-four candidates a step, an unmasked policy samples STOP within about
+        # sixty-four steps and never reaches a valid COMMIT, which is what the first
+        # imitation-initialised evaluation showed: demands 0.70, validity zero.
+        keep = np.array([c.opcode not in (Opcode.STOP, Opcode.RESTART) for c in dec.candidates])
+        if (legal & keep).any():
+            legal = legal & keep
         if not legal.any():
             break
         feats = np.stack([fc.candidate(candidate_tuple(c), chains) for c in dec.candidates])
