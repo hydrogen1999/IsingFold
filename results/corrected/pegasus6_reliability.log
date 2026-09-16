@@ -1,0 +1,24 @@
+{"cache": "runs/relabel/pegasus6_registered.pkl", "split": "eval", "lineages": 32, "states": 61, "reads": 512, "beta_range": [0.1, 2.0]}
+  10/61 states, 91s
+  20/61 states, 176s
+  30/61 states, 259s
+  40/61 states, 344s
+  50/61 states, 433s
+  60/61 states, 517s
+
+  61 states in 32 lineages
+  quantity                    mean  95% bootstrap over lineages
+  rank corr A vs B, 512    +0.7198  [+0.6417, +0.7918]
+  rank corr C(256) vs B    +0.7165  [+0.6232, +0.7947]
+  top choice agrees        +0.5938  [+0.4531, +0.7344]
+  select A, assess B       +0.1094  [+0.0858, +0.1329]
+  select B, assess A       +0.1068  [+0.0838, +0.1295]
+  select C(256), assess B   +0.1106  [+0.0866, +0.1343]
+  oracle on B (inflated)   +0.1187  [+0.0957, +0.1413]
+  spread of B              +0.2393  [+0.1982, +0.2789]
+
+  The select-A-assess-B gain is what a perfect predictor of block A earns on fresh
+  reads; nothing trained on A can show more held-out. The oracle-on-B row carries the
+  winner's curse and is printed only to show its size.
+
+LABEL RELIABILITY DONE

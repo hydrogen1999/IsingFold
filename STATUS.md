@@ -235,6 +235,23 @@ finds nothing from 70 percent up on either host at 60 to 155 seconds a draw
 (`results/fill/*_exact.log`). Pegasus 6 at fifty tries: 80 percent with medium chains rises
 from 0.33 to 0.83 and 85 percent from 0 to 0.17; everything else stays at zero.
 
+## Label reliability under the registered schedule (Task 8)
+
+Two independent 512-read blocks per candidate, 61 and 63 states in 32 lineages per host,
+bootstrap over lineages (`results/corrected/*_reliability.log`):
+
+    quantity                         Pegasus 6                 Zephyr 4
+    rank correlation A vs B          +0.72 [+0.64, +0.79]      +0.77 [+0.72, +0.82]
+    top choice agrees                 0.59 [0.45, 0.73]         0.64 [0.52, 0.77]
+    select on A, assess on B         +0.109 [+0.086, +0.133]   +0.122 [+0.094, +0.152]
+    oracle on B, inflated            +0.119                    +0.129
+    spread within a state             0.24                      0.27
+
+The select-on-A row is the ceiling for anything trained on these labels: a perfect predictor
+of the 256-read label earns +0.11 to +0.12 on fresh reads. The winner's curse in the oracle
+row is about 0.01. The labels are reliable; the gap between the learned head's +0.01 and this
+ceiling is generalisation, now with an interval.
+
 Labels under the registered schedule with the corrected compiler exist for both modern
 corpora (`results/relabel/`, 2298 and 2329 labelled candidates, 17 and 19 minutes). A side
 observation from the labelling run's own one-epoch head, preliminary at 69 and 71 held-out
