@@ -138,19 +138,28 @@ def main() -> int:
                       "eval_deadline": a.eval_deadline}), flush=True)
 
     def evaluate(tag):
+        """Policy plus search: layouts are sampled from the policy until the deadline, each
+        handed to the router with a short budget, and the instance counts as solved if any
+        layout completes. The baseline is the router alone restarted until the same
+        deadline. A single greedy layout would give the baseline a search the policy does
+        not get."""
         model.eval()
         cells = defaultdict(list)
         for k, t in enumerate(eval_tasks):
-            t0 = time.time()
-            roots, _ = place_roots(t, model, fc_for(t), a.temperature, rng, train=False)
-            left = a.eval_deadline - (time.time() - t0)
-            ok, secs, n = complete(t, roots, max(1.0, left), a.tries, 70_000 + 1000 * k)
-            ok0, secs0, n0 = complete(t, None, a.eval_deadline, a.tries, 80_000 + 1000 * k)
-            cells[t.lineage.rsplit("-", 1)[0].split("-", 1)[1].rsplit("-", 1)[0]].append((ok, ok0))
+            t0, ok, layouts = time.time(), False, 0
+            while not ok and time.time() - t0 < a.eval_deadline:
+                roots, _ = place_roots(t, model, fc_for(t), a.temperature, rng, train=True)
+                layouts += 1
+                left = a.eval_deadline - (time.time() - t0)
+                ok, _, _ = complete(t, roots, min(a.train_deadline, max(0.5, left)), a.tries,
+                                    70_000 + 1000 * k + 13 * layouts)
+            ok0, _, _ = complete(t, None, a.eval_deadline, a.tries, 80_000 + 1000 * k)
+            cells[t.lineage.rsplit("-", 1)[0].split("-", 1)[1].rsplit("-", 1)[0]].append((ok, ok0, layouts))
         model.train()
         allr = [r for rs in cells.values() for r in rs]
-        print("  %s held-out within %.0fs: policy+mm %.2f  plain mm %.2f  over %d"
-              % (tag, a.eval_deadline, np.mean([r[0] for r in allr]), np.mean([r[1] for r in allr]), len(allr)), flush=True)
+        print("  %s held-out within %.0fs: policy+search %.2f  router alone %.2f  layouts tried %.1f  over %d"
+              % (tag, a.eval_deadline, np.mean([r[0] for r in allr]), np.mean([r[1] for r in allr]),
+                 np.mean([r[2] for r in allr]), len(allr)), flush=True)
         print("    " + "  ".join("%s %.2f/%.2f" % (c, np.mean([r[0] for r in rs]), np.mean([r[1] for r in rs]))
                                  for c, rs in sorted(cells.items())), flush=True)
         return float(np.mean([r[0] for r in allr]))
