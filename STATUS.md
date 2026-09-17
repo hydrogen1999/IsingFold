@@ -506,6 +506,29 @@ Next rungs in order: size (running: 8 to 14 variables on 32 to 64 qubit fragment
 Pegasus 3 and Zephyr 2, with both the 16-channel and the 230-channel linear actors), then
 the full small hosts, then wall-clock, then quality.
 
+## Quality on the modern corpora: the fragment-trained constructor over-spends and loses
+
+The reviews' B2: the quality protocol on the regime where embedding quality moves the
+objective (`runs/modern/{pegasus6,zephyr4}/corpus`, 16 to 20 variables on the full hosts,
+p_solve 0.4 to 0.6, where best-of-8 selection gains +0.15). Evaluation only, 12 held-out
+lineages, 60 s deadline, six measured candidates an arm, the corpus-size checkpoints
+(`results/curriculum/modq_*.log`, residual, paired, positive is worse for the constructor):
+
+    host, actor              valid pol/mm/grown   residual pol/mm/grown   pol minus mm              pol minus grown           qubits pol/mm/grown
+    Pegasus 6, 16 channels   0.92/1.00/1.00       0.084/0.079/0.065       +0.017 [-0.018, +0.049]   +0.026 [-0.003, +0.056]   42.0/22.6/24.5
+    Pegasus 6, 230 channels  0.67/1.00/1.00       0.113/0.079/0.070       +0.036 [-0.009, +0.077]   +0.044 [+0.004, +0.083]   40.9/22.6/24.8
+    Zephyr 4, 16 channels    1.00/1.00/1.00       0.052/0.043/0.038       +0.008 [+0.004, +0.012]   +0.014 [+0.004, +0.027]   40.7/20.4/22.6
+    Zephyr 4, 230 channels   0.75/1.00/1.00       0.084/0.043/0.042       +0.035 [+0.017, +0.055]   +0.035 [+0.014, +0.057]   33.4/20.4/22.6
+
+The constructor trained on fragments builds chains of about two on every variable (40 qubits
+against minorminer's 20 to 23) and is worse than both controls here, on Zephyr with the
+interval above zero; the 230-channel actor also loses validity within the 60 s deadline on
+the full hosts. What the small rungs taught (spend a qubit, realise an edge) is the wrong
+rule at 16 to 20 variables on a 600-qubit host, where the router's near-singleton draw plus
+two grown qubits is the best of the three. This is the table the paper needs either way; it
+says the learned quality component is negative until the constructor is trained on this
+regime with the quality reward (the experiment that follows the feasibility fixes).
+
 ## Two critical reviews and the diagnostics they asked for (2026-09-17)
 
 The two reviews (`docs/review/2026-09-17-claude-critical-review.md`,
