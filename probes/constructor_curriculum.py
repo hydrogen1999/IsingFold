@@ -294,10 +294,14 @@ def build_corpus_sets(path, cells, n_train, n_heldout, seed, use_manifest_split=
     from isingfold.rl.data.generate import load_instances
     tasks = load_instances(path)
     if use_manifest_split:
-        manifest = json.load(open(Path(path) / "manifest.json"))
-        split = manifest.get("split") or {}
+        split = {}
+        splits_file = Path(path) / "splits.json"
+        if splits_file.exists():
+            split = json.load(open(splits_file))
+        else:
+            split = (json.load(open(Path(path) / "manifest.json")).get("split") or {})
         if not any(isinstance(split.get(k), list) for k in ("train", "validation", "test")):
-            raise ValueError("manifest has no train/validation/test lists to honour")
+            raise ValueError("corpus has no train/validation/test lists to honour")
         return manifest_split_sets(tasks, split, cells, n_train, n_heldout, seed)
     return corpus_sets_from_tasks(tasks, cells, n_train, n_heldout, seed)
 
