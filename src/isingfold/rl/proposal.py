@@ -341,7 +341,16 @@ class ProposalGenerator:
         # options; on a host of degree fifteen a single root per variable does not.
         attached.sort(key=lambda vr: (-best_pref(vr), -placed_neighbours(vr[0]),
                                       -self.logical.degree(vr[0]), str(vr[0])))
-        per_variable = max(1, budget // 8)
+        if budget > 64:
+            # Wide support: every frontier variable is offered, with as many of its adjacent
+            # roots as the budget allows (at most twelve each), instead of eight variables
+            # with a shortlist. On a planted instance the witness root of every frontier
+            # variable is adjacent to a placed neighbour, so it is in this offer whenever
+            # its variable is; the registered 64-candidate shortlist covered eight variables
+            # of a frontier of fifty and blocked the witness walk within twenty steps.
+            per_variable = max(1, min(12, budget // max(1, len(attached))))
+        else:
+            per_variable = max(1, budget // 8)
         attached = [(v, roots[:per_variable]) for v, roots in attached[: max(1, budget // per_variable)]]
         if not attached:
             # Nothing placed yet: a spread of free roots for the highest-degree empty

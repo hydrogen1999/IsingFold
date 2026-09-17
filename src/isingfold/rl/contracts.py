@@ -149,6 +149,12 @@ class OverlapProfile:
         return int(math.ceil(self.excess_fraction_of_qubit_cap * qubit_cap))
 
 
+# The wide construction support: a decision may see every frontier placement of a large
+# instance instead of a 64-candidate shortlist. Registered by its own context version so
+# no measurement under the 64-candidate registration is ever mistaken for one under this.
+WIDE_STATE_CHANGING = 512
+WIDE_SUFFIX = "-wide512"
+
 DEFAULT_CAPS = WorkVector(
     decisions=32,
     route_expansions=200_000,
@@ -261,7 +267,16 @@ class Context:
             value = getattr(self, name)
             if isinstance(value, bool) or not isinstance(value, int) or value < 0:
                 raise ValueError(f"{name} must be a nonnegative integer")
-        if self.max_state_changing != 64 or self.max_commit != 8 or self.padded_actions != 73:
+        if self.max_commit != 8:
+            raise ValueError("IF-Core-v1 fixes the COMMIT capacity at 8")
+        if self.max_state_changing not in (64, WIDE_STATE_CHANGING):
+            raise ValueError(
+                "IF-Core-v1 fixes the state-changing capacity at 64; the wide construction "
+                f"registration allows {WIDE_STATE_CHANGING}"
+            )
+        if self.max_state_changing == WIDE_STATE_CHANGING and WIDE_SUFFIX not in str(self.context_version):
+            raise ValueError("a wide support must be registered by its context version")
+        if self.max_state_changing == 64 and self.padded_actions != 73:
             raise ValueError("IF-Core-v1 fixes the action capacities at 64 + 8 + 1 = 73")
         if self.archive_protected != 1 or self.archive_fifo != 7:
             raise ValueError("IF-Core-v1 fixes the improvement archive at 1 protected + 7 FIFO")

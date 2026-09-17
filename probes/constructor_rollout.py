@@ -16,7 +16,7 @@ import torch
 from isingfold.rl.contracts import DecisionState, Mode, Opcode, TerminalReason, TerminalRecord
 from isingfold.rl.env import EmbeddingEnv, fixed_strength_selector
 
-from _context import construction_context
+from _context import construction_context, scale_caps_for_steps
 
 
 CONSTRUCTION_QUOTAS = {
@@ -60,11 +60,11 @@ def _progress(task, chains):
     return 0.5 * (placed + demand)
 
 
-def _context(task, cap, max_steps, reward_reads, quotas, restart_allowance):
+def _context(task, cap, max_steps, reward_reads, quotas, restart_allowance, wide=False):
     ctx = construction_context(
         cap, task.logical.number_of_nodes(), task.logical.number_of_edges(),
-        quotas=CONSTRUCTION_QUOTAS if quotas is None else quotas,
-        restart_allowance=restart_allowance,
+        quotas=(None if wide else CONSTRUCTION_QUOTAS) if quotas is None else quotas,
+        restart_allowance=restart_allowance, wide=wide,
     )
     # Leave one decision beyond the caller's horizon: reaching max_steps does not
     # artificially turn the last policy support into a forced COMMIT-only state.
@@ -76,14 +76,15 @@ def _context(task, cap, max_steps, reward_reads, quotas, restart_allowance):
     })
     reserve = replace(ctx.reserve, evaluator_reads=max(ctx.reserve.evaluator_reads, reward_reads))
     caps = replace(caps, evaluator_reads=max(caps.evaluator_reads, reserve.evaluator_reads))
-    return replace(ctx, caps=caps, reserve=reserve, n_est_reads=reward_reads,
-                   context_version=ctx.context_version + "-independent-constructor-v1")
+    ctx = replace(ctx, caps=caps, reserve=reserve, n_est_reads=reward_reads,
+                  context_version=ctx.context_version + "-independent-constructor-v1")
+    return scale_caps_for_steps(ctx, task.logical.number_of_nodes(), max_steps)
 
 
 def episode(task, model, fc, temperature, max_steps, rng, deadline, train=True, *,
             qubit_cap=None, objective="quality", reward_reads=256, shaping_coef=0.0,
             measure=None, quotas=None, restart_allowance=2, evaluate_reward=None,
-            build_observation=False, initializer=None):
+            build_observation=False, initializer=None, wide=False):
     """Construct one embedding; only an on-time, actor-selected COMMIT can succeed.
 
     ``train`` selects stochastic sampling versus greedy inference. ``evaluate_reward``
@@ -118,7 +119,7 @@ def episode(task, model, fc, temperature, max_steps, rng, deadline, train=True, 
         raise ValueError("qubit_cap must be a positive integer within the active host")
     if hasattr(fc, "budget") and fc.budget != cap:
         raise ValueError("feature context and environment must use the same public qubit cap")
-    ctx = _context(task, cap, max_steps, reward_reads, quotas, restart_allowance)
+    ctx = _context(task, cap, max_steps, reward_reads, quotas, restart_allowance, wide=wide)
     # The constructor scores candidates from ``fc``; the environment's tensor observation
     # is never read here and dominates the step cost on large hosts, so it is off by default.
     # ``initializer`` is a training-time curriculum hook only: a partial embedding to build

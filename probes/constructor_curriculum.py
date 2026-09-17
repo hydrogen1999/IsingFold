@@ -87,19 +87,26 @@ class Task:
         raise AssertionError("initial embedding accessed")
 
 
-def exact_ground_energy(problem, limit=14):
-    """Minimum Ising energy by enumeration; only for the small generated instances."""
+def exact_ground_energy(problem, limit=20):
+    """Minimum Ising energy by enumeration in chunks; for the generated instances (at most
+    20 variables in any stage)."""
     nodes = sorted(problem.h)
     n = len(nodes)
     if n > limit:
         raise ValueError("enumeration is limited to %d variables" % limit)
     index = {v: i for i, v in enumerate(nodes)}
     h = np.array([float(problem.h[v]) for v in nodes])
-    states = ((np.arange(2 ** n)[:, None] >> np.arange(n)) & 1) * 2 - 1
-    energy = states @ h
-    for (u, v), j in problem.j.items():
-        energy = energy + float(j) * states[:, index[u]] * states[:, index[v]]
-    return float(energy.min())
+    couplings = [(index[u], index[v], float(j)) for (u, v), j in problem.j.items()]
+    best = float("inf")
+    chunk = 1 << min(n, 16)
+    for start in range(0, 2 ** n, chunk):
+        codes = np.arange(start, min(start + chunk, 2 ** n))
+        states = ((codes[:, None] >> np.arange(n)) & 1) * 2 - 1
+        energy = states @ h
+        for a, b, j in couplings:
+            energy = energy + j * states[:, a] * states[:, b]
+        best = min(best, float(energy.min()))
+    return best
 
 
 def logical_graph(rng, n):
@@ -411,13 +418,15 @@ def run(args, train, heldout):
 
     quality = args.objective == "quality"
 
+    wide = args.support == "wide"
+
     def draw(task, seed, grad, reward=None, initializer=None):
         with torch.set_grad_enabled(grad):
             return episode(task, actor, features[task.name], 1., args.max_steps,
                            np.random.default_rng(seed), args.episode_seconds,
                            train=True, objective=args.objective, reward_reads=args.reward_reads,
                            evaluate_reward=quality if reward is None else reward,
-                           initializer=initializer)
+                           initializer=initializer, wide=wide)
 
     def evaluate_quality(tag):
         """The paper's protocol: proposals until the deadline, selection by measurement,
@@ -430,7 +439,7 @@ def run(args, train, heldout):
                     with torch.no_grad():
                         result = episode(t, actor, features[t.name], 1., args.max_steps,
                                          np.random.default_rng(seed), min(seconds_left, args.episode_seconds),
-                                         train=True, objective="quality", evaluate_reward=False)
+                                         train=True, objective="quality", evaluate_reward=False, wide=wide)
                     return result["terminal"] if result["valid"] else None
 
                 def baseline(seed, seconds_left, t=t):
@@ -539,7 +548,7 @@ def run(args, train, heldout):
         "entropy_coef": 0., "prefix_curriculum": args.prefix_fraction or None,
         "train_prefix_sources": sum(1 for t in train if getattr(t, "prefix_source", None)),
         "heldout_prefix_sources": sum(1 for t in heldout if getattr(t, "prefix_source", None)),
-        "max_steps": args.max_steps, "episode_seconds": args.episode_seconds,
+        "max_steps": args.max_steps, "episode_seconds": args.episode_seconds, "support": args.support,
         "certificate": "minorminer at generation only; forbidden afterwards",
     }), flush=True)
     started = time.monotonic()
@@ -593,7 +602,7 @@ def run(args, train, heldout):
         torch.save({"state": actor.state_dict(), "actor": args.actor, "width": args.width,
                     "features": args.features, "feature_width": FEATURE_WIDTHS[args.features],
                     "baseline": args.baseline, "stage": args.stage, "seed": args.seed,
-                    "summary": summary}, args.out)
+                    "support": args.support, "summary": summary}, args.out)
     print("CURRICULUM GATE 2 DONE", flush=True)
     return summary
 
@@ -611,6 +620,8 @@ def parse(argv=None):
                         help="test: the final table only; evaluation-only (--iterations 0) with --init, "
                              "the held-out set is the locked test list, once")
     parser.add_argument("--objective", choices=("feasibility", "quality"), default="feasibility")
+    parser.add_argument("--support", choices=("registered", "wide"), default="registered",
+                        help="wide: the 512-candidate construction support, every frontier placement offered")
     parser.add_argument("--reward-reads", type=int, default=256)
     parser.add_argument("--selection-reads", type=int, default=256)
     parser.add_argument("--assessment-reads", type=int, default=512)
