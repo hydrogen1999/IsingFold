@@ -6,7 +6,8 @@ actor, trained on a fixed set of small instances whose hosts carry dead-end bran
 placement ambiguity, raise its valid-COMMIT rate on those instances, and on instances it has
 never seen? Stages: ``a`` (2 to 4 variables on cycles with pendant dead ends and a chord), ``b`` (4 to 8
 variables on small grids with holes and dead ends), ``p`` and ``z`` (4 to 8 variables on
-connected 12 to 24 qubit fragments of Pegasus 2 and Zephyr 1, the target topologies). Hosts and logical graphs
+connected 12 to 24 qubit fragments of Pegasus 2 and Zephyr 1, the target topologies), ``P``
+and ``Z`` (8 to 14 variables on 32 to 64 qubit fragments of Pegasus 3 and Zephyr 2). Hosts and logical graphs
 are generated from seeds; every instance is certified embeddable by minorminer at generation
 time and that embedding is discarded. During training and evaluation minorminer is forbidden,
 and the task raises on any access to a witness, an initial embedding or a ground energy.
@@ -38,9 +39,12 @@ from constructor_features import ConstructorFeatureContext, WIDTH as CONSTRUCTIO
 from constructor_tiny_gate import Actor, Features, no_completion_solver
 from layout_policy import LayoutActorCritic
 
-STAGES = ("a", "b", "p", "z")
-VARIABLES = {"a": (2, 4), "b": (4, 8), "p": (4, 8), "z": (4, 8)}
+STAGES = ("a", "b", "p", "z", "P", "Z")
+VARIABLES = {"a": (2, 4), "b": (4, 8), "p": (4, 8), "z": (4, 8), "P": (8, 14), "Z": (8, 14)}
 FRAGMENT = (12, 24)
+# stage -> (hardware family, generator size, fragment size range)
+HARDWARE = {"p": ("pegasus", 2, (12, 24)), "z": ("zephyr", 1, (12, 24)),
+            "P": ("pegasus", 3, (32, 64)), "Z": ("zephyr", 2, (32, 64))}
 FEATURE_WIDTH = len(OPCODES) + 8
 FEATURE_WIDTHS = {"tiny": FEATURE_WIDTH, "construction": CONSTRUCTION_WIDTH}
 
@@ -108,12 +112,14 @@ def _attach_dead_ends(g, rng, count, max_length):
     return g
 
 
-def hardware_fragment(rng, family, lo=FRAGMENT[0], hi=FRAGMENT[1]):
-    """A connected induced subgraph of Pegasus 2 or Zephyr 1 with the hardware's own
+def hardware_fragment(rng, family, lo=FRAGMENT[0], hi=FRAGMENT[1], size=None):
+    """A connected induced subgraph of a Pegasus or Zephyr graph with the hardware's own
     degree structure and dead ends: a breadth-first ball, then random removals that keep
     it connected, down to a size drawn from [lo, hi]."""
     import dwave_networkx as dnx
-    full = dnx.pegasus_graph(2) if family == "pegasus" else dnx.zephyr_graph(1)
+    if size is None:
+        size = 2 if family == "pegasus" else 1
+    full = dnx.pegasus_graph(size) if family == "pegasus" else dnx.zephyr_graph(size)
     full = nx.convert_node_labels_to_integers(full, ordering="sorted")
     target = int(rng.integers(lo, hi + 1))
     start = int(rng.choice(sorted(full.nodes())))
@@ -134,9 +140,11 @@ def hardware_fragment(rng, family, lo=FRAGMENT[0], hi=FRAGMENT[1]):
 
 def host_graph(rng, stage):
     """a: cycle plus dead ends and a chord. b: grid with holes plus dead ends.
-    p, z: fragments of Pegasus 2 and Zephyr 1."""
-    if stage in ("p", "z"):
-        return hardware_fragment(rng, "pegasus" if stage == "p" else "zephyr")
+    p, z: 12 to 24 qubit fragments of Pegasus 2 and Zephyr 1. P, Z: 32 to 64 qubit
+    fragments of Pegasus 3 and Zephyr 2 for 8 to 14 variables."""
+    if stage in HARDWARE:
+        family, size, (lo, hi) = HARDWARE[stage]
+        return hardware_fragment(rng, family, lo, hi, size)
     if stage == "a":
         m = int(rng.integers(5, 10))
         g = nx.cycle_graph(m)

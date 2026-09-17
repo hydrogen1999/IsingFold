@@ -120,3 +120,13 @@ def test_hardware_stage_sets_build_and_stay_disjoint():
         for b in heldout:
             assert not cc.isomorphic_pair(a, b)
     assert all(4 <= t.logical.number_of_nodes() <= 8 for t in train + heldout)
+
+
+@pytest.mark.parametrize("stage", ["P", "Z"])
+def test_larger_hardware_fragments_match_their_declared_range(stage):
+    pytest.importorskip("dwave_networkx")
+    family, size, (lo, hi) = cc.HARDWARE[stage]
+    for seed in range(2):
+        h = cc.host_graph(np.random.default_rng(seed), stage)
+        assert nx.is_connected(h) and lo <= h.number_of_nodes() <= hi
+    assert cc.VARIABLES[stage] == (8, 14)
