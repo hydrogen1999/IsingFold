@@ -269,9 +269,37 @@ def corpus_sets_from_tasks(tasks, cells, n_train, n_heldout, seed):
     return wrapped[:n_train], wrapped[n_train:]
 
 
-def build_corpus_sets(path, cells, n_train, n_heldout, seed):
+def manifest_split_sets(tasks, split, cells, n_train, n_heldout, seed):
+    """Honour a corpus manifest's split: train from its train list, held-out from its
+    validation list, and never touch its test list. Lists may name instances or lineages."""
+    def member(t, names):
+        return t.name in names or (t.lineage or "") in names
+    train_names, val_names, test_names = (set(split.get(k, [])) for k in ("train", "validation", "test"))
+    keep = [t for t in tasks if not cells or any(cell in t.name for cell in cells)]
+    train_pool = [t for t in keep if member(t, train_names) and not member(t, test_names)]
+    val_pool = [t for t in keep if member(t, val_names) and not member(t, test_names)]
+    rng = np.random.default_rng(seed)
+    rng.shuffle(train_pool); rng.shuffle(val_pool)
+    if len(train_pool) < n_train or len(val_pool) < n_heldout:
+        raise ValueError("manifest split holds %d train and %d validation tasks in the chosen cells, "
+                         "%d and %d requested" % (len(train_pool), len(val_pool), n_train, n_heldout))
+    wrapped = [Task(t.name, t.logical, t.host, t.lineage or t.name, getattr(t, "problem", None),
+                    getattr(t, "ground_energy", None)) for t in train_pool[:n_train] + val_pool[:n_heldout]]
+    for w, t in zip(wrapped[:n_train], train_pool[:n_train]):
+        w.prefix_source = getattr(t, "witness", None)
+    return wrapped[:n_train], wrapped[n_train:]
+
+
+def build_corpus_sets(path, cells, n_train, n_heldout, seed, use_manifest_split=False):
     from isingfold.rl.data.generate import load_instances
-    return corpus_sets_from_tasks(load_instances(path), cells, n_train, n_heldout, seed)
+    tasks = load_instances(path)
+    if use_manifest_split:
+        manifest = json.load(open(Path(path) / "manifest.json"))
+        split = manifest.get("split") or {}
+        if not any(isinstance(split.get(k), list) for k in ("train", "validation", "test")):
+            raise ValueError("manifest has no train/validation/test lists to honour")
+        return manifest_split_sets(tasks, split, cells, n_train, n_heldout, seed)
+    return corpus_sets_from_tasks(tasks, cells, n_train, n_heldout, seed)
 
 
 def load_init(path, actor, kind, features):
@@ -486,6 +514,7 @@ def run(args, train, heldout):
                  "no quality claim; no completion solver at train or test time",
         "stage": args.stage, "seed": args.seed, "actor": args.actor, "width": args.width,
         "corpus": args.corpus or None, "cells": args.cells or None,
+        "manifest_split": bool(args.manifest_split),
         "init": args.init or None, "init_summary": init_summary,
         "parameters": sum(p.numel() for p in actor.parameters()),
         "features": args.features, "feature_width": FEATURE_WIDTHS[args.features],
@@ -563,6 +592,9 @@ def parse(argv=None):
     parser.add_argument("--corpus", default="", help="stage corpus: a planted corpus directory")
     parser.add_argument("--cells", default="", help="stage corpus: comma-separated name filters")
     parser.add_argument("--init", default="", help="warm start from a lower rung's checkpoint")
+    parser.add_argument("--manifest-split", action="store_true",
+                        help="stage corpus: train from the manifest's train list, held-out from its "
+                             "validation list, never its test list")
     parser.add_argument("--objective", choices=("feasibility", "quality"), default="feasibility")
     parser.add_argument("--reward-reads", type=int, default=256)
     parser.add_argument("--selection-reads", type=int, default=256)
@@ -671,7 +703,8 @@ def main(argv=None):
     # the certificate needs minorminer; everything after this line must not
     if args.stage == "corpus":
         cells = [c for c in args.cells.split(",") if c]
-        train, heldout = build_corpus_sets(args.corpus, cells, args.train, args.heldout, args.seed)
+        train, heldout = build_corpus_sets(args.corpus, cells, args.train, args.heldout, args.seed,
+                                           use_manifest_split=args.manifest_split)
     else:
         train, heldout = build_sets(args.stage, args.train, args.heldout, args.seed)
     with no_completion_solver():

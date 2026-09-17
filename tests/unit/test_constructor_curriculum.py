@@ -272,3 +272,16 @@ def test_prefix_curriculum_trains_from_partial_starts_and_evaluates_from_empty()
     assert 0. <= summary["heldout"]["final"] <= 1.
     with pytest.raises(SystemExit):
         cc.parse(["--prefix-fraction", "1.5:0"])
+
+
+def test_manifest_split_keeps_the_test_list_untouched():
+    tasks = [_Fake("h-dense24-%d" % i, "L%d" % i) for i in range(10)]
+    split = {"train": ["h-dense24-%d" % i for i in range(6)], "validation": ["L6", "L7"], "test": ["h-dense24-8", "L9"]}
+    train, heldout = cc.manifest_split_sets(tasks, split, ["dense24"], 4, 2, seed=0)
+    names = {t.name for t in train + heldout}
+    assert len(train) == 4 and len(heldout) == 2
+    assert "h-dense24-8" not in names and "h-dense24-9" not in names
+    assert {t.lineage for t in heldout} <= {"L6", "L7"}
+    assert all(t.prefix_source for t in train) and all(t.prefix_source is None for t in heldout)
+    with pytest.raises(ValueError):
+        cc.manifest_split_sets(tasks, split, ["dense24"], 7, 2, seed=0)
