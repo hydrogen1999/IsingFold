@@ -11,6 +11,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Hashable, Mapping
 
+import weakref
+
 import networkx as nx
 
 from isingfold.embedding import LogicalProblem
@@ -51,6 +53,73 @@ class ValidationReceipt:
         }
 
 
+# Per-host memo of chain connectivity and of chain-pair contacts. A search state validates
+# every chain on every candidate's dry run; between candidates only the affected chains
+# change, so the answers for the others are the same. Keyed by the host graph object (never
+# mutated once built) and the exact frozen chains; bounded so a long run cannot grow it
+# without limit. Results are identical to the direct computation by construction.
+_CONNECTED_MEMO: "weakref.WeakKeyDictionary[nx.Graph, dict]" = weakref.WeakKeyDictionary()
+_CONTACT_MEMO: "weakref.WeakKeyDictionary[nx.Graph, dict]" = weakref.WeakKeyDictionary()
+_MEMO_LIMIT = 200_000
+
+
+def _memo(table: "weakref.WeakKeyDictionary", host: nx.Graph) -> dict:
+    try:
+        cache = table.get(host)
+    except TypeError:
+        return {}
+    if cache is None:
+        cache = {}
+        try:
+            table[host] = cache
+        except TypeError:
+            pass
+    if len(cache) > _MEMO_LIMIT:
+        cache.clear()
+    return cache
+
+
+def chain_is_connected(chain: frozenset[Qubit], host: nx.Graph) -> bool:
+    """``nx.is_connected(host.subgraph(chain))`` for a nonempty chain inside the host,
+    by a breadth-first walk over the adjacency dict, memoised per host and chain."""
+    chain = frozenset(chain)
+    if len(chain) <= 1:
+        return True
+    cache = _memo(_CONNECTED_MEMO, host)
+    hit = cache.get(chain)
+    if hit is not None:
+        return hit
+    adj = host._adj
+    start = next(iter(chain))
+    seen = {start}
+    stack = [start]
+    while stack:
+        q = stack.pop()
+        for r in adj[q]:
+            if r in chain and r not in seen:
+                seen.add(r)
+                stack.append(r)
+    hit = len(seen) == len(chain)
+    cache[chain] = hit
+    return hit
+
+
+def chains_touch(cu: frozenset[Qubit], cv: frozenset[Qubit], host: nx.Graph) -> bool:
+    """Whether some qubit of ``cu`` and some *other* qubit of ``cv`` share a host edge,
+    memoised per host and chain pair."""
+    cu, cv = frozenset(cu), frozenset(cv)
+    cache = _memo(_CONTACT_MEMO, host)
+    key = (cu, cv) if len(cu) <= len(cv) else (cv, cu)
+    hit = cache.get(key)
+    if hit is not None:
+        return hit
+    small, big = key
+    adj = host._adj
+    hit = any(r != q and r in big for q in small if q in adj for r in adj[q])
+    cache[key] = hit
+    return hit
+
+
 def unrealized_demands(
     chains: Mapping[Node, frozenset[Qubit]],
     logical: nx.Graph,
@@ -64,7 +133,7 @@ def unrealized_demands(
         if not cu or not cv:
             count += 1
             continue
-        if not any(host.has_edge(q, r) for q in cu for r in cv if q != r):
+        if not chains_touch(cu, cv, host):
             count += 1
     return count
 
@@ -87,13 +156,14 @@ def chains_are_connected(
     chains: Mapping[Node, frozenset[Qubit]], host: nx.Graph
 ) -> tuple[Node, ...]:
     bad = []
+    adj = host._adj
     for i, chain in chains.items():
         if not chain:
             continue
-        if not set(chain) <= set(host.nodes):
+        if any(q not in adj for q in chain):
             bad.append(i)
             continue
-        if len(chain) > 1 and not nx.is_connected(host.subgraph(chain)):
+        if len(chain) > 1 and not chain_is_connected(chain, host):
             bad.append(i)
     return tuple(bad)
 

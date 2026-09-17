@@ -55,34 +55,114 @@ class Task:
 
 
 class Features:
-    """Opcode, five successor deltas and three terminal/restart indicators."""
+    """Opcode, five successor deltas and three terminal/restart indicators.
+
+    The summary of a state is computed once per state and reused across the candidates of
+    a decision; a candidate's successor summary is the state's summary adjusted by the
+    variables the candidate touches, so an observation costs the affected chains rather
+    than every chain (at four hundred placed chains the full recomputation per candidate
+    was two seconds a step). ``summary_reference`` is the direct computation, kept for the
+    equality test."""
 
     def __init__(self, task):
         self.task = task
         self.budget = len(task.host)
+        self._neighbours = {q: tuple(task.host[q]) for q in task.host}
+        self._logical_neighbours = {v: tuple(task.logical[v]) for v in task.logical}
+        self._n = len(task.logical)
+        self._m = max(1, task.logical.number_of_edges())
+        self._state_key = None
+        self._state_counts = None
+        self._connected_cache = {}
+
+    def _connected(self, chain):
+        chain = frozenset(chain)
+        hit = self._connected_cache.get(chain)
+        if hit is None:
+            if not chain:
+                hit = True
+            else:
+                start = next(iter(chain)); seen = {start}; stack = [start]
+                while stack:
+                    q = stack.pop()
+                    for r in self._neighbours.get(q, ()):
+                        if r in chain and r not in seen:
+                            seen.add(r); stack.append(r)
+                hit = len(seen) == len(chain)
+            if len(self._connected_cache) > 4096:
+                self._connected_cache.clear()
+            self._connected_cache[chain] = hit
+        return hit
+
+    def _touch(self, chains, v, u):
+        a, b = chains.get(v, ()), chains.get(u, ())
+        if not a or not b:
+            return False
+        if len(a) > len(b):
+            a, b = b, a
+        bset = b if isinstance(b, (set, frozenset)) else set(b)
+        return any(r in bset for x in a for r in self._neighbours.get(x, ()))
+
+    def _counts(self, chains):
+        """(placed, realised edges, occupied qubits, memberships, disconnected chains)."""
+        placed = sum(1 for v in self._logical_neighbours if chains.get(v))
+        realized = sum(1 for v, u in self.task.logical.edges() if self._touch(chains, v, u))
+        used = set().union(*chains.values()) if chains else set()
+        memberships = sum(len(c) for c in chains.values())
+        disconnected = sum(1 for c in chains.values() if c and not self._connected(c))
+        return placed, realized, len(used), memberships, disconnected
+
+    def _to_row(self, counts):
+        placed, realized, used, memberships, disconnected = counts
+        host = len(self.task.host)
+        return np.array([placed / self._n, realized / self._m, used / host,
+                         (memberships - used) / host, disconnected / self._n], dtype=np.float32)
+
+    def summary_reference(self, chains):
+        return self._to_row(self._counts(chains))
 
     def summary(self, chains):
-        host, logical = self.task.host, self.task.logical
-        placed = sum(bool(chains.get(v)) for v in logical) / len(logical)
-        realized = sum(any(host.has_edge(x, y) for x in chains.get(v, ())
-                           for y in chains.get(u, ())) for v, u in logical.edges())
-        realized /= logical.number_of_edges()
-        used = set().union(*chains.values()) if chains else set()
-        memberships = sum(map(len, chains.values()))
-        overlap = (memberships - len(used)) / len(host)
-        disconnected = sum(bool(chain) and not nx.is_connected(host.subgraph(chain))
-                           for chain in chains.values()) / len(logical)
-        return np.array([placed, realized, len(used) / len(host), overlap, disconnected],
-                        dtype=np.float32)
+        key = frozenset((v, frozenset(c)) for v, c in chains.items() if c)
+        if key != self._state_key:
+            self._state_key = key
+            self._state_counts = self._counts(chains)
+        return self._to_row(self._state_counts)
+
+    def successor_summary(self, chains, after, affected):
+        """The successor's summary from the state's counts and the affected variables."""
+        self.summary(chains)
+        placed, realized, used, memberships, disconnected = self._state_counts
+        affected = set(affected)
+        edges = {tuple(sorted((v, u), key=repr)) for v in affected for u in self._logical_neighbours[v]}
+        for v in affected:
+            before, now = chains.get(v, frozenset()), after.get(v, frozenset())
+            placed += bool(now) - bool(before)
+            memberships += len(now) - len(before)
+            disconnected += (bool(now) and not self._connected(now)) - (bool(before) and not self._connected(before))
+        for v, u in edges:
+            realized += self._touch(after, v, u) - self._touch(chains, v, u)
+        # occupied qubits: recount only if the affected chains changed the union
+        old_q = set().union(*(chains.get(v, frozenset()) for v in affected)) if affected else set()
+        new_q = set().union(*(after.get(v, frozenset()) for v in affected)) if affected else set()
+        if old_q != new_q:
+            others = set()
+            for v, c in chains.items():
+                if v not in affected and c:
+                    others |= c
+            used = len(others | new_q)
+        return self._to_row((placed, realized, used, memberships, disconnected))
 
     def observe(self, candidate, chains, *, state, ctx, steps_left, max_steps):
         opcode = candidate.opcode.value
         if opcode == "COMMIT":
             after = dict(state.archive[candidate.archive_ref].chains)
+            before, new = self.summary(chains), self.summary_reference(after)
         else:
             after = dict(chains)
             after.update(candidate.new_chains)
-        before, new = self.summary(chains), self.summary(after)
+            affected = [v for v in candidate.new_chains if after.get(v, frozenset()) != chains.get(v, frozenset())]
+            before = self.summary(chains)
+            new = self.successor_summary(chains, after, affected) if affected else before
         onehot = [float(opcode == getattr(item, "value", item)) for item in OPCODES]
         return np.asarray(onehot + list(new - before)
                           + [float(opcode == "COMMIT") * new[0],
