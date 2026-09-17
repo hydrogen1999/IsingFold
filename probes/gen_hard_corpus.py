@@ -36,6 +36,8 @@ from isingfold.rl.data.lineage import Lineage
 from isingfold.rl.data.planting import PlantingError, frustrated_loops
 from isingfold.rl.env import EmbeddingTask
 
+from _context import host_context
+
 from _initializers import minorminer_initializer
 
 
@@ -111,7 +113,9 @@ def main() -> int:
     mm = minorminer_initializer(a.mm_tries)
     rng = np.random.default_rng(a.seed)
     weights = tuple(float(x) for x in a.weights.split(","))
-    ctx = Context(qubit_cap=a.qubit_cap)
+    # the registered reserve scales with the cap; the bare default cannot encode a
+    # COMMIT-only support above a few hundred qubits (hardware-sized hosts)
+    ctx = host_context(a.qubit_cap)
 
     families = [f.strip() for f in a.families.split(",") if f.strip()]
     sizes = [int(v) for v in a.variables.split(",") if v]
