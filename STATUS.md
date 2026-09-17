@@ -25,7 +25,7 @@ never depends on memory.
 | layout v4 (PR #2, branch `7b465f3`, not merged) | all-free root support, capacity features, contextual actor-critic, witness-root warm start; arms legacy, support, capacity, warm, seed 0, Pegasus 3 and Zephyr 2 | apollo `~/prj_IsingFold_pr2/runs/hybrid_v4/{legacy,support,capacity,warm}_{pegasus3,zephyr2}_s0.log` (separate checkout of the PR) | launched and stopped 2026-09-16 at the user's request before the first training evaluation, with every other policy-then-router arm; 111 of its unit tests pass locally; not merged |
 | independent constructor (PR #2 head `d06bf43`, ADR-005, not merged) | RL builds the whole embedding from empty, no router completion; contextual actor-critic over the environment's macro-actions, 230-channel observations; stage 1 feasibility curriculum, stage 2 quality from the stage-1 checkpoint; minorminer as a separate comparison arm only | apollo `~/prj_IsingFold_pr2/runs/constructor/feas_{pegasus3,zephyr2}_s{0,1,2}.log` | launched 2026-09-16; 203 of its unit tests pass locally; gate before any quality run: nonzero valid-COMMIT coverage on held-out lineages |
 | contact policy, low fill | contact growth vs random growth vs the start vs four fresh router draws, all with measured selection | goose `runs/contact/pegasus6.log`, `zephyr4.log` | Pegasus 6: restart minus start +0.141; random growth -0.075, policy -0.104 below it. Zephyr 4: restart +0.139; random -0.060, policy -0.063 below it. Both hosts: growing one draw loses to drawing again |
-| contact policy, high fill | same, starting from the planted witness at 80 to 95 percent occupancy, budget = the space left, objective = energy residual, frontier features, occupancy traced | goose `runs/contact/*_fill.log`; Zephyr init copy `results/contact/zephyr4_fill_init.log` | Zephyr 4, init, 16 instances at 89 percent occupancy, residual (higher is better): random growth +0.0066 [+0.0047, +0.0085] over the start, policy +0.0077, policy minus random +0.0012 [-0.0017, +0.0046]; router redraws -0.0052 [-0.0103, -0.0010] under the start, growth +0.0117 over the redraws. The regime flips: at high fill growth beats redrawing and the start, and the learned part is still zero. Pegasus 6 in its first validation (router redraws at 90 percent take 300 s each) |
+| contact policy, high fill | same, starting from the planted witness at 80 to 95 percent occupancy, budget = the space left, objective = energy residual, frontier features, occupancy traced | goose `runs/contact/*_fill.log`; Zephyr init copy `results/contact/zephyr4_fill_init.log` | Zephyr 4, init, 16 instances at 89 percent occupancy, residual (higher is better): random growth +0.0066 [+0.0047, +0.0085] over the start, policy +0.0077, policy minus random +0.0012 [-0.0017, +0.0046]; router redraws -0.0052 [-0.0103, -0.0010] under the start, growth +0.0117 over the redraws. The regime flips: at high fill growth beats redrawing and the start, and the learned part is still zero. Pegasus 6 (`results/contact/pegasus6_fill_init.log`) agrees: random growth +0.0061 [+0.0042, +0.0082], policy +0.0057 over the start, policy minus random -0.0005 [-0.0022, +0.0013]; router redraws +0.0003 [-0.0005, +0.0010], i.e. the router never redrew at 90 percent and that arm is the start. Training continues; later validations decide whether the policy learns past random |
 | direction 4, RL | REINFORCE on the constructive policy (policy = prioritiser), dense progress reward, STOP and RESTART masked, evaluation samples until the deadline; from scratch and initialised from the imitation prioritiser; Pegasus 3 and Zephyr 2 | `results/rl/pegasus3_scratch.log`, `pegasus3_init.log`, `zephyr2_init.log` | **closed, null**: valid 0.00 on 30 held-out instances at every checkpoint through iterations 119 to 129 (demand fraction 0.51 to 0.64); stopped 2026-09-16 |
 | anytime 600 s | minorminer restarted until 300 and 600 s on the big fill corpora | `results/fill/*_anytime600.log` | **done**: at 600 s nothing changes but Pegasus 85 percent medium chains 0 -> 0.17; short chains stay 0 in every cell on both hosts |
 | imitation, deployed | the imitation prioritiser as a policy on the full fill corpora, sample until 600 s | `results/rl/pegasus6_imitation_deploy.log`, `zephyr4_imitation_deploy.log`; baseline `results/fill/*_anytime600.log` | **closed, null**: valid 0.00 in every cell, 48 instances per host, demand fraction 0.44 / 0.39 |
@@ -407,8 +407,21 @@ the start where the router failed and a worse embedding where it succeeded), and
 contacts into the space that is left improves the residual over the start with the interval
 above zero, on every arm that grows. So the platform's territory is the regime where the
 router cannot redraw: complete or improve what exists, then measure. The learned part is
-still zero here: the policy's proposals are worth exactly random proposals. Pegasus 6 is in
-its first validation; its redraws at 90 percent take 300 s each.
+still zero here: the policy's proposals are worth exactly random proposals.
+
+Pegasus 6 (`results/contact/pegasus6_fill_init.log`, same protocol, start occupancy 0.90):
+
+    random contact growth minus the start     +0.0061 [+0.0042, +0.0082]
+    policy minus the start                    +0.0057 [+0.0034, +0.0078]
+    policy minus random                       -0.0005 [-0.0022, +0.0013]
+    router redraws minus the start            +0.0003 [-0.0005, +0.0010]
+    random growth minus router redraws        +0.0059 [+0.0042, +0.0078]
+
+Here the router did not redraw a single instance at 90 percent within its 20 tries, so the
+redraw arm is the start itself, and growth into the remaining space is the only thing that
+moves the objective. Both hosts, both intervals above zero for growth, both policies equal
+to random at initialisation; the runs keep training and the later validations say whether
+the policy learns anything past random where random already wins.
 
 ## The learned prior on allocation: signal at zero reads, a loss as a filter (B minus A)
 
