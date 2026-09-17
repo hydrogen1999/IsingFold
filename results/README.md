@@ -1,5 +1,14 @@
 # Results
 
+## Constructor learning gate (same-instance diagnostic)
+
+`audit/constructor_tiny_summary.json` and the three `constructor_tiny_seed*.log` files
+record K3-on-C5 feasibility learning by a 16-parameter linear policy: 31/100 valid
+outputs initially and 93/100, 92/100, 93/100 after 40 REINFORCE updates. This is a
+same-task overfit gate, not a downstream-quality or held-out benchmark result.
+See `probes/constructor_tiny_gate.py` and
+`docs/review/2026-09-17-constructor-learnability.md` for reproduction and limits.
+
 ## Index
 
 One line per directory. The section below each name, where it exists, says how the number was

@@ -196,3 +196,9 @@ deadline failures, budget constraints, reward/gradient contracts and CLI checkpo
 The tiny Monte Carlo learnability gate has a synthetic rewarded terminal action; it is
 not an annealing-quality result. Full-scale training and A* competitiveness remain to
 be established. The hybrid logs remain historical measurements of a different method.
+
+A later real-embedding learning gate uses a 16-parameter linear policy on K3-on-C5:
+31/100 valid outputs initially and 93/100, 92/100, 93/100 after 40 updates across
+three seeds. This is same-instance feasibility overfitting, not downstream-quality
+evidence. See [the learnability review](../review/2026-09-17-constructor-learnability.md)
+and `probes/constructor_tiny_gate.py`.
