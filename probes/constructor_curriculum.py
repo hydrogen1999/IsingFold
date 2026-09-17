@@ -355,10 +355,25 @@ def run(args, train, heldout):
                     arms.reverse()
                 row = {"instance": t.name}
                 for arm, proposer in arms:
+                    shapes = []
+
+                    def measure(task, terminal, seed, reads, shapes=shapes):
+                        # the last call of a search is the assessment of the chosen candidate
+                        from constructor_objective import measure_terminal
+                        chains = terminal.embedding
+                        shapes.append({"qubits": sum(len(c) for c in chains.values()),
+                                       "longest_chain": max(len(c) for c in chains.values()),
+                                       "reads": reads})
+                        return measure_terminal(task, terminal, seed, reads)
                     row[arm] = evaluate_search(t, proposer, deadline=args.deadline, select_cap=args.select_cap,
                                                selection_reads=args.selection_reads,
                                                assessment_reads=args.assessment_reads, objective="quality",
-                                               seed=experiment_seed(args.seed, "validation", t.name, k))
+                                               seed=experiment_seed(args.seed, "validation", t.name, k),
+                                               measure=measure)
+                    chosen = [x for x in shapes if x["reads"] == args.assessment_reads]
+                    row[arm]["chosen_qubits"] = chosen[-1]["qubits"] if chosen else None
+                    row[arm]["chosen_longest_chain"] = chosen[-1]["longest_chain"] if chosen else None
+                    row[arm]["candidate_qubits_mean"] = float(np.mean([x["qubits"] for x in shapes])) if shapes else None
                 rows.append(row)
             valid = {arm: float(np.mean([r[arm]["valid"] for r in rows])) for arm in rows[0] if arm != "instance"}
             residual = {arm: [r[arm]["residual"] for r in rows if r[arm]["valid"] and r[arm]["residual"] is not None]
@@ -366,8 +381,11 @@ def run(args, train, heldout):
             both = [r for r in rows if "minorminer" in r and r["policy"]["valid"] and r["minorminer"]["valid"]
                     and r["policy"]["residual"] is not None and r["minorminer"]["residual"] is not None]
             paired = paired_boot([r["policy"]["residual"] - r["minorminer"]["residual"] for r in both])
+            shape = {arm: {"chosen_qubits": float(np.mean([r[arm]["chosen_qubits"] for r in rows if r[arm]["chosen_qubits"] is not None] or [np.nan])),
+                           "chosen_longest_chain": float(np.mean([r[arm]["chosen_longest_chain"] for r in rows if r[arm]["chosen_longest_chain"] is not None] or [np.nan]))}
+                     for arm in valid}
             summary = {"evaluation": tag, "set": name, "seed": args.seed, "stage": args.stage,
-                       "objective": "quality", "instances": len(tasks), "valid": valid,
+                       "objective": "quality", "instances": len(tasks), "valid": valid, "chosen_shape": shape,
                        "mean_residual": {arm: (float(np.mean(v)) if v else None) for arm, v in residual.items()},
                        "measured": {arm: len(v) for arm, v in residual.items()},
                        "paired_residual_policy_minus_minorminer": paired, "paired_over": len(both),
@@ -446,6 +464,7 @@ def run(args, train, heldout):
         if quality:
             summary[name] = {"init_valid": before["valid"], "final_valid": after["valid"],
                              "init_residual": before["mean_residual"], "final_residual": after["mean_residual"],
+                             "final_shape": after["chosen_shape"],
                              "final_paired_policy_minus_minorminer": after["paired_residual_policy_minus_minorminer"],
                              "paired_over": after["paired_over"], "instances": before["instances"]}
             continue
@@ -499,9 +518,9 @@ def parse(argv=None):
     args = parser.parse_args(argv)
     if not 0 <= args.seed < 2 ** 32:
         parser.error("seed must be a nonnegative 32-bit integer")
-    if min(args.train, args.heldout, args.iterations, args.eval_episodes, args.eval_every,
-           args.instances_per_iteration, args.max_steps, args.width) < 1:
-        parser.error("set sizes, iterations, evaluation, width and horizon must be positive")
+    if min(args.train, args.heldout, args.eval_episodes, args.eval_every,
+           args.instances_per_iteration, args.max_steps, args.width) < 1 or args.iterations < 0:
+        parser.error("set sizes, evaluation, width and horizon must be positive; iterations nonnegative")
     if args.episodes < 2:
         parser.error("leave-one-out requires at least two episodes per instance")
     if args.baseline == "value" and args.actor != "contextual":

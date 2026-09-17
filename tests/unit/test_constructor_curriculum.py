@@ -194,6 +194,7 @@ def test_quality_objective_runs_the_deadline_protocol_with_the_comparison_arm(tm
     assert summary["objective"] == "quality"
     for name in ("train", "heldout"):
         assert set(summary[name]["final_valid"]) == {"policy", "minorminer"}
+    assert set(summary["heldout"]["final_shape"]) == {"policy", "minorminer"}
         assert 0. <= summary[name]["final_valid"]["minorminer"] <= 1.
     # the guard is back in force after the comparison arm ran
     with pytest.raises(AssertionError):
@@ -207,3 +208,12 @@ def test_init_accepts_legacy_checkpoints_that_stored_the_feature_width(tmp_path)
     assert cc.load_init(str(tmp_path / "old.pt"), cc.make_actor("linear", 8, cc.FEATURE_WIDTHS["tiny"]), "linear", "tiny") is None
     with pytest.raises(ValueError):
         cc.load_init(str(tmp_path / "old.pt"), cc.make_actor("linear", 8, cc.FEATURE_WIDTHS["construction"]), "linear", "construction")
+
+
+def test_zero_iterations_evaluates_only(tmp_path):
+    args = cc.parse(["--stage", "a", "--train", "1", "--heldout", "1", "--episodes", "2",
+                     "--iterations", "0", "--eval-episodes", "2", "--seed", "9", "--max-steps", "12"])
+    train, heldout = cc.build_sets("a", 1, 1, seed=9)
+    with cc.no_completion_solver():
+        summary = cc.run(args, train, heldout)
+    assert summary["heldout"]["init"] == summary["heldout"]["final"]
