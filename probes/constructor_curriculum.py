@@ -269,15 +269,20 @@ def corpus_sets_from_tasks(tasks, cells, n_train, n_heldout, seed):
     return wrapped[:n_train], wrapped[n_train:]
 
 
-def manifest_split_sets(tasks, split, cells, n_train, n_heldout, seed):
+def manifest_split_sets(tasks, split, cells, n_train, n_heldout, seed, heldout_role="validation"):
     """Honour a corpus manifest's split: train from its train list, held-out from its
-    validation list, and never touch its test list. Lists may name instances or lineages."""
+    validation list, and never touch its test list. Lists may name instances or lineages.
+    ``heldout_role="test"`` is for the final table only: an evaluation-only pass over the
+    test list, once, with a checkpoint chosen on validation."""
     def member(t, names):
         return t.name in names or (t.lineage or "") in names
+    if heldout_role not in ("validation", "test"):
+        raise ValueError("heldout_role must be validation or test")
     train_names, val_names, test_names = (set(split.get(k, [])) for k in ("train", "validation", "test"))
     keep = [t for t in tasks if not cells or any(cell in t.name for cell in cells)]
     train_pool = [t for t in keep if member(t, train_names) and not member(t, test_names)]
-    val_pool = [t for t in keep if member(t, val_names) and not member(t, test_names)]
+    val_pool = ([t for t in keep if member(t, val_names) and not member(t, test_names)]
+                if heldout_role == "validation" else [t for t in keep if member(t, test_names)])
     rng = np.random.default_rng(seed)
     rng.shuffle(train_pool); rng.shuffle(val_pool)
     if len(train_pool) < n_train or len(val_pool) < n_heldout:
@@ -290,7 +295,8 @@ def manifest_split_sets(tasks, split, cells, n_train, n_heldout, seed):
     return wrapped[:n_train], wrapped[n_train:]
 
 
-def build_corpus_sets(path, cells, n_train, n_heldout, seed, use_manifest_split=False):
+def build_corpus_sets(path, cells, n_train, n_heldout, seed, use_manifest_split=False,
+                      heldout_role="validation"):
     from isingfold.rl.data.generate import load_instances
     tasks = load_instances(path)
     if use_manifest_split:
@@ -302,7 +308,9 @@ def build_corpus_sets(path, cells, n_train, n_heldout, seed, use_manifest_split=
             split = (json.load(open(Path(path) / "manifest.json")).get("split") or {})
         if not any(isinstance(split.get(k), list) for k in ("train", "validation", "test")):
             raise ValueError("corpus has no train/validation/test lists to honour")
-        return manifest_split_sets(tasks, split, cells, n_train, n_heldout, seed)
+        return manifest_split_sets(tasks, split, cells, n_train, n_heldout, seed, heldout_role)
+    if heldout_role == "test":
+        raise ValueError("a test-list evaluation needs --manifest-split")
     return corpus_sets_from_tasks(tasks, cells, n_train, n_heldout, seed)
 
 
@@ -518,7 +526,7 @@ def run(args, train, heldout):
                  "no quality claim; no completion solver at train or test time",
         "stage": args.stage, "seed": args.seed, "actor": args.actor, "width": args.width,
         "corpus": args.corpus or None, "cells": args.cells or None,
-        "manifest_split": bool(args.manifest_split),
+        "manifest_split": bool(args.manifest_split), "heldout_role": args.heldout_role,
         "init": args.init or None, "init_summary": init_summary,
         "parameters": sum(p.numel() for p in actor.parameters()),
         "features": args.features, "feature_width": FEATURE_WIDTHS[args.features],
@@ -599,6 +607,9 @@ def parse(argv=None):
     parser.add_argument("--manifest-split", action="store_true",
                         help="stage corpus: train from the manifest's train list, held-out from its "
                              "validation list, never its test list")
+    parser.add_argument("--heldout-role", choices=("validation", "test"), default="validation",
+                        help="test: the final table only; evaluation-only (--iterations 0) with --init, "
+                             "the held-out set is the locked test list, once")
     parser.add_argument("--objective", choices=("feasibility", "quality"), default="feasibility")
     parser.add_argument("--reward-reads", type=int, default=256)
     parser.add_argument("--selection-reads", type=int, default=256)
@@ -644,6 +655,8 @@ def parse(argv=None):
         parser.error("learning rate and episode seconds must be positive and finite")
     if (args.stage == "corpus") != bool(args.corpus):
         parser.error("--stage corpus and --corpus PATH go together")
+    if args.heldout_role == "test" and (args.iterations != 0 or not args.init or not args.manifest_split):
+        parser.error("--heldout-role test is evaluation-only: needs --iterations 0, --init and --manifest-split")
     if args.prefix_fraction:
         try:
             lo, hi = (float(x) for x in args.prefix_fraction.split(":"))
@@ -708,7 +721,8 @@ def main(argv=None):
     if args.stage == "corpus":
         cells = [c for c in args.cells.split(",") if c]
         train, heldout = build_corpus_sets(args.corpus, cells, args.train, args.heldout, args.seed,
-                                           use_manifest_split=args.manifest_split)
+                                           use_manifest_split=args.manifest_split,
+                                           heldout_role=args.heldout_role)
     else:
         train, heldout = build_sets(args.stage, args.train, args.heldout, args.seed)
     with no_completion_solver():

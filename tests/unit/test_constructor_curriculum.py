@@ -285,3 +285,16 @@ def test_manifest_split_keeps_the_test_list_untouched():
     assert all(t.prefix_source for t in train) and all(t.prefix_source is None for t in heldout)
     with pytest.raises(ValueError):
         cc.manifest_split_sets(tasks, split, ["dense24"], 7, 2, seed=0)
+
+
+def test_test_role_uses_the_test_list_and_is_evaluation_only():
+    tasks = [_Fake("h-dense24-%d" % i, "L%d" % i) for i in range(10)]
+    split = {"train": ["L%d" % i for i in range(6)], "validation": ["L6", "L7"], "test": ["L8", "L9"]}
+    train, heldout = cc.manifest_split_sets(tasks, split, [], 2, 2, seed=0, heldout_role="test")
+    assert {t.lineage for t in heldout} == {"L8", "L9"} and all(t.lineage in split["train"] for t in train)
+    with pytest.raises(ValueError):
+        cc.manifest_split_sets(tasks, split, [], 2, 2, seed=0, heldout_role="ood")
+    with pytest.raises(SystemExit):
+        cc.parse(["--stage", "corpus", "--corpus", "x", "--manifest-split", "--heldout-role", "test", "--iterations", "5"])
+    with pytest.raises(SystemExit):
+        cc.parse(["--stage", "corpus", "--corpus", "x", "--heldout-role", "test", "--iterations", "0", "--init", "a.pt"])
