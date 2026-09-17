@@ -71,6 +71,9 @@ class ConstructorFeatureContext:
         self.budget = self.legacy.budget
         self.host, self.logical = task.host, task.logical
         self._host_nodes = set(self.host)
+        # adjacency lists once; the per-candidate summary walks them instead of building
+        # networkx subgraph views, whose filter layer dominated the step cost on large hosts
+        self._neighbours = {q: tuple(self.host[q]) for q in self.host}
         self._m, self._n = max(1, len(self.host)), max(1, len(self.logical))
         self._host_edges = max(1, self.host.number_of_edges())
         problem = getattr(task, "problem", None)
@@ -136,11 +139,17 @@ class ConstructorFeatureContext:
             leaves += chain_leaves
             cycles += chain_cycles
         contacts = {}
-        for q, r in self.host.edges():
-            for v in owners.get(q, ()):
-                for u in owners.get(r, ()):
-                    if v != u and self.logical.has_edge(v, u):
-                        contacts.setdefault(frozenset((u, v)), set()).add(frozenset((q, r)))
+        # only edges incident to occupied qubits can be contacts; both directions of an
+        # edge collapse in the frozenset keys, so this equals the walk over host.edges()
+        for q, q_owners in owners.items():
+            for r in self._neighbours.get(q, ()):
+                r_owners = owners.get(r)
+                if not r_owners:
+                    continue
+                for v in q_owners:
+                    for u in r_owners:
+                        if v != u and self.logical.has_edge(v, u):
+                            contacts.setdefault(frozenset((u, v)), set()).add(frozenset((q, r)))
         realized = len(contacts)
         mass = sum(abs(self._j.get(edge, 0.0)) for edge in contacts)
         signed = sum(self._j.get(edge, 0.0) for edge in contacts)
@@ -158,7 +167,7 @@ class ConstructorFeatureContext:
             load = abs(float(self._h.get(v, 0.0))) / len(chain)
             for q in chain:
                 field_loads[q] = field_loads.get(q, 0.0) + load
-        free_components = list(nx.connected_components(self.host.subgraph(self._host_nodes - occupied)))
+        free_components = self._free_component_sizes(occupied)
         within = len(occupied) <= self.budget
         complete = (set(chains) == set(self.logical) and connected == len(self.logical)
                     and memberships == len(occupied) and valid_nodes
@@ -174,13 +183,34 @@ class ConstructorFeatureContext:
             sum(len(c) for c in contacts.values()) / self._host_edges,
             weighted_multiplicity / max(self._coupling_mass, 1e-30),
             max(contact_loads.values(), default=0.0) / max(sum(contact_loads.values()), 1e-30),
-            max(map(len, free_components), default=0) / self._m, len(free_components) / self._m,
+            max(free_components, default=0) / self._m, len(free_components) / self._m,
             (self.budget - len(occupied)) / self._m, float(complete), float(within),
             signed / max(self._coupling_mass, 1e-30),
             max(field_loads.values(), default=0.0) / max(sum(field_loads.values()), 1e-30),
         ], dtype=np.float32)
         self._summary_cache[signature] = np.clip(row, -1.0, 1.0)
         return self._summary_cache[signature]
+
+    def _free_component_sizes(self, occupied):
+        """Sizes of the connected components of the host minus ``occupied``: a breadth-first
+        walk over precomputed adjacency lists, equal to networkx's connected_components of
+        the induced subgraph."""
+        seen = set(occupied) & self._host_nodes
+        sizes = []
+        for start in self._neighbours:
+            if start in seen:
+                continue
+            seen.add(start)
+            frontier, size = [start], 1
+            while frontier:
+                node = frontier.pop()
+                for nxt in self._neighbours[node]:
+                    if nxt not in seen:
+                        seen.add(nxt)
+                        size += 1
+                        frontier.append(nxt)
+            sizes.append(size)
+        return sizes
 
     def _local(self, chains, variables, preferred):
         pairs = []
