@@ -194,8 +194,8 @@ def test_quality_objective_runs_the_deadline_protocol_with_the_comparison_arm(tm
     assert summary["objective"] == "quality"
     for name in ("train", "heldout"):
         assert set(summary[name]["final_valid"]) == {"policy", "minorminer"}
-    assert set(summary["heldout"]["final_shape"]) == {"policy", "minorminer"}
         assert 0. <= summary[name]["final_valid"]["minorminer"] <= 1.
+    assert set(summary["heldout"]["final_shape"]) == {"policy", "minorminer"}
     # the guard is back in force after the comparison arm ran
     with pytest.raises(AssertionError):
         cc.certified_embeddable(train[0].logical, train[0].host, 0) if cc.minorminer.find_embedding is cc.forbidden_solver else (_ for _ in ()).throw(AssertionError())
