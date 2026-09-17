@@ -25,6 +25,8 @@ job="$root/runs/curriculum/slurm/$name.sbatch"
     echo "cd $root"
     echo 'source ~/isingfold/.venv/bin/activate'
     echo 'export ISINGFOLD_SRC=$PWD/src PYTHONPATH=$PWD/src OMP_NUM_THREADS=1 MKL_NUM_THREADS=1'
+    # the timing fast path: identical episodes, proven by the flag check in the record
+    echo 'export ISINGFOLD_FAST_INTERNAL_ASSERTS=1'
     printf 'exec python -u probes/constructor_curriculum.py'
     for a in "$@"; do printf ' %q' "$a"; done
     echo " > runs/curriculum/$name.log 2>&1"
