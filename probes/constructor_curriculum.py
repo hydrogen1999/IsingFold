@@ -161,6 +161,11 @@ def hardware_fragment(rng, family, lo=FRAGMENT[0], hi=FRAGMENT[1], size=None):
                 seen.add(neighbour); order.append(neighbour)
         if len(order) >= 2 * target:
             break
+    if target >= 512:
+        # a breadth-first prefix is connected by construction; the random-removal shaping
+        # below is quadratic and only affordable for the small fragments
+        sub = full.subgraph(order[:target]).copy()
+        return nx.convert_node_labels_to_integers(sub, ordering="sorted")
     sub = full.subgraph(order[:2 * target]).copy()
     while sub.number_of_nodes() > target:
         removable = [n for n in sorted(sub.nodes())
