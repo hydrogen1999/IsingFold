@@ -521,9 +521,27 @@ minorminer produced 6.0 unique candidates an instance on every set, the policy 4
 and restricting the pairing to instances where both arms had six leaves the numbers as they
 are (-0.118 on p and z, -0.077 / -0.043 / +0.000 on b). The remaining suspect is shape: the
 constructor may build longer chains, which under the fixed strength rule can lower the
-residual on these small problems; the chosen embeddings' qubit counts and longest chains
-are being recorded (`*_shape_s0.log`). Scale is small (4 to 8 variables, hosts of 9 to 24
-qubits), so this is a rung, not the paper's number.
+residual on these small problems. The shapes (`*_shape_s0.log`, held-out, chosen embeddings):
+
+    stage      arm          valid   qubits   longest chain   residual   corr(extra qubits, residual gain)
+    b, s0      policy       1.00    7.2      2.58            0.029      -0.70 over 12
+               minorminer   1.00    6.2      1.50            0.107
+    p          policy       0.92    6.6      2.00            0.020      -0.60 over 11
+               minorminer   1.00    5.8      1.08            0.144
+    z          policy       0.92    7.3      2.27            0.023      -0.01 over 11
+               minorminer   1.00    5.7      1.17            0.110
+
+minorminer, resource-first, returns near-singleton embeddings; the constructor spends one
+to two more qubits on chains of length two or three, and on two of the three sets the
+per-instance gain tracks the extra qubits. Under a fixed schedule a strongly coupled chain
+makes the logical spin heavier and its excited states rarer, so this is the objective's
+own preference for spent qubits over minimal ones (the thesis), not necessarily anything
+learned about placement. The control that separates the two is running: a third arm that
+takes minorminer's draw and adds one or two random contact-growth qubits before the same
+compile, selection and assessment (`--comparison minorminer_grown`, `*_grown*_s0.log`).
+If it matches the constructor, the platform gets this gain without learning; if the
+constructor still wins, placement is learned. Scale is small (4 to 8 variables, hosts of 9
+to 24 qubits), so this is a rung, not the paper's number.
 
 ## High fill flips the regime: growth beats redrawing, and the policy still equals random
 
