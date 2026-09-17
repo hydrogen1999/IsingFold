@@ -764,6 +764,7 @@ class EmbeddingEnv:
             self.ctx.qubit_cap,
             self.ctx.overlap,
             allow_empty=self.mode is Mode.CONSTRUCTION,
+            count_demands=False,
         )
         if not receipt.valid:
             return False
@@ -1292,6 +1293,11 @@ class EmbeddingEnv:
 
     def _refresh_integrity_seal(self) -> None:
         self._assert_search_state(verify_seal=False)
+        if _SKIP_INTERNAL_ASSERTS:
+            # The seal exists only to be verified by _assert_search_state, which the fast
+            # path skips; computing it would be a third of a step at four hundred chains.
+            self._integrity_seal = None
+            return
         self._integrity_seal = self._search_state_digest()
 
     @staticmethod

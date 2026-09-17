@@ -176,8 +176,13 @@ def p_search(
     overlap: OverlapProfile,
     remaining: WorkVector | None = None,
     allow_empty: bool = False,
+    count_demands: bool = True,
 ) -> ValidationReceipt:
-    """Search-state admissibility. Neither ``U = 0`` nor disjointness is required here."""
+    """Search-state admissibility. Neither ``U = 0`` nor disjointness is required here.
+
+    ``count_demands=False`` leaves the receipt's demand count at -1: the legality dry run
+    of every candidate only reads ``valid``, and the count was the dominant cost of a
+    decision at hundreds of placed chains."""
 
     reasons: list[str] = []
     if set(chains) != set(logical.nodes()):
@@ -207,7 +212,7 @@ def p_search(
         reasons=tuple(reasons),
         qubits=unique,
         max_chain=max(lengths),
-        unrealized_demands=unrealized_demands(chains, logical, host),
+        unrealized_demands=unrealized_demands(chains, logical, host) if count_demands else -1,
     )
 
 
