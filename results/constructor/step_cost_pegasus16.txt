@@ -1,0 +1,10 @@
+constructor seconds per step on Pegasus 16 (probes/constructor_step_cost.py, branch
+feat/constructor-curriculum at 51f710e; breadth-first fragments of pegasus_graph(16) and the
+full host; 24 logical variables; uniform linear policy; 30-step horizon; apollo, 2026-09-17)
+
+ 1024 qubits tiny          0.049 s/step  observe 0.011  env 0.037  (26 steps, STOP_NO_VALID)
+ 1024 qubits construction  0.177 s/step  observe 0.139  env 0.038  (26 steps, STOP_NO_VALID)
+ 2048 qubits tiny          0.057 s/step  observe 0.011  env 0.046  (26 steps, STOP_NO_VALID)
+ 2048 qubits construction  0.343 s/step  observe 0.297  env 0.046  (26 steps, STOP_NO_VALID)
+ 5640 qubits tiny          0.087 s/step  observe 0.011  env 0.076  (26 steps, STOP_NO_VALID)
+ 5640 qubits construction  0.820 s/step  observe 0.744  env 0.076  (26 steps, STOP_NO_VALID)
