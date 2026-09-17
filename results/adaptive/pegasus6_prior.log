@@ -1,0 +1,25 @@
+  WARNING: code-only cache mismatch accepted; recorded=50acb532416f8e13 current=87279028497d3170
+{"cache": "runs/relabel/pegasus6_registered.pkl", "split": "eval", "lineages": 32, "states": 61, "reads": 256, "block": 32, "beta_range": [0.1, 2.0], "prior": "runs/large/train_seed0.pt"}
+  prior contract: {"allow_stale_cache": null, "checkpoint_sha256": "af59e1e062f6ab746473c5ff7e5f6323999e4d2e87f5c8d36a9e9ec3fad1cd0c", "coords": false, "label_provenance": null, "legacy_compile": false, "physics": false, "space": false, "width": 64}
+  prior states: 61 states compiled, 0 candidates dropped, 0 without native coordinates, 1s
+  prior preprocessing/inference seconds 10.098182
+  10/61 states, 520 evaluator calls, 1441s
+  20/61 states, 1024 evaluator calls, 2823s
+  30/61 states, 1510 evaluator calls, 4165s
+  40/61 states, 1982 evaluator calls, 5477s
+  50/61 states, 2448 evaluator calls, 6778s
+  60/61 states, 2916 evaluator calls, 8079s
+
+  61 states in 32 lineages, assessed on 512 independent reads
+  quality and differences are equally weighted over lineages
+  arm                 reads    quality  differences, 95% over lineages
+  uniform              1574     0.4503  vs uniform +0.0000 [+0.0000, +0.0000]  vs halving -0.0005 [-0.0057, +0.0052]
+  halving               787     0.4508  vs uniform +0.0005 [-0.0052, +0.0057]  vs halving +0.0000 [+0.0000, +0.0000]
+  ucb                   787     0.4503  vs uniform +0.0000 [-0.0055, +0.0050]  vs halving -0.0005 [-0.0058, +0.0054]
+  random                  0     0.3298  vs uniform -0.1205 [-0.1618, -0.0827]  vs halving -0.1210 [-0.1622, -0.0832]
+  prior                   0     0.3875  vs uniform -0.0628 [-0.0939, -0.0350]  vs halving -0.0633 [-0.0958, -0.0337]
+  halving+prior         787     0.4304  vs uniform -0.0199 [-0.0363, -0.0068]  vs halving -0.0204 [-0.0378, -0.0063]
+  selection wall seconds per state (prior preprocessing excluded): {"uniform": 17.384391460628784, "halving": 28.519262339980877, "ucb": 67.26883197081138, "random": 0.0, "prior": 0.0, "halving+prior": 11.745825695148746}
+  assessment reads: 512 per arm/state; 94720 actually used after sharing identical picks
+
+ADAPTIVE ALLOCATION DONE

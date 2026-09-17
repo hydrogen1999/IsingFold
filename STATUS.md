@@ -16,7 +16,7 @@ never depends on memory.
 | Task 10 | anytime minorminer with a wall-time deadline, 30 to 300 s | `results/fill/*_anytime.log` | **done** both hosts: Zephyr at 300 s medium chains 1.00 / 0.83 / 0.33 / 0 at 80 / 85 / 90 / 95 percent, short chains 0; Pegasus only 80 percent medium reaches 1.00, every other cell 0 at every deadline. ADR-003's three gates are passed on both hosts |
 | budget x20 | minorminer at 200 tries on the fill corpora | `results/fill/*_budget.log` | **done** both hosts: Pegasus 80 percent medium 0.33 -> 0.83 -> 1.00 at 10, 50, 200 tries, 85 percent 0 -> 0.17 -> 0.17, everything else 0 at 300 to 480 s a draw; Zephyr done: 85 percent medium chains 0.50 -> 0.67 -> 0.83 at 10, 50, 200 tries; 90 percent stays 0.33; short chains stay 0 at 260 to 350 s a draw |
 | Task 12 | witness replay through the construction API | `results/fill/*_replay_{hint,nohint}.log` | **done**: with the witness as the generator's preference, a valid COMMIT on 48/48 instances per host, every cell, 400 to 620 decisions, 200 to 530 s; with the unhinted heuristic order, none. Imitation records collected; prioritiser training |
-| direction 3 | adaptive allocation of reads vs uniform, real evaluator, disjoint assessment | `results/adaptive/*.log` | **done, replicated**: successive halving matches uniform at half the reads on both hosts, -0.002 [-0.008, +0.004] Zephyr and +0.002 [-0.004, +0.009] Pegasus; UCB slightly worse; random -0.11 to -0.12 |
+| direction 3 | adaptive allocation of reads vs uniform, real evaluator, disjoint assessment | `results/adaptive/*.log` | **done, replicated**: successive halving matches uniform at half the reads on both hosts, -0.002 [-0.008, +0.004] Zephyr and +0.002 [-0.004, +0.009] Pegasus; UCB slightly worse; random -0.11 to -0.12. Learned prior (`results/adaptive/pegasus6_prior.log`, direction 5's surrogate as the prior): prior alone at zero reads 0.388, +0.058 over random and -0.063 [-0.094, -0.035] under uniform; halving seeded by the prior's top half -0.020 [-0.038, -0.006] under plain halving. The prior carries signal and costs quality as a filter; measurement dominates it. Null as a learned component |
 | curriculum baseline | anytime minorminer on Pegasus 3 and Zephyr 2 fill corpora, 12 a cell, deadlines 10 to 120 s | `results/small/*_anytime.log` | **done**: short chains from 80 percent 0 to 0.17 at 120 s with 20 to 40 attempts; medium chains 0.42 / 0.17 (Pegasus 3) and 0.75 / 0.08 (Zephyr 2) at 90 / 95 percent |
 | hybrid | policy roots then minorminer; seeded-minorminer tolerance arms | apollo `runs/seeded/*.log`, `runs/hybrid/*.log` | witness roots turn 0 into 12/12 at 80 percent short chains on both small hosts and 2/2 so far on both big hosts; policy roots and tolerance running; big-host seeded tables done: witness roots 1.00 to 85 percent on Pegasus 6 and Zephyr 4, plain router 0 on short chains from 80 percent |
 | hybrid v3, validity | fair protocol: both arms search until 60 s and select by measurement, full-host budget, curriculum hosts | apollo `runs/hybrid/v3_valid_*.log`, copies in `results/hybrid/` | 60 iterations: policy+search 0.50 vs router+search 0.47 at every checkpoint (Pegasus 3, init and scratch), 0.37 to 0.40 vs 0.40 (Zephyr 2); valid candidates equal in both arms at every checkpoint, so the layouts change no instance's completability. Null, closed |
@@ -384,6 +384,28 @@ training-lineage provenance. The audit's evidence boundaries stand: registered c
 intervals include zero; the large scorer is validation evidence against random, not a gain
 over halving; the selection reference is finite-read. Every run in flight was restarted on
 the merged code; numbers from before the merge are history.
+
+## The learned prior on allocation: signal at zero reads, a loss as a filter (B minus A)
+
+The allocation probe with direction 5's surrogate as a prior (`results/adaptive/pegasus6_prior.log`,
+Pegasus 6, 61 states in 32 lineages, every arm assessed on 512 independent reads, differences
+paired over lineages):
+
+    arm                  reads    p_solve    vs uniform                  vs halving
+    uniform              1574     0.450
+    halving               787     0.451      +0.001 [-0.005, +0.006]
+    prior alone             0     0.388      -0.063 [-0.094, -0.035]     -0.063 [-0.096, -0.034]
+    random pick             0     0.330      -0.121 [-0.162, -0.083]
+    halving + prior       787     0.430      -0.020 [-0.036, -0.007]     -0.020 [-0.038, -0.006]
+
+The prior is not empty: at zero reads it is +0.058 over a random pick, the same order as its
+held-out +0.02 to +0.03 on ten times the lineages. But 787 reads of measurement are +0.063
+above it, and using it to pre-select the half that halving then measures loses -0.020 with
+the interval below zero: the candidates it ranks low include the ones measurement would
+have kept. This was arm B minus arm A of the plan, the last place a learned component could
+have entered the low-fill platform, and it is negative. Not tried: a soft prior (initial
+allocation weights instead of a hard filter); the sign here and the +0.02 ceiling of the
+surrogate say it could at best recover the -0.020, not add to halving.
 
 ## Resource count is a weak quality signal; measurement takes the ceiling (selection rules)
 
