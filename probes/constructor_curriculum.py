@@ -37,8 +37,12 @@ from isingfold.rl.contracts import OPCODES
 from constructor_learning import constructor_loss
 from constructor_rollout import episode
 from constructor_features import ConstructorFeatureContext, WIDTH as CONSTRUCTION_WIDTH
+from constructor_protocol import evaluate_search, experiment_seed
 from constructor_tiny_gate import Actor, Features, no_completion_solver
 from layout_policy import LayoutActorCritic
+
+# captured before any guard replaces it; only the minorminer comparison arm may use it
+_ORIGINAL_FIND_EMBEDDING = minorminer.find_embedding
 
 STAGES = ("a", "b", "p", "z", "P", "Z", "F", "G")
 VARIABLES = {"a": (2, 4), "b": (4, 8), "p": (4, 8), "z": (4, 8), "P": (8, 14), "Z": (8, 14),
@@ -53,13 +57,16 @@ FEATURE_WIDTHS = {"tiny": FEATURE_WIDTH, "construction": CONSTRUCTION_WIDTH}
 
 
 class Task:
-    """A feasibility task; nothing evaluator-only is reachable from it."""
+    """A curriculum task. The witness and any initial embedding are never reachable; the
+    ground energy is reachable only when supplied, and only the quality reward and
+    assessment backends read it."""
 
-    def __init__(self, name, logical, host, lineage, problem=None):
+    def __init__(self, name, logical, host, lineage, problem=None, ground_energy=None):
         self.logical, self.host = logical, host
         self.problem = problem if problem is not None else LogicalProblem.from_dicts(
             {v: 0. for v in logical}, {edge: -1. for edge in logical.edges()})
         self.name, self.lineage = name, lineage
+        self._ground_energy = ground_energy
 
     @property
     def witness(self):
@@ -67,11 +74,28 @@ class Task:
 
     @property
     def ground_energy(self):
-        raise AssertionError("quality labels accessed in feasibility gate")
+        if self._ground_energy is None:
+            raise AssertionError("quality labels accessed in feasibility gate")
+        return self._ground_energy
 
     @property
     def initial_embedding(self):
         raise AssertionError("initial embedding accessed")
+
+
+def exact_ground_energy(problem, limit=14):
+    """Minimum Ising energy by enumeration; only for the small generated instances."""
+    nodes = sorted(problem.h)
+    n = len(nodes)
+    if n > limit:
+        raise ValueError("enumeration is limited to %d variables" % limit)
+    index = {v: i for i, v in enumerate(nodes)}
+    h = np.array([float(problem.h[v]) for v in nodes])
+    states = ((np.arange(2 ** n)[:, None] >> np.arange(n)) & 1) * 2 - 1
+    energy = states @ h
+    for (u, v), j in problem.j.items():
+        energy = energy + float(j) * states[:, index[u]] * states[:, index[v]]
+    return float(energy.min())
 
 
 def logical_graph(rng, n):
@@ -198,6 +222,7 @@ def generate(stage, count, seed, lineage, exclude=(), max_attempts=2000):
             continue
         task = Task("%s-%s-n%d-m%d-%d" % (lineage, family, n, host.number_of_nodes(), len(tasks)),
                     logical, host, lineage)
+        task._ground_energy = exact_ground_energy(task.problem)
         if any(isomorphic_pair(task, other) for other in list(exclude) + tasks):
             continue
         tasks.append(task)
@@ -219,8 +244,8 @@ def corpus_sets_from_tasks(tasks, cells, n_train, n_heldout, seed):
         raise ValueError("corpus has %d lineages in the chosen cells, %d requested"
                          % (len(lineages), n_train + n_heldout))
     picked = [sorted(by_lineage[l], key=lambda t: t.name)[0] for l in lineages[:n_train + n_heldout]]
-    wrapped = [Task(t.name, t.logical, t.host, t.lineage or t.name, getattr(t, "problem", None))
-               for t in picked]
+    wrapped = [Task(t.name, t.logical, t.host, t.lineage or t.name, getattr(t, "problem", None),
+                    getattr(t, "ground_energy", None)) for t in picked]
     return wrapped[:n_train], wrapped[n_train:]
 
 
@@ -288,13 +313,70 @@ def run(args, train, heldout):
     init_summary = load_init(args.init, actor, args.actor, args.features) if args.init else None
     optimizer = torch.optim.Adam(actor.parameters(), lr=args.learning_rate)
 
-    def draw(task, seed, grad):
+    quality = args.objective == "quality"
+
+    def draw(task, seed, grad, reward=None):
         with torch.set_grad_enabled(grad):
             return episode(task, actor, features[task.name], 1., args.max_steps,
                            np.random.default_rng(seed), args.episode_seconds,
-                           train=True, objective="feasibility", evaluate_reward=False)
+                           train=True, objective=args.objective, reward_reads=args.reward_reads,
+                           evaluate_reward=quality if reward is None else reward)
+
+    def evaluate_quality(tag):
+        """The paper's protocol: proposals until the deadline, selection by measurement,
+        assessment on a fresh block; the minorminer arm under the same deadline."""
+        out = {}
+        for name, tasks in (("train", train), ("heldout", heldout)):
+            rows = []
+            for k, t in enumerate(tasks):
+                def learned(seed, seconds_left, t=t):
+                    with torch.no_grad():
+                        result = episode(t, actor, features[t.name], 1., args.max_steps,
+                                         np.random.default_rng(seed), min(seconds_left, args.episode_seconds),
+                                         train=True, objective="quality", evaluate_reward=False)
+                    return result["terminal"] if result["valid"] else None
+
+                def baseline(seed, seconds_left, t=t):
+                    from constructor_baseline import baseline_proposal
+                    minorminer.find_embedding = _ORIGINAL_FIND_EMBEDDING
+                    try:
+                        return baseline_proposal(t, len(t.host), seed, seconds_left,
+                                                 args.baseline_tries, args.baseline_router_seconds)
+                    finally:
+                        minorminer.find_embedding = forbidden_solver
+                arms = [("policy", learned)]
+                if args.comparison == "minorminer":
+                    arms.append(("minorminer", baseline))
+                if experiment_seed(args.seed, "arm-order", t.name) % 2:
+                    arms.reverse()
+                row = {"instance": t.name}
+                for arm, proposer in arms:
+                    row[arm] = evaluate_search(t, proposer, deadline=args.deadline, select_cap=args.select_cap,
+                                               selection_reads=args.selection_reads,
+                                               assessment_reads=args.assessment_reads, objective="quality",
+                                               seed=experiment_seed(args.seed, "validation", t.name, k))
+                rows.append(row)
+            valid = {arm: float(np.mean([r[arm]["valid"] for r in rows])) for arm in rows[0] if arm != "instance"}
+            residual = {arm: [r[arm]["residual"] for r in rows if r[arm]["valid"] and r[arm]["residual"] is not None]
+                        for arm in valid}
+            both = [r for r in rows if "minorminer" in r and r["policy"]["valid"] and r["minorminer"]["valid"]
+                    and r["policy"]["residual"] is not None and r["minorminer"]["residual"] is not None]
+            paired = paired_boot([r["policy"]["residual"] - r["minorminer"]["residual"] for r in both])
+            summary = {"evaluation": tag, "set": name, "seed": args.seed, "stage": args.stage,
+                       "objective": "quality", "instances": len(tasks), "valid": valid,
+                       "mean_residual": {arm: (float(np.mean(v)) if v else None) for arm, v in residual.items()},
+                       "measured": {arm: len(v) for arm, v in residual.items()},
+                       "paired_residual_policy_minus_minorminer": paired, "paired_over": len(both),
+                       "policy_valid_minorminer_not": sum(1 for r in rows if "minorminer" in r
+                                                          and r["policy"]["valid"] and not r["minorminer"]["valid"]),
+                       "rows": rows}
+            print(json.dumps(summary), flush=True)
+            out[name] = summary
+        return out
 
     def evaluate(tag):
+        if quality:
+            return evaluate_quality(tag)
         out = {}
         for name, tasks in (("train", train), ("heldout", heldout)):
             rates = {}
@@ -354,9 +436,15 @@ def run(args, train, heldout):
             history["iter %d" % iteration] = evaluate("iter %d" % iteration)
     history["final"] = evaluate("final")
     summary = {"summary": "gate2", "stage": args.stage, "seed": args.seed, "actor": args.actor,
-               "features": args.features, "baseline": args.baseline}
+               "features": args.features, "baseline": args.baseline, "objective": args.objective}
     for name in ("train", "heldout"):
         before, after = history["init"][name], history["final"][name]
+        if quality:
+            summary[name] = {"init_valid": before["valid"], "final_valid": after["valid"],
+                             "init_residual": before["mean_residual"], "final_residual": after["mean_residual"],
+                             "final_paired_policy_minus_minorminer": after["paired_residual_policy_minus_minorminer"],
+                             "paired_over": after["paired_over"], "instances": before["instances"]}
+            continue
         diff = paired_boot([after[k] - before[k] for k in before])
         summary[name] = {"init": float(np.mean(list(before.values()))),
                          "final": float(np.mean(list(after.values()))),
@@ -379,6 +467,15 @@ def parse(argv=None):
     parser.add_argument("--corpus", default="", help="stage corpus: a planted corpus directory")
     parser.add_argument("--cells", default="", help="stage corpus: comma-separated name filters")
     parser.add_argument("--init", default="", help="warm start from a lower rung's checkpoint")
+    parser.add_argument("--objective", choices=("feasibility", "quality"), default="feasibility")
+    parser.add_argument("--reward-reads", type=int, default=256)
+    parser.add_argument("--selection-reads", type=int, default=256)
+    parser.add_argument("--assessment-reads", type=int, default=512)
+    parser.add_argument("--select-cap", type=int, default=6)
+    parser.add_argument("--deadline", type=float, default=60., help="quality evaluation: seconds an arm may propose and select")
+    parser.add_argument("--comparison", choices=("none", "minorminer"), default="minorminer")
+    parser.add_argument("--baseline-tries", type=int, default=2)
+    parser.add_argument("--baseline-router-seconds", type=float, default=2.)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--train", type=int, default=12)
     parser.add_argument("--heldout", type=int, default=12)
@@ -409,7 +506,14 @@ def parse(argv=None):
         parser.error("learning rate and episode seconds must be positive and finite")
     if (args.stage == "corpus") != bool(args.corpus):
         parser.error("--stage corpus and --corpus PATH go together")
+    if min(args.reward_reads, args.selection_reads, args.assessment_reads, args.select_cap,
+           args.baseline_tries) < 1 or args.deadline <= 0 or args.baseline_router_seconds <= 0:
+        parser.error("reads, caps, deadline and router seconds must be positive")
     return args
+
+
+def forbidden_solver(*args, **kwargs):
+    raise AssertionError("minorminer called outside the comparison arm")
 
 
 def main(argv=None):

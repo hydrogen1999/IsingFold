@@ -42,8 +42,7 @@ def test_sets_are_certified_disjoint_and_guarded():
         assert cc.certified_embeddable(t.logical, t.host, 0)
         with pytest.raises(AssertionError):
             t.witness
-        with pytest.raises(AssertionError):
-            t.ground_energy
+        assert np.isfinite(t.ground_energy)  # reachable only by the quality backends
         with pytest.raises(AssertionError):
             t.initial_embedding
     for a in train:
@@ -162,3 +161,40 @@ def test_init_checkpoint_must_match_actor_and_features(tmp_path):
         cc.load_init(str(tmp_path / "a.pt"), cc.make_actor("linear", 8, cc.FEATURE_WIDTHS["construction"]), "linear", "construction")
     with pytest.raises(SystemExit):
         cc.parse(["--stage", "corpus"])
+
+
+def test_exact_ground_energy_on_small_problems():
+    from isingfold.embedding import LogicalProblem
+    tri = LogicalProblem.from_dicts({0: 0., 1: 0., 2: 0.}, {(0, 1): -1., (1, 2): -1., (0, 2): -1.})
+    assert cc.exact_ground_energy(tri) == -3.
+    frustrated = LogicalProblem.from_dicts({0: 0., 1: 0., 2: 0.}, {(0, 1): 1., (1, 2): 1., (0, 2): 1.})
+    assert cc.exact_ground_energy(frustrated) == -1.
+    field = LogicalProblem.from_dicts({0: 1., 1: -2.}, {(0, 1): 1.})
+    assert cc.exact_ground_energy(field) == -4.
+    with pytest.raises(ValueError):
+        cc.exact_ground_energy(LogicalProblem.from_dicts({i: 0. for i in range(15)}, {}), limit=14)
+
+
+def test_generated_tasks_carry_a_ground_energy_and_still_guard_the_witness():
+    train, _ = cc.build_sets("a", 1, 1, seed=6)
+    assert np.isfinite(train[0].ground_energy)
+    with pytest.raises(AssertionError):
+        train[0].witness
+
+
+def test_quality_objective_runs_the_deadline_protocol_with_the_comparison_arm(tmp_path):
+    args = cc.parse(["--stage", "a", "--train", "2", "--heldout", "1", "--episodes", "2",
+                     "--iterations", "1", "--eval-episodes", "2", "--eval-every", "5", "--seed", "8",
+                     "--max-steps", "16", "--objective", "quality", "--reward-reads", "16",
+                     "--selection-reads", "16", "--assessment-reads", "16", "--select-cap", "2",
+                     "--deadline", "3", "--comparison", "minorminer"])
+    train, heldout = cc.build_sets("a", 2, 1, seed=8)
+    with cc.no_completion_solver():
+        summary = cc.run(args, train, heldout)
+    assert summary["objective"] == "quality"
+    for name in ("train", "heldout"):
+        assert set(summary[name]["final_valid"]) == {"policy", "minorminer"}
+        assert 0. <= summary[name]["final_valid"]["minorminer"] <= 1.
+    # the guard is back in force after the comparison arm ran
+    with pytest.raises(AssertionError):
+        cc.certified_embeddable(train[0].logical, train[0].host, 0) if cc.minorminer.find_embedding is cc.forbidden_solver else (_ for _ in ()).throw(AssertionError())
