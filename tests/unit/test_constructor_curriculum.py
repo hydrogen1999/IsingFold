@@ -298,3 +298,46 @@ def test_test_role_uses_the_test_list_and_is_evaluation_only():
         cc.parse(["--stage", "corpus", "--corpus", "x", "--manifest-split", "--heldout-role", "test", "--iterations", "5"])
     with pytest.raises(SystemExit):
         cc.parse(["--stage", "corpus", "--corpus", "x", "--heldout-role", "test", "--iterations", "0", "--init", "a.pt"])
+
+
+def test_prefix_by_qubits_reaches_the_target_occupancy_and_is_shared_per_group():
+    train, _ = cc.build_sets("b", 1, 1, seed=41)
+    t = train[0]
+    total = sum(len(c) for c in t.prefix_source.values())
+    init = cc.prefix_initializer(t, 0.6, seed=7, unit="qubits")
+    partial = init(t.logical, t.host, 0)
+    covered = sum(len(c) for c in partial.values())
+    assert covered >= 0.6 * total and len(partial) < len(t.logical)
+    again = cc.prefix_initializer(t, 0.6, seed=7, unit="qubits")(t.logical, t.host, 0)
+    assert again == partial
+    other = cc.prefix_initializer(t, 0.6, seed=8, unit="qubits")(t.logical, t.host, 0)
+    assert other != partial or len(t.logical) <= 3
+    with pytest.raises(ValueError):
+        cc.prefix_initializer(t, 0.6, seed=7, unit="edges")
+
+
+def test_terminal_bias_moves_only_the_stop_and_restart_logits():
+    import torch
+    for features in ("tiny", "construction"):
+        actor = cc.make_actor("linear", 8, cc.FEATURE_WIDTHS[features])
+        before = actor.m.weight.detach().clone()
+        assert cc.apply_terminal_bias(actor, features, -6.0)
+        diff = (actor.m.weight.detach() - before)[0]
+        moved = {i for i in range(len(diff)) if abs(float(diff[i])) > 0}
+        assert moved == {cc.opcode_channel(features, "STOP"), cc.opcode_channel(features, "RESTART")}
+        assert all(float(diff[i]) == -6.0 for i in moved)
+    assert not cc.apply_terminal_bias(cc.make_actor("mlp", 8), "tiny", -6.0)
+    assert not cc.apply_terminal_bias(cc.make_actor("linear", 8), "tiny", 0.0)
+
+
+def test_mastery_schedule_and_options_parse_and_run():
+    args = cc.parse(["--stage", "a", "--train", "2", "--heldout", "1", "--episodes", "2",
+                     "--iterations", "2", "--eval-episodes", "1", "--eval-every", "9", "--seed", "42",
+                     "--max-steps", "16", "--prefix-fraction", "0.9:0.0", "--prefix-schedule", "mastery",
+                     "--mastery-threshold", "0.1", "--prefix-empty-mix", "0.5", "--stop-bias", "-6"])
+    train, heldout = cc.build_sets("a", 2, 1, seed=42)
+    with cc.no_completion_solver():
+        summary = cc.run(args, train, heldout)
+    assert 0. <= summary["heldout"]["final"] <= 1.
+    with pytest.raises(SystemExit):
+        cc.parse(["--prefix-empty-mix", "1.5"])

@@ -355,22 +355,67 @@ def prefix_fraction(schedule, iteration, iterations):
     return start + (end - start) * iteration / (iterations - 1)
 
 
-def prefix_initializer(task, fraction, seed):
-    """A random subset of the task's prefix source covering ``fraction`` of the variables,
-    as the environment's partial-start initializer; None when nothing to start from."""
+def prefix_initializer(task, fraction, seed, unit="qubits"):
+    """A random subset of the task's prefix source as the environment's partial-start
+    initializer; None when nothing to start from. ``unit="qubits"`` takes variables in a
+    random order until their chains cover ``fraction`` of the source's qubits (so a 0.9
+    prefix of a 90 percent witness is 81 percent occupancy, the deployment regime);
+    ``unit="variables"`` takes that fraction of the variables."""
     source = getattr(task, "prefix_source", None)
     if not source or fraction is None or fraction <= 0:
         return None
     rng = np.random.default_rng(seed)
     variables = sorted(source, key=repr)
-    # at least one variable stays unplaced: a complete prefix would be a valid embedding,
-    # which construction mode must build, not be handed
-    k = min(int(round(fraction * len(variables))), len(variables) - 1)
-    if k <= 0:
+    order = [variables[i] for i in rng.permutation(len(variables))]
+    if unit == "variables":
+        # at least one variable stays unplaced: a complete prefix would be a valid
+        # embedding, which construction mode must build, not be handed
+        k = min(int(round(fraction * len(variables))), len(variables) - 1)
+        chosen = order[:k]
+    elif unit == "qubits":
+        total = sum(len(source[v]) for v in variables)
+        target = fraction * total
+        chosen, covered = [], 0
+        for v in order[:-1]:
+            if covered >= target:
+                break
+            chosen.append(v)
+            covered += len(source[v])
+    else:
+        raise ValueError("unit must be qubits or variables")
+    if not chosen:
         return None
-    chosen = [variables[i] for i in sorted(rng.choice(len(variables), size=k, replace=False))]
     partial = {v: frozenset(source[v]) for v in chosen}
     return lambda logical, host, seed_: partial
+
+
+def opcode_channel(features, name):
+    """Index of an opcode's one-hot channel in a feature schema."""
+    names = [getattr(item, "value", item) for item in OPCODES]
+    if name not in names:
+        raise ValueError("unknown opcode %s" % name)
+    if features == "tiny":
+        return names.index(name)
+    if features == "construction":
+        from constructor_features import FEATURE_SLICES
+        return FEATURE_SLICES["opcode"].start + names.index(name)
+    raise ValueError("features must be tiny or construction")
+
+
+def apply_terminal_bias(actor, features, bias):
+    """Shift the linear actor's STOP and RESTART logits by ``bias`` (negative lowers the
+    hazard). With one STOP among about sixty equiprobable candidates a cold policy survives
+    a thousand decisions with probability e^-17; a bias of -6 makes that 0.96. The weight
+    stays learnable; only its start moves. Applies to the linear actor only."""
+    if not bias:
+        return False
+    linear = getattr(actor, "m", None)
+    if not isinstance(linear, torch.nn.Linear):
+        return False
+    with torch.no_grad():
+        for name in ("STOP", "RESTART"):
+            linear.weight[0, opcode_channel(features, name)] += float(bias)
+    return True
 
 
 def make_actor(kind, width, in_dim=FEATURE_WIDTH):
@@ -414,6 +459,7 @@ def run(args, train, heldout):
     features = {t.name: make_features(args.features, t) for t in train + heldout}
     actor = make_actor(args.actor, args.width, FEATURE_WIDTHS[args.features])
     init_summary = load_init(args.init, actor, args.actor, args.features) if args.init else None
+    biased = apply_terminal_bias(actor, args.features, args.stop_bias)
     optimizer = torch.optim.Adam(actor.parameters(), lr=args.learning_rate)
 
     quality = args.objective == "quality"
@@ -537,6 +583,9 @@ def run(args, train, heldout):
         "corpus": args.corpus or None, "cells": args.cells or None,
         "manifest_split": bool(args.manifest_split), "heldout_role": args.heldout_role,
         "init": args.init or None, "init_summary": init_summary,
+        "stop_bias": args.stop_bias if biased else 0.0,
+        "prefix_unit": args.prefix_unit, "prefix_schedule": args.prefix_schedule,
+        "prefix_shared": not args.prefix_per_episode, "prefix_empty_mix": args.prefix_empty_mix,
         "parameters": sum(p.numel() for p in actor.parameters()),
         "features": args.features, "feature_width": FEATURE_WIDTHS[args.features],
         "train": [t.name for t in train], "heldout": [t.name for t in heldout],
@@ -554,15 +603,28 @@ def run(args, train, heldout):
     started = time.monotonic()
     history = {"init": evaluate("init")}
     order = np.random.default_rng(args.seed + 1)
+    mix = np.random.default_rng(args.seed + 2)
+    schedule_start, schedule_end = (None, None)
+    if args.prefix_fraction:
+        schedule_start, schedule_end = (float(x) for x in args.prefix_fraction.split(":"))
+    mastery_fraction = schedule_start
     for iteration in range(args.iterations):
         picks = order.choice(len(train), size=min(args.instances_per_iteration, len(train)), replace=False)
         losses, valid, rewards, entropies = [], 0, [], []
-        fraction = prefix_fraction(args.prefix_fraction, iteration, args.iterations)
+        if args.prefix_schedule == "mastery" and args.prefix_fraction:
+            fraction = mastery_fraction
+        else:
+            fraction = prefix_fraction(args.prefix_fraction, iteration, args.iterations)
         for slot, idx in enumerate(picks):
             t = train[int(idx)]
-            records = [draw(t, args.seed * 1000000 + iteration * 1000 + slot * 100 + i, True,
+            # one prefix for the whole leave-one-out group of an instance, so the baseline
+            # compares episodes from the same start; a share of the slots start from empty
+            slot_fraction = 0.0 if (fraction and mix.random() < args.prefix_empty_mix) else fraction
+            group_seed = args.seed * 1000000 + iteration * 1000 + slot * 100
+            records = [draw(t, group_seed + i, True,
                             initializer=prefix_initializer(
-                                t, fraction, args.seed * 1000000 + iteration * 1000 + slot * 100 + i))
+                                t, slot_fraction, group_seed + (i if args.prefix_per_episode else 0),
+                                unit=args.prefix_unit))
                        for i in range(args.episodes)]
             loss, metrics = constructor_loss(records, baseline=args.baseline, entropy_coef=0.)
             losses.append(loss); valid += sum(r["valid"] for r in records)
@@ -572,6 +634,10 @@ def run(args, train, heldout):
         total.backward()
         norm = torch.nn.utils.clip_grad_norm_(actor.parameters(), 1.)
         optimizer.step()
+        if args.prefix_schedule == "mastery" and args.prefix_fraction and mastery_fraction is not None:
+            # advance the curriculum only when the current assistance is mastered
+            if valid / max(1, len(picks) * args.episodes) >= args.mastery_threshold:
+                mastery_fraction = max(schedule_end, mastery_fraction - args.mastery_step)
         if iteration % 10 == 9:
             print(json.dumps({"iteration": iteration, "seed": args.seed, "train_valid": valid,
                               "train_episodes": len(picks) * args.episodes, "prefix_fraction": fraction,
@@ -632,6 +698,19 @@ def parse(argv=None):
     parser.add_argument("--prefix-fraction", default="",
                         help="training curriculum 'start:end': fraction of a train task's prefix "
                              "source pre-placed at the first and last iteration; evaluation is from empty")
+    parser.add_argument("--prefix-unit", choices=("qubits", "variables"), default="qubits",
+                        help="what the prefix fraction counts: occupied qubits (default) or variables")
+    parser.add_argument("--prefix-schedule", choices=("linear", "mastery"), default="linear",
+                        help="mastery: lower the prefix by --mastery-step only after an iteration whose "
+                             "training validity reaches --mastery-threshold")
+    parser.add_argument("--mastery-threshold", type=float, default=0.8)
+    parser.add_argument("--mastery-step", type=float, default=0.1)
+    parser.add_argument("--prefix-per-episode", action="store_true",
+                        help="a different prefix for every episode of a leave-one-out group (default: shared)")
+    parser.add_argument("--prefix-empty-mix", type=float, default=0.25,
+                        help="share of training instance slots that start from empty while a prefix is active")
+    parser.add_argument("--stop-bias", type=float, default=0.0,
+                        help="added to the linear actor's STOP and RESTART logits at start (negative lowers the hazard)")
     parser.add_argument("--grow-extra", type=int, default=1,
                         help="minorminer_grown arm: random contact-growth qubits added to the router's draw")
     parser.add_argument("--baseline-tries", type=int, default=2)
@@ -675,6 +754,10 @@ def parse(argv=None):
             parser.error("--prefix-fraction must be 'start:end'")
         if not (0 <= lo <= 1 and 0 <= hi <= 1):
             parser.error("--prefix-fraction values must lie in [0, 1]")
+    if not (0 <= args.prefix_empty_mix <= 1) or not (0 < args.mastery_threshold <= 1) or args.mastery_step <= 0:
+        parser.error("--prefix-empty-mix in [0, 1], --mastery-threshold in (0, 1], --mastery-step positive")
+    if not np.isfinite(args.stop_bias):
+        parser.error("--stop-bias must be finite")
     if min(args.reward_reads, args.selection_reads, args.assessment_reads, args.select_cap,
            args.baseline_tries) < 1 or args.deadline <= 0 or args.baseline_router_seconds <= 0 or args.grow_extra < 0:
         parser.error("reads, caps, deadline and router seconds must be positive")
