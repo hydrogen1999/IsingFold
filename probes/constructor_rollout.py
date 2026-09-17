@@ -82,7 +82,8 @@ def _context(task, cap, max_steps, reward_reads, quotas, restart_allowance):
 
 def episode(task, model, fc, temperature, max_steps, rng, deadline, train=True, *,
             qubit_cap=None, objective="quality", reward_reads=256, shaping_coef=0.0,
-            measure=None, quotas=None, restart_allowance=2, evaluate_reward=None):
+            measure=None, quotas=None, restart_allowance=2, evaluate_reward=None,
+            build_observation=False):
     """Construct one embedding; only an on-time, actor-selected COMMIT can succeed.
 
     ``train`` selects stochastic sampling versus greedy inference. ``evaluate_reward``
@@ -118,8 +119,11 @@ def episode(task, model, fc, temperature, max_steps, rng, deadline, train=True, 
     if hasattr(fc, "budget") and fc.budget != cap:
         raise ValueError("feature context and environment must use the same public qubit cap")
     ctx = _context(task, cap, max_steps, reward_reads, quotas, restart_allowance)
+    # The constructor scores candidates from ``fc``; the environment's tensor observation
+    # is never read here and dominates the step cost on large hosts, so it is off by default.
     env = EmbeddingEnv(task, ctx, mode=Mode.CONSTRUCTION, initializer=None,
-                       selector=fixed_strength_selector(), reward_reads=reward_reads)
+                       selector=fixed_strength_selector(), reward_reads=reward_reads,
+                       build_observation=build_observation)
     # Set before reset binds the first support. The context version registers this
     # support extension; valid embeddings can still trade spare capacity for quality.
     env.generator.allow_satisfied_growth = True

@@ -174,10 +174,15 @@ class EmbeddingEnv:
         restart_cache_manifest_digest: str | None = None,
         improvement_restart_protocol: str = AUTHENTICATED_RESTART_CACHE_V1,
         seed: int = 0,
+        build_observation: bool = True,
     ) -> None:
         self.task = task
         self.ctx = ctx
         self.mode = mode
+        # A caller that scores candidates from its own features (the constructor probes)
+        # can skip the full tensor observation; budgets, candidates, legality, fingerprints
+        # and transitions are identical either way, only DecisionState.observation is None.
+        self.build_observation = bool(build_observation)
         self.initializer = initializer
         self.selector = selector or fixed_strength_selector()
         self.reward_reads = ctx.n_est_reads if reward_reads is None else reward_reads
@@ -511,7 +516,7 @@ class EmbeddingEnv:
 
         program = st.reference_program if st.workspace_valid else None
 
-        observation = build_observation(
+        observation = None if not self.build_observation else build_observation(
             ctx=self.ctx,
             logical=self.task.logical,
             host=self.task.host,
