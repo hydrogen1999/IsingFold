@@ -20,3 +20,11 @@ after skipping the environment tensor observation in the constructor rollout (br
  128 qubits construction 0.077 s/step  observe 0.051  env 0.026
  512 qubits tiny         0.045 s/step  observe 0.010  env 0.035
  512 qubits construction 0.249 s/step  observe 0.215  env 0.034
+
+after replacing the networkx subgraph walks in the 230-channel summary with adjacency-list
+walks (branch commit c64373c; element-for-element equality test against networkx):
+
+ 128 qubits tiny         0.034 s/step  observe 0.009  env 0.025
+ 128 qubits construction 0.058 s/step  observe 0.032  env 0.025
+ 512 qubits tiny         0.045 s/step  observe 0.011  env 0.034
+ 512 qubits construction 0.127 s/step  observe 0.092  env 0.034

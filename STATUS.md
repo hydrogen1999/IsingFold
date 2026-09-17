@@ -487,10 +487,13 @@ off only in the constructor rollout, a test proves the trajectory is identical) 
     128             0.035               0.077                        0.026
     512             0.045               0.249                        0.035
 
-The environment part is now nearly flat in the host size; the 230-channel observation
-(0.215 s a step at 512 qubits, global structural summaries) is the remaining item before the
-fill corpora (300 variables at 680 qubits) and the hardware-sized hosts are reachable. The
-corpus-size rung was restarted on the fixed code.
+The environment part is now nearly flat in the host size. The 230-channel observation's
+hot spot was networkx subgraph views (free-host components and the contact walk over every
+host edge, per candidate); adjacency-list walks with an element-for-element equality test
+(branch commit `c64373c`) bring it to 0.032 s a step at 128 qubits and 0.092 at 512, so the
+whole step is 0.058 and 0.127 s against 0.112 and 0.317 at the start. Remaining growth with
+the host is in the local layout features. The corpus-size rung was restarted on the fixed
+environment; at these costs a 300-variable fill instance is one to two minutes an episode.
 
 ## High fill flips the regime: growth beats redrawing, and the policy still equals random
 
