@@ -30,7 +30,7 @@ def test_hosts_are_connected_and_carry_a_dead_end(stage):
 
 def test_unknown_stage_is_rejected():
     with pytest.raises(ValueError):
-        cc.host_graph(np.random.default_rng(0), "z")
+        cc.host_graph(np.random.default_rng(0), "q")
 
 
 def test_sets_are_certified_disjoint_and_guarded():
@@ -79,3 +79,23 @@ def test_mlp_actor_has_more_parameters_than_linear():
     assert linear == cc.FEATURE_WIDTH and mlp > linear
     with pytest.raises(ValueError):
         cc.make_actor("gnn", 32)
+
+
+@pytest.mark.parametrize("stage", ["p", "z"])
+def test_hardware_fragments_are_connected_and_sized(stage):
+    pytest.importorskip("dwave_networkx")
+    for seed in range(4):
+        h = cc.host_graph(np.random.default_rng(seed), stage)
+        assert nx.is_connected(h)
+        assert cc.FRAGMENT[0] <= h.number_of_nodes() <= cc.FRAGMENT[1]
+        assert sorted(h.nodes()) == list(range(h.number_of_nodes()))
+
+
+def test_hardware_stage_sets_build_and_stay_disjoint():
+    pytest.importorskip("dwave_networkx")
+    train, heldout = cc.build_sets("p", 2, 2, seed=5)
+    assert len(train) == 2 and len(heldout) == 2
+    for a in train:
+        for b in heldout:
+            assert not cc.isomorphic_pair(a, b)
+    assert all(4 <= t.logical.number_of_nodes() <= 8 for t in train + heldout)

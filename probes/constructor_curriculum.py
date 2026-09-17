@@ -4,8 +4,9 @@ The tiny gate showed the empty-start environment and a 16-weight linear REINFORC
 learn one instance (K3 into C5). This gate asks the next question in order: does the same
 actor, trained on a fixed set of small instances whose hosts carry dead-end branches and
 placement ambiguity, raise its valid-COMMIT rate on those instances, and on instances it has
-never seen? Two stages: ``a`` (2 to 4 variables on cycles with pendant dead ends and a chord)
-and ``b`` (4 to 8 variables on small grids with holes and dead ends). Hosts and logical graphs
+never seen? Stages: ``a`` (2 to 4 variables on cycles with pendant dead ends and a chord), ``b`` (4 to 8
+variables on small grids with holes and dead ends), ``p`` and ``z`` (4 to 8 variables on
+connected 12 to 24 qubit fragments of Pegasus 2 and Zephyr 1, the target topologies). Hosts and logical graphs
 are generated from seeds; every instance is certified embeddable by minorminer at generation
 time and that embedding is discarded. During training and evaluation minorminer is forbidden,
 and the task raises on any access to a witness, an initial embedding or a ground energy.
@@ -35,7 +36,9 @@ from constructor_learning import constructor_loss
 from constructor_rollout import episode
 from constructor_tiny_gate import Actor, Features, no_completion_solver
 
-STAGES = ("a", "b")
+STAGES = ("a", "b", "p", "z")
+VARIABLES = {"a": (2, 4), "b": (4, 8), "p": (4, 8), "z": (4, 8)}
+FRAGMENT = (12, 24)
 FEATURE_WIDTH = len(OPCODES) + 8
 
 
@@ -102,8 +105,35 @@ def _attach_dead_ends(g, rng, count, max_length):
     return g
 
 
+def hardware_fragment(rng, family, lo=FRAGMENT[0], hi=FRAGMENT[1]):
+    """A connected induced subgraph of Pegasus 2 or Zephyr 1 with the hardware's own
+    degree structure and dead ends: a breadth-first ball, then random removals that keep
+    it connected, down to a size drawn from [lo, hi]."""
+    import dwave_networkx as dnx
+    full = dnx.pegasus_graph(2) if family == "pegasus" else dnx.zephyr_graph(1)
+    full = nx.convert_node_labels_to_integers(full, ordering="sorted")
+    target = int(rng.integers(lo, hi + 1))
+    start = int(rng.choice(sorted(full.nodes())))
+    order, seen = [start], {start}
+    for node in order:
+        for neighbour in sorted(full.neighbors(node)):
+            if neighbour not in seen:
+                seen.add(neighbour); order.append(neighbour)
+        if len(order) >= 2 * target:
+            break
+    sub = full.subgraph(order[:2 * target]).copy()
+    while sub.number_of_nodes() > target:
+        removable = [n for n in sorted(sub.nodes())
+                     if nx.is_connected(sub.subgraph(set(sub) - {n}))]
+        sub.remove_node(int(rng.choice(removable)))
+    return nx.convert_node_labels_to_integers(sub, ordering="sorted")
+
+
 def host_graph(rng, stage):
-    """Stage a: cycle plus dead ends and a chord. Stage b: grid with holes plus dead ends."""
+    """a: cycle plus dead ends and a chord. b: grid with holes plus dead ends.
+    p, z: fragments of Pegasus 2 and Zephyr 1."""
+    if stage in ("p", "z"):
+        return hardware_fragment(rng, "pegasus" if stage == "p" else "zephyr")
     if stage == "a":
         m = int(rng.integers(5, 10))
         g = nx.cycle_graph(m)
@@ -139,7 +169,7 @@ def isomorphic_pair(a, b):
 def generate(stage, count, seed, lineage, exclude=(), max_attempts=2000):
     """Certified-embeddable instances, none isomorphic (logical and host) to ``exclude``."""
     rng = np.random.default_rng(seed)
-    lo, hi = (2, 4) if stage == "a" else (4, 8)
+    lo, hi = VARIABLES[stage]
     tasks = []
     for attempt in range(max_attempts):
         if len(tasks) == count:
