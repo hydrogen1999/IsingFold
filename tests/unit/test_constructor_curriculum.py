@@ -198,3 +198,12 @@ def test_quality_objective_runs_the_deadline_protocol_with_the_comparison_arm(tm
     # the guard is back in force after the comparison arm ran
     with pytest.raises(AssertionError):
         cc.certified_embeddable(train[0].logical, train[0].host, 0) if cc.minorminer.find_embedding is cc.forbidden_solver else (_ for _ in ()).throw(AssertionError())
+
+
+def test_init_accepts_legacy_checkpoints_that_stored_the_feature_width(tmp_path):
+    import torch
+    actor = cc.make_actor("linear", 8, cc.FEATURE_WIDTHS["tiny"])
+    torch.save({"state": actor.state_dict(), "actor": "linear", "features": cc.FEATURE_WIDTHS["tiny"]}, tmp_path / "old.pt")
+    assert cc.load_init(str(tmp_path / "old.pt"), cc.make_actor("linear", 8, cc.FEATURE_WIDTHS["tiny"]), "linear", "tiny") is None
+    with pytest.raises(ValueError):
+        cc.load_init(str(tmp_path / "old.pt"), cc.make_actor("linear", 8, cc.FEATURE_WIDTHS["construction"]), "linear", "construction")

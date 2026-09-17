@@ -257,9 +257,13 @@ def build_corpus_sets(path, cells, n_train, n_heldout, seed):
 def load_init(path, actor, kind, features):
     """Warm start from a lower rung: same actor kind and feature schema, or refuse."""
     blob = torch.load(path, map_location="cpu", weights_only=False)
-    if blob.get("actor") != kind or blob.get("features") != features:
+    saved = blob.get("features")
+    if isinstance(saved, (int, np.integer)):
+        # checkpoints written before the feature option carried the width, not the name
+        saved = {width: name for name, width in FEATURE_WIDTHS.items()}.get(int(saved), saved)
+    if blob.get("actor") != kind or saved != features:
         raise ValueError("checkpoint actor/features %s/%s do not match %s/%s"
-                         % (blob.get("actor"), blob.get("features"), kind, features))
+                         % (blob.get("actor"), saved, kind, features))
     actor.load_state_dict(blob["state"])
     return blob.get("summary")
 
