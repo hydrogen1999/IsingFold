@@ -55,9 +55,9 @@ FEATURE_WIDTHS = {"tiny": FEATURE_WIDTH, "construction": CONSTRUCTION_WIDTH}
 class Task:
     """A feasibility task; nothing evaluator-only is reachable from it."""
 
-    def __init__(self, name, logical, host, lineage):
+    def __init__(self, name, logical, host, lineage, problem=None):
         self.logical, self.host = logical, host
-        self.problem = LogicalProblem.from_dicts(
+        self.problem = problem if problem is not None else LogicalProblem.from_dicts(
             {v: 0. for v in logical}, {edge: -1. for edge in logical.edges()})
         self.name, self.lineage = name, lineage
 
@@ -206,6 +206,39 @@ def generate(stage, count, seed, lineage, exclude=(), max_attempts=2000):
     return tasks
 
 
+def corpus_sets_from_tasks(tasks, cells, n_train, n_heldout, seed):
+    """One guarded task per lineage from a planted corpus, split by lineage; the witness
+    that certifies embeddability stays behind in the corpus task and is never reachable."""
+    keep = [t for t in tasks if not cells or any(cell in t.name for cell in cells)]
+    by_lineage = {}
+    for t in keep:
+        by_lineage.setdefault(t.lineage or t.name, []).append(t)
+    lineages = sorted(by_lineage)
+    np.random.default_rng(seed).shuffle(lineages)
+    if len(lineages) < n_train + n_heldout:
+        raise ValueError("corpus has %d lineages in the chosen cells, %d requested"
+                         % (len(lineages), n_train + n_heldout))
+    picked = [sorted(by_lineage[l], key=lambda t: t.name)[0] for l in lineages[:n_train + n_heldout]]
+    wrapped = [Task(t.name, t.logical, t.host, t.lineage or t.name, getattr(t, "problem", None))
+               for t in picked]
+    return wrapped[:n_train], wrapped[n_train:]
+
+
+def build_corpus_sets(path, cells, n_train, n_heldout, seed):
+    from isingfold.rl.data.generate import load_instances
+    return corpus_sets_from_tasks(load_instances(path), cells, n_train, n_heldout, seed)
+
+
+def load_init(path, actor, kind, features):
+    """Warm start from a lower rung: same actor kind and feature schema, or refuse."""
+    blob = torch.load(path, map_location="cpu", weights_only=False)
+    if blob.get("actor") != kind or blob.get("features") != features:
+        raise ValueError("checkpoint actor/features %s/%s do not match %s/%s"
+                         % (blob.get("actor"), blob.get("features"), kind, features))
+    actor.load_state_dict(blob["state"])
+    return blob.get("summary")
+
+
 def build_sets(stage, n_train, n_heldout, seed):
     train = generate(stage, n_train, seed, "train-%s-s%d" % (stage, seed))
     heldout = generate(stage, n_heldout, seed + 7919, "heldout-%s-s%d" % (stage, seed), exclude=train)
@@ -252,6 +285,7 @@ def run(args, train, heldout):
     torch.manual_seed(args.seed)
     features = {t.name: make_features(args.features, t) for t in train + heldout}
     actor = make_actor(args.actor, args.width, FEATURE_WIDTHS[args.features])
+    init_summary = load_init(args.init, actor, args.actor, args.features) if args.init else None
     optimizer = torch.optim.Adam(actor.parameters(), lr=args.learning_rate)
 
     def draw(task, seed, grad):
@@ -279,6 +313,8 @@ def run(args, train, heldout):
         "scope": "feasibility on a fixed small train set and unseen held-out instances; "
                  "no quality claim; no completion solver at train or test time",
         "stage": args.stage, "seed": args.seed, "actor": args.actor, "width": args.width,
+        "corpus": args.corpus or None, "cells": args.cells or None,
+        "init": args.init or None, "init_summary": init_summary,
         "parameters": sum(p.numel() for p in actor.parameters()),
         "features": args.features, "feature_width": FEATURE_WIDTHS[args.features],
         "train": [t.name for t in train], "heldout": [t.name for t in heldout],
@@ -339,7 +375,10 @@ def run(args, train, heldout):
 
 def parse(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--stage", choices=STAGES, default="a")
+    parser.add_argument("--stage", choices=STAGES + ("corpus",), default="a")
+    parser.add_argument("--corpus", default="", help="stage corpus: a planted corpus directory")
+    parser.add_argument("--cells", default="", help="stage corpus: comma-separated name filters")
+    parser.add_argument("--init", default="", help="warm start from a lower rung's checkpoint")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--train", type=int, default=12)
     parser.add_argument("--heldout", type=int, default=12)
@@ -368,13 +407,19 @@ def parse(argv=None):
         parser.error("--baseline value needs the contextual actor's value head")
     if not np.isfinite(args.learning_rate) or args.learning_rate <= 0 or args.episode_seconds <= 0:
         parser.error("learning rate and episode seconds must be positive and finite")
+    if (args.stage == "corpus") != bool(args.corpus):
+        parser.error("--stage corpus and --corpus PATH go together")
     return args
 
 
 def main(argv=None):
     args = parse(argv)
     # the certificate needs minorminer; everything after this line must not
-    train, heldout = build_sets(args.stage, args.train, args.heldout, args.seed)
+    if args.stage == "corpus":
+        cells = [c for c in args.cells.split(",") if c]
+        train, heldout = build_corpus_sets(args.corpus, cells, args.train, args.heldout, args.seed)
+    else:
+        train, heldout = build_sets(args.stage, args.train, args.heldout, args.seed)
     with no_completion_solver():
         run(args, train, heldout)
     return 0

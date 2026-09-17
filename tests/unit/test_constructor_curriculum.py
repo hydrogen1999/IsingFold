@@ -130,3 +130,35 @@ def test_larger_hardware_fragments_match_their_declared_range(stage):
         h = cc.host_graph(np.random.default_rng(seed), stage)
         assert nx.is_connected(h) and lo <= h.number_of_nodes() <= hi
     assert cc.VARIABLES[stage] == ((8, 14) if stage in "PZ" else (12, 20))
+
+
+class _Fake:
+    def __init__(self, name, lineage):
+        self.name, self.lineage = name, lineage
+        self.logical = nx.path_graph(3); self.host = nx.cycle_graph(6)
+        self.problem = None
+        self.witness = {0: frozenset({0}), 1: frozenset({1}), 2: frozenset({2})}
+
+
+def test_corpus_sets_split_by_lineage_filter_by_cell_and_guard_the_witness():
+    tasks = [_Fake("h-fill80-a2.0-%d" % i, "L%d" % (i // 2)) for i in range(8)]
+    tasks += [_Fake("h-fill95-a3.0-%d" % i, "M%d" % i) for i in range(3)]
+    train, heldout = cc.corpus_sets_from_tasks(tasks, ["fill80"], 3, 1, seed=0)
+    assert len(train) == 3 and len(heldout) == 1
+    assert {t.lineage for t in train}.isdisjoint({t.lineage for t in heldout})
+    assert all("fill80" in t.name for t in train + heldout)
+    with pytest.raises(AssertionError):
+        train[0].witness
+    with pytest.raises(ValueError):
+        cc.corpus_sets_from_tasks(tasks, ["fill95"], 3, 1, seed=0)
+
+
+def test_init_checkpoint_must_match_actor_and_features(tmp_path):
+    import torch
+    actor = cc.make_actor("linear", 8, cc.FEATURE_WIDTHS["tiny"])
+    torch.save({"state": actor.state_dict(), "actor": "linear", "features": "tiny", "summary": {"x": 1}}, tmp_path / "a.pt")
+    assert cc.load_init(str(tmp_path / "a.pt"), cc.make_actor("linear", 8, cc.FEATURE_WIDTHS["tiny"]), "linear", "tiny") == {"x": 1}
+    with pytest.raises(ValueError):
+        cc.load_init(str(tmp_path / "a.pt"), cc.make_actor("linear", 8, cc.FEATURE_WIDTHS["construction"]), "linear", "construction")
+    with pytest.raises(SystemExit):
+        cc.parse(["--stage", "corpus"])
