@@ -455,8 +455,11 @@ Size rung, 8 to 14 variables on 32 to 64 qubit fragments of Pegasus 3 and Zephyr
     Zephyr 2, 2         0.08 -> 0.92             0.07 -> 0.77                +0.70 [+0.53, +0.85]
     Zephyr 2, ctx, 0    0.07 -> 0.98             0.10 -> 0.86                +0.75 [+0.59, +0.90]
 
-Every interval above zero; the 230-channel linear actor sits higher again (0.90 / 0.76 /
-0.69 on Pegasus, 0.94 / 0.88 on Zephyr at iteration 100 to 150).
+Every interval above zero; the 230-channel linear actor sits higher again: Zephyr 2
+fragments, seed 1, held-out 0.06 -> 0.96 (+0.90 [+0.81, +0.97], `Z_lin230_s1.log`), Pegasus
+3 fragments seed 1 at 0.90 at iteration 150 (final pending); seeds 0 and 2 of the
+230-channel runs were stopped at iteration 120 to 180 to give the fill rung the cores
+(held-out 0.70 / 0.75 Pegasus, 0.93 / 0.88 Zephyr when stopped).
 
 Gate 3, the same stage-b sets, 200 iterations, lr 0.03 (`results/curriculum/b_lin230_*.log`,
 `b_ctx_loo_*.log`, `b_ctx_value_*.log`), held-out after training by seed 0 / 1 / 2:
