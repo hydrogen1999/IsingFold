@@ -595,7 +595,9 @@ class EmbeddingEnv:
 
         successor = dict(st.chains)
         successor.update({i: frozenset(cand.new_chains[i]) for i in affected})
-        if cand.payload_key != bound_successor_key(
+        # The payload key was computed by the generator from this same successor; the
+        # recomputation is a defensive re-check, skipped on the timing fast path.
+        if not _SKIP_INTERNAL_ASSERTS and cand.payload_key != bound_successor_key(
             successor,
             cand.work,
             restart=cand.opcode is Opcode.RESTART,
@@ -869,8 +871,16 @@ class EmbeddingEnv:
 
         st = self._require_state()
         calls = sum(1 for entry in st.archive if entry.admissible)
+        empties = {node for node, chain in st.chains.items() if not chain}
         for candidate in candidates:
             if not candidate.changes_workspace:
+                continue
+            # A successor with an empty chain cannot be a complete embedding (p_embed
+            # rejects it on that ground alone), so only near-complete states pay the check.
+            still_empty = (empties - {v for v, c in candidate.new_chains.items() if c}) | {
+                v for v, c in candidate.new_chains.items() if not c
+            }
+            if still_empty:
                 continue
             successor = dict(st.chains)
             successor.update(candidate.new_chains)

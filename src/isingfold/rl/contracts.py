@@ -533,16 +533,29 @@ class StepResult:
     work_receipt: WorkVector = WorkVector()
 
 
+_CHAIN_ROW_MEMO: dict = {}
+
+
+def _chain_row(node: Node, chain) -> list:
+    """The identity row of one chain, memoised by node and exact chain: a decision at
+    hundreds of placed chains keys thousands of successors that differ in one chain."""
+    key = (node, frozenset(chain))
+    row = _CHAIN_ROW_MEMO.get(key)
+    if row is None:
+        row = [
+            _typed_identity(node),
+            sorted((_typed_identity(qubit) for qubit in chain), key=lambda item: item),
+        ]
+        if len(_CHAIN_ROW_MEMO) > 200_000:
+            _CHAIN_ROW_MEMO.clear()
+        _CHAIN_ROW_MEMO[key] = row
+    return row
+
+
 def chain_key(chains: Mapping[Node, Sequence[Qubit] | frozenset[Qubit]]) -> str:
     """A stable, order-free identity of a complete assignment, for dedup and archives."""
 
-    payload = [
-        [
-            _typed_identity(node),
-            sorted((_typed_identity(qubit) for qubit in chains[node]), key=lambda item: item),
-        ]
-        for node in sorted(chains, key=_typed_identity)
-    ]
+    payload = [_chain_row(node, chains[node]) for node in sorted(chains, key=_typed_identity)]
     return stable_digest(payload)
 
 
