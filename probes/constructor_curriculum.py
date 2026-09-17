@@ -7,7 +7,8 @@ placement ambiguity, raise its valid-COMMIT rate on those instances, and on inst
 never seen? Stages: ``a`` (2 to 4 variables on cycles with pendant dead ends and a chord), ``b`` (4 to 8
 variables on small grids with holes and dead ends), ``p`` and ``z`` (4 to 8 variables on
 connected 12 to 24 qubit fragments of Pegasus 2 and Zephyr 1, the target topologies), ``P``
-and ``Z`` (8 to 14 variables on 32 to 64 qubit fragments of Pegasus 3 and Zephyr 2). Hosts and logical graphs
+and ``Z`` (8 to 14 variables on 32 to 64 qubit fragments of Pegasus 3 and Zephyr 2), ``F``
+and ``G`` (12 to 20 variables on 64 to 128 qubit fragments of the same hosts). Hosts and logical graphs
 are generated from seeds; every instance is certified embeddable by minorminer at generation
 time and that embedding is discarded. During training and evaluation minorminer is forbidden,
 and the task raises on any access to a witness, an initial embedding or a ground energy.
@@ -39,12 +40,14 @@ from constructor_features import ConstructorFeatureContext, WIDTH as CONSTRUCTIO
 from constructor_tiny_gate import Actor, Features, no_completion_solver
 from layout_policy import LayoutActorCritic
 
-STAGES = ("a", "b", "p", "z", "P", "Z")
-VARIABLES = {"a": (2, 4), "b": (4, 8), "p": (4, 8), "z": (4, 8), "P": (8, 14), "Z": (8, 14)}
+STAGES = ("a", "b", "p", "z", "P", "Z", "F", "G")
+VARIABLES = {"a": (2, 4), "b": (4, 8), "p": (4, 8), "z": (4, 8), "P": (8, 14), "Z": (8, 14),
+             "F": (12, 20), "G": (12, 20)}
 FRAGMENT = (12, 24)
 # stage -> (hardware family, generator size, fragment size range)
 HARDWARE = {"p": ("pegasus", 2, (12, 24)), "z": ("zephyr", 1, (12, 24)),
-            "P": ("pegasus", 3, (32, 64)), "Z": ("zephyr", 2, (32, 64))}
+            "P": ("pegasus", 3, (32, 64)), "Z": ("zephyr", 2, (32, 64)),
+            "F": ("pegasus", 3, (64, 128)), "G": ("zephyr", 2, (64, 128))}
 FEATURE_WIDTH = len(OPCODES) + 8
 FEATURE_WIDTHS = {"tiny": FEATURE_WIDTH, "construction": CONSTRUCTION_WIDTH}
 
@@ -141,7 +144,8 @@ def hardware_fragment(rng, family, lo=FRAGMENT[0], hi=FRAGMENT[1], size=None):
 def host_graph(rng, stage):
     """a: cycle plus dead ends and a chord. b: grid with holes plus dead ends.
     p, z: 12 to 24 qubit fragments of Pegasus 2 and Zephyr 1. P, Z: 32 to 64 qubit
-    fragments of Pegasus 3 and Zephyr 2 for 8 to 14 variables."""
+    fragments of Pegasus 3 and Zephyr 2 for 8 to 14 variables. F, G: 64 to 128 qubit
+    fragments of the same hosts for 12 to 20 variables, the size of the small corpora."""
     if stage in HARDWARE:
         family, size, (lo, hi) = HARDWARE[stage]
         return hardware_fragment(rng, family, lo, hi, size)
