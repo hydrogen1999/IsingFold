@@ -506,6 +506,40 @@ Next rungs in order: size (running: 8 to 14 variables on 32 to 64 qubit fragment
 Pegasus 3 and Zephyr 2, with both the 16-channel and the 230-channel linear actors), then
 the full small hosts, then wall-clock, then quality.
 
+## Two critical reviews and the diagnostics they asked for (2026-09-17)
+
+The two reviews (`docs/review/2026-09-17-claude-critical-review.md`,
+`docs/review/2026-09-17-codex-gpt6-astra-review-bottlenecks.md`) converge on the same first
+item for bottleneck 1: measure whether the environment's 64-candidate support can contain the
+witness at fill before reading any training run. It cannot. The unhinted witness replay
+(`probes/witness_replay.py`, now reporting the offer) at fill 80 on Zephyr 4 blocks at step
+14 to 17 with 46 to 48 frontier variables and PLACE offered for 8 to 14 of them; at every
+quota mix (place 32 / 48 / 56 of 64) the walk sticks within 0 to 89 steps on both hosts.
+The shortlist offers eight variables with a few roots each (`_place`, `budget // 8`), so at
+scale the action that continues the witness is simply not in the batch. The learned rungs
+succeed because a 20-variable frontier fits in 64. Fix on the branch (`feat/constructor-curriculum`):
+a wide construction registration (512 candidates, its own context version, every frontier
+variable with up to twelve adjacent roots) and work caps sized by the horizon, since the
+registered per-step feature charge exhausted the 200k-per-32-decision budget after a few
+hundred decisions at 400 variables. The wide unhinted replay at fill 80 and 90 is running.
+
+Support diagnostic (`results/diag/support_fill80_*.log`, fill 80 Pegasus 6, two instances,
+registered 64-candidate support): the warm-started 16-channel actor puts 0.00 to 0.02 of its
+mass on STOP and 0.77 to 0.82 on PLACE from empty (a zero actor: 0.02 on STOP, 0.33 to 0.42
+on REWRITE, STOP within 10 to 108 steps as the reviews predicted); from empty it runs to the
+400 s deadline at 0.44 progress; from a 90 percent witness prefix it reaches 0.989 progress
+in 106 steps and then samples STOP. Steps cost 0.7 to 1.4 s from empty and 2.9 to 3.4 s
+from the 90 percent prefix at 400 chains, not the 0.1 to 0.5 s assumed: a 1,100-decision
+construction is 15 to 60 minutes an episode, which makes the step cost at hundreds of placed
+chains the binding constraint for training at fill (profiling now).
+
+Reward signal-to-noise (`results/diag/snr_*.log`, six valid embeddings of the policy per
+instance measured six times each on 256 reads): the between-embedding standard deviation of
+the true residual is 0.016 to 0.017 against a within-embedding measurement standard
+deviation of 0.005 to 0.008, signal-to-noise 2.9 (stage b) and 11 (size rung) per single
+measurement; 23 to 128 reads suffice for signal-to-noise one. The quality reward is not
+noise-dominated at 256 reads; the quality null is not a measurement null.
+
 ## What blocks the ladder above 128 qubits: the step cost grows with the host
 
 Datasets on the two axes the paper needs: EmbedBench has hardware-sized hosts (Pegasus 16
