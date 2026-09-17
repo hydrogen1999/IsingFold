@@ -547,12 +547,16 @@ The control (`results/curriculum/*grown*_s0.log`, held-out, paired residual, pol
     p, 16 channels, +2 qubits       -0.137 [-0.210, -0.067]     +0.000 [-0.003, +0.004]
     z, 16 channels, +2 qubits       -0.094 [-0.171, -0.020]     -0.001 [-0.010, +0.009]
 
-On the hardware fragments minorminer's draw plus two random contact-growth qubits reproduces
-the constructor's whole advantage: the learned part is zero there, and the gain is the
-platform's spend-and-measure, which needs no learning. On stage b with the 230-channel actor
-a quarter of the raw gap survives the control, -0.02 with the interval below zero on one
-seed and twelve instances: a trace of learned placement, small, being checked on the other
-two seeds. The quality-reward finals on stage b (`bq_lin230_s*.log`): -0.068 [-0.133,
+    b, 16 channels, +2 qubits       -0.066 [-0.132, -0.008]     -0.007 [-0.017, +0.004]
+
+On the hardware fragments, and on stage b with the 16-channel actor, minorminer's draw plus
+two random contact-growth qubits reproduces the constructor's whole advantage: the learned
+part is zero there, and the gain is the platform's spend-and-measure, which needs no
+learning. On stage b with the 230-channel actor a quarter of the raw gap survives the
+control, -0.02 with the interval below zero on one seed and twelve instances, and it does
+so with fewer qubits than the grown control (7.2 against 8.2, longest chain 2.6 against
+3.2): a trace of learned placement rather than spending, small, being checked on the other
+two seeds (`bq_grown2_s{1,2}.log`). The quality-reward finals on stage b (`bq_lin230_s*.log`): -0.068 [-0.133,
 -0.010], -0.033 [-0.088, +0.011], +0.005 [-0.009, +0.021] against minorminer, so the
 quality reward did not add to what feasibility training built. Scale is small (4 to 8
 variables, hosts of 9 to 24 qubits), so this is a rung, not the paper's number.
