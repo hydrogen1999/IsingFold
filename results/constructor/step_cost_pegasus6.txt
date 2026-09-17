@@ -1,0 +1,14 @@
+constructor seconds per step against host size (probes/constructor_step_cost.py on branch
+feat/constructor-curriculum; Pegasus 6 fragments, 16 logical variables, uniform linear policy,
+40-step horizon, apollo, 2026-09-17)
+
+  32 qubits tiny         0.013 s/step  observe 0.001  env 0.012  (9 steps, STOP_NO_VALID)
+  32 qubits construction 0.020 s/step  observe 0.008  env 0.012  (9 steps, STOP_NO_VALID)
+  64 qubits tiny         0.056 s/step  observe 0.008  env 0.047  (26 steps, STOP_NO_VALID)
+  64 qubits construction 0.083 s/step  observe 0.039  env 0.045  (26 steps, STOP_NO_VALID)
+ 128 qubits tiny         0.062 s/step  observe 0.009  env 0.054  (26 steps, STOP_NO_VALID)
+ 128 qubits construction 0.112 s/step  observe 0.054  env 0.058  (26 steps, STOP_NO_VALID)
+ 256 qubits tiny         0.075 s/step  observe 0.009  env 0.067  (26 steps, STOP_NO_VALID)
+ 256 qubits construction 0.152 s/step  observe 0.083  env 0.068  (26 steps, STOP_NO_VALID)
+ 512 qubits tiny         0.109 s/step  observe 0.010  env 0.099  (26 steps, STOP_NO_VALID)
+ 512 qubits construction 0.317 s/step  observe 0.226  env 0.091  (26 steps, STOP_NO_VALID)

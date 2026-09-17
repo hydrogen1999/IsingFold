@@ -461,6 +461,28 @@ Next rungs in order: size (running: 8 to 14 variables on 32 to 64 qubit fragment
 Pegasus 3 and Zephyr 2, with both the 16-channel and the 230-channel linear actors), then
 the full small hosts, then wall-clock, then quality.
 
+## What blocks the ladder above 128 qubits: the step cost grows with the host
+
+Datasets on the two axes the paper needs: EmbedBench has hardware-sized hosts (Pegasus 16
+with 5,640 qubits and Zephyr 15 with 7,440, 24 to 100 variables), and the fill corpora on
+Pegasus 6 and Zephyr 4 hold 263 to 334 logical variables at 80 to 95 percent occupancy. No
+Pegasus 16 or Zephyr 15 corpus exists in this repo; `probes/gen_fill_corpus.py --host-size`
+can plant one.
+
+Seconds per constructor step against host size, 16 variables, uniform linear policy
+(`results/constructor/step_cost_pegasus6.txt`):
+
+    host qubits     tiny 16 channels    construction 230 channels    environment part
+    32              0.013               0.020                        0.012
+    128             0.062               0.112                        0.054
+    512             0.109               0.317                        0.099
+
+Both the environment (candidate generation) and the 230-channel observation scale with the
+host even though the logical problem is fixed at 16 variables. At 680 qubits a 300-variable
+fill instance is thousands of steps, at 5,640 qubits a step is seconds: the ladder cannot
+reach either dataset axis until candidate generation and the observation are local to the
+touched chains. That is the engineering item before the next rung, not a learning item.
+
 ## High fill flips the regime: growth beats redrawing, and the policy still equals random
 
 Contact policy from the planted witness on the Zephyr 4 fill corpus
