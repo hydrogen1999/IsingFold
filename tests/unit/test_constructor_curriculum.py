@@ -79,6 +79,27 @@ def test_mlp_actor_has_more_parameters_than_linear():
     assert linear == cc.FEATURE_WIDTH and mlp > linear
     with pytest.raises(ValueError):
         cc.make_actor("gnn", 32)
+    contextual = cc.make_actor("contextual", 16, cc.FEATURE_WIDTHS["construction"])
+    assert hasattr(contextual, "distribution_value")
+    with pytest.raises(ValueError):
+        cc.make_features("dense", None)
+
+
+def test_contextual_actor_with_construction_features_runs_one_update(tmp_path):
+    args = cc.parse(["--stage", "a", "--train", "2", "--heldout", "1", "--episodes", "2",
+                     "--iterations", "1", "--eval-episodes", "2", "--eval-every", "5",
+                     "--seed", "4", "--max-steps", "12", "--actor", "contextual",
+                     "--features", "construction", "--baseline", "value", "--width", "8"])
+    train, heldout = cc.build_sets("a", 2, 1, seed=4)
+    with cc.no_completion_solver():
+        summary = cc.run(args, train, heldout)
+    assert summary["features"] == "construction" and summary["baseline"] == "value"
+    assert 0. <= summary["heldout"]["final"] <= 1.
+
+
+def test_value_baseline_requires_the_contextual_actor():
+    with pytest.raises(SystemExit):
+        cc.parse(["--actor", "linear", "--baseline", "value"])
 
 
 @pytest.mark.parametrize("stage", ["p", "z"])

@@ -34,12 +34,15 @@ from isingfold.embedding import LogicalProblem
 from isingfold.rl.contracts import OPCODES
 from constructor_learning import constructor_loss
 from constructor_rollout import episode
+from constructor_features import ConstructorFeatureContext, WIDTH as CONSTRUCTION_WIDTH
 from constructor_tiny_gate import Actor, Features, no_completion_solver
+from layout_policy import LayoutActorCritic
 
 STAGES = ("a", "b", "p", "z")
 VARIABLES = {"a": (2, 4), "b": (4, 8), "p": (4, 8), "z": (4, 8)}
 FRAGMENT = (12, 24)
 FEATURE_WIDTH = len(OPCODES) + 8
+FEATURE_WIDTHS = {"tiny": FEATURE_WIDTH, "construction": CONSTRUCTION_WIDTH}
 
 
 class Task:
@@ -197,17 +200,29 @@ def build_sets(stage, n_train, n_heldout, seed):
     return train, heldout
 
 
-def make_actor(kind, width):
+def make_actor(kind, width, in_dim=FEATURE_WIDTH):
+    """linear and mlp score candidates independently; contextual is the PR's candidate-set
+    actor-critic (Deep Sets pooling, state value head) on the same rows."""
     if kind == "linear":
-        linear = torch.nn.Linear(FEATURE_WIDTH, 1, bias=False)
+        linear = torch.nn.Linear(in_dim, 1, bias=False)
         torch.nn.init.zeros_(linear.weight)
         return Actor(linear)
     if kind == "mlp":
-        net = torch.nn.Sequential(torch.nn.Linear(FEATURE_WIDTH, width), torch.nn.SiLU(),
+        net = torch.nn.Sequential(torch.nn.Linear(in_dim, width), torch.nn.SiLU(),
                                   torch.nn.Linear(width, 1, bias=False))
         torch.nn.init.zeros_(net[-1].weight)
         return Actor(net)
-    raise ValueError("actor must be linear or mlp")
+    if kind == "contextual":
+        return LayoutActorCritic(width, in_dim=in_dim)
+    raise ValueError("actor must be linear, mlp or contextual")
+
+
+def make_features(kind, task):
+    if kind == "tiny":
+        return Features(task)
+    if kind == "construction":
+        return ConstructorFeatureContext(task, len(task.host))
+    raise ValueError("features must be tiny or construction")
 
 
 def paired_boot(values, seed=0, draws=2000):
@@ -223,8 +238,8 @@ def run(args, train, heldout):
     """Train and evaluate on prebuilt sets; the caller forbids the completion solver."""
     torch.set_num_threads(1)
     torch.manual_seed(args.seed)
-    features = {t.name: Features(t) for t in train + heldout}
-    actor = make_actor(args.actor, args.width)
+    features = {t.name: make_features(args.features, t) for t in train + heldout}
+    actor = make_actor(args.actor, args.width, FEATURE_WIDTHS[args.features])
     optimizer = torch.optim.Adam(actor.parameters(), lr=args.learning_rate)
 
     def draw(task, seed, grad):
@@ -252,13 +267,15 @@ def run(args, train, heldout):
         "scope": "feasibility on a fixed small train set and unseen held-out instances; "
                  "no quality claim; no completion solver at train or test time",
         "stage": args.stage, "seed": args.seed, "actor": args.actor, "width": args.width,
-        "parameters": sum(p.numel() for p in actor.parameters()), "features": FEATURE_WIDTH,
+        "parameters": sum(p.numel() for p in actor.parameters()),
+        "features": args.features, "feature_width": FEATURE_WIDTHS[args.features],
         "train": [t.name for t in train], "heldout": [t.name for t in heldout],
         "train_sizes": [(t.logical.number_of_nodes(), t.host.number_of_nodes()) for t in train],
         "heldout_sizes": [(t.logical.number_of_nodes(), t.host.number_of_nodes()) for t in heldout],
         "iterations": args.iterations, "instances_per_iteration": args.instances_per_iteration,
         "episodes_per_instance": args.episodes, "eval_episodes": args.eval_episodes,
-        "learning_rate": args.learning_rate, "baseline": "loo within instance", "entropy_coef": 0.,
+        "learning_rate": args.learning_rate, "baseline": args.baseline + " within instance",
+        "entropy_coef": 0.,
         "max_steps": args.max_steps, "episode_seconds": args.episode_seconds,
         "certificate": "minorminer at generation only; forbidden afterwards",
     }), flush=True)
@@ -272,7 +289,7 @@ def run(args, train, heldout):
             t = train[int(idx)]
             records = [draw(t, args.seed * 1000000 + iteration * 1000 + slot * 100 + i, True)
                        for i in range(args.episodes)]
-            loss, metrics = constructor_loss(records, baseline="loo", entropy_coef=0.)
+            loss, metrics = constructor_loss(records, baseline=args.baseline, entropy_coef=0.)
             losses.append(loss); valid += sum(r["valid"] for r in records)
             rewards.append(metrics["reward_mean"]); entropies.append(metrics["normalized_entropy"])
         total = torch.stack(losses).mean()
@@ -288,7 +305,8 @@ def run(args, train, heldout):
         if (iteration + 1) % args.eval_every == 0 and iteration + 1 < args.iterations:
             history["iter %d" % iteration] = evaluate("iter %d" % iteration)
     history["final"] = evaluate("final")
-    summary = {"summary": "gate2", "stage": args.stage, "seed": args.seed, "actor": args.actor}
+    summary = {"summary": "gate2", "stage": args.stage, "seed": args.seed, "actor": args.actor,
+               "features": args.features, "baseline": args.baseline}
     for name in ("train", "heldout"):
         before, after = history["init"][name], history["final"][name]
         diff = paired_boot([after[k] - before[k] for k in before])
@@ -300,7 +318,8 @@ def run(args, train, heldout):
     if args.out:
         Path(args.out).parent.mkdir(parents=True, exist_ok=True)
         torch.save({"state": actor.state_dict(), "actor": args.actor, "width": args.width,
-                    "features": FEATURE_WIDTH, "stage": args.stage, "seed": args.seed,
+                    "features": args.features, "feature_width": FEATURE_WIDTHS[args.features],
+                    "baseline": args.baseline, "stage": args.stage, "seed": args.seed,
                     "summary": summary}, args.out)
     print("CURRICULUM GATE 2 DONE", flush=True)
     return summary
@@ -312,7 +331,9 @@ def parse(argv=None):
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--train", type=int, default=12)
     parser.add_argument("--heldout", type=int, default=12)
-    parser.add_argument("--actor", choices=("linear", "mlp"), default="linear")
+    parser.add_argument("--actor", choices=("linear", "mlp", "contextual"), default="linear")
+    parser.add_argument("--features", choices=("tiny", "construction"), default="tiny")
+    parser.add_argument("--baseline", choices=("loo", "value"), default="loo")
     parser.add_argument("--width", type=int, default=32)
     parser.add_argument("--iterations", type=int, default=200)
     parser.add_argument("--instances-per-iteration", type=int, default=4)
@@ -331,6 +352,8 @@ def parse(argv=None):
         parser.error("set sizes, iterations, evaluation, width and horizon must be positive")
     if args.episodes < 2:
         parser.error("leave-one-out requires at least two episodes per instance")
+    if args.baseline == "value" and args.actor != "contextual":
+        parser.error("--baseline value needs the contextual actor's value head")
     if not np.isfinite(args.learning_rate) or args.learning_rate <= 0 or args.episode_seconds <= 0:
         parser.error("learning rate and episode seconds must be positive and finite")
     return args
