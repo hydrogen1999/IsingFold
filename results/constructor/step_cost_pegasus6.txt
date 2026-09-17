@@ -12,3 +12,11 @@ feat/constructor-curriculum; Pegasus 6 fragments, 16 logical variables, uniform 
  256 qubits construction 0.152 s/step  observe 0.083  env 0.068  (26 steps, STOP_NO_VALID)
  512 qubits tiny         0.109 s/step  observe 0.010  env 0.099  (26 steps, STOP_NO_VALID)
  512 qubits construction 0.317 s/step  observe 0.226  env 0.091  (26 steps, STOP_NO_VALID)
+
+after skipping the environment tensor observation in the constructor rollout (branch commit
+4d9a0c0; DecisionState.observation is None, everything else identical, trajectory-equality test):
+
+ 128 qubits tiny         0.035 s/step  observe 0.009  env 0.026
+ 128 qubits construction 0.077 s/step  observe 0.051  env 0.026
+ 512 qubits tiny         0.045 s/step  observe 0.010  env 0.035
+ 512 qubits construction 0.249 s/step  observe 0.215  env 0.034

@@ -478,10 +478,19 @@ Seconds per constructor step against host size, 16 variables, uniform linear pol
     512             0.109               0.317                        0.099
 
 Both the environment (candidate generation) and the 230-channel observation scale with the
-host even though the logical problem is fixed at 16 variables. At 680 qubits a 300-variable
-fill instance is thousands of steps, at 5,640 qubits a step is seconds: the ladder cannot
-reach either dataset axis until candidate generation and the observation are local to the
-touched chains. That is the engineering item before the next rung, not a learning item.
+host even though the logical problem is fixed at 16 variables. Profiling the environment
+part on the 512-qubit fragment: 2.7 of 4.5 s of an episode were the environment's tensor
+observation, which the constructor never reads. Skipping it (branch commit `4d9a0c0`, flag
+off only in the constructor rollout, a test proves the trajectory is identical) gives
+
+    host qubits     tiny 16 channels    construction 230 channels    environment part
+    128             0.035               0.077                        0.026
+    512             0.045               0.249                        0.035
+
+The environment part is now nearly flat in the host size; the 230-channel observation
+(0.215 s a step at 512 qubits, global structural summaries) is the remaining item before the
+fill corpora (300 variables at 680 qubits) and the hardware-sized hosts are reachable. The
+corpus-size rung was restarted on the fixed code.
 
 ## High fill flips the regime: growth beats redrawing, and the policy still equals random
 
