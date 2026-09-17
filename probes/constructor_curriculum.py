@@ -61,12 +61,16 @@ class Task:
     ground energy is reachable only when supplied, and only the quality reward and
     assessment backends read it."""
 
-    def __init__(self, name, logical, host, lineage, problem=None, ground_energy=None):
+    def __init__(self, name, logical, host, lineage, problem=None, ground_energy=None,
+                 prefix_source=None):
         self.logical, self.host = logical, host
         self.problem = problem if problem is not None else LogicalProblem.from_dicts(
             {v: 0. for v in logical}, {edge: -1. for edge in logical.edges()})
         self.name, self.lineage = name, lineage
         self._ground_energy = ground_energy
+        # a valid embedding used only to start *training* episodes part-way (curriculum);
+        # never set on held-out tasks, never read by features, evaluation starts from empty
+        self.prefix_source = prefix_source
 
     @property
     def witness(self):
@@ -196,9 +200,16 @@ def host_graph(rng, stage):
 
 def certified_embeddable(logical, host, seed, tries=50):
     """Generation-time certificate only; the embedding it finds is thrown away."""
+    return bool(certificate_embedding(logical, host, seed, tries))
+
+
+def certificate_embedding(logical, host, seed, tries=50):
+    """The certificate itself, kept only as a training prefix source for train tasks."""
     found = minorminer.find_embedding(list(logical.edges()), list(host.edges()),
                                       tries=tries, random_seed=int(seed) % (2 ** 31))
-    return bool(found)
+    if not found:
+        return None
+    return {v: frozenset(c) for v, c in found.items()}
 
 
 def isomorphic_pair(a, b):
@@ -218,11 +229,13 @@ def generate(stage, count, seed, lineage, exclude=(), max_attempts=2000):
         host = host_graph(rng, stage)
         if logical.number_of_nodes() > host.number_of_nodes():
             continue
-        if not certified_embeddable(logical, host, rng.integers(2 ** 31)):
+        certificate = certificate_embedding(logical, host, rng.integers(2 ** 31))
+        if not certificate:
             continue
         task = Task("%s-%s-n%d-m%d-%d" % (lineage, family, n, host.number_of_nodes(), len(tasks)),
                     logical, host, lineage)
         task._ground_energy = exact_ground_energy(task.problem)
+        task._certificate = certificate
         if any(isomorphic_pair(task, other) for other in list(exclude) + tasks):
             continue
         tasks.append(task)
@@ -246,6 +259,8 @@ def corpus_sets_from_tasks(tasks, cells, n_train, n_heldout, seed):
     picked = [sorted(by_lineage[l], key=lambda t: t.name)[0] for l in lineages[:n_train + n_heldout]]
     wrapped = [Task(t.name, t.logical, t.host, t.lineage or t.name, getattr(t, "problem", None),
                     getattr(t, "ground_energy", None)) for t in picked]
+    for w, t in zip(wrapped[:n_train], picked[:n_train]):
+        w.prefix_source = getattr(t, "witness", None)   # train tasks only
     return wrapped[:n_train], wrapped[n_train:]
 
 
@@ -271,7 +286,39 @@ def load_init(path, actor, kind, features):
 def build_sets(stage, n_train, n_heldout, seed):
     train = generate(stage, n_train, seed, "train-%s-s%d" % (stage, seed))
     heldout = generate(stage, n_heldout, seed + 7919, "heldout-%s-s%d" % (stage, seed), exclude=train)
+    for t in train:
+        t.prefix_source = t._certificate
+    for t in heldout:
+        t.prefix_source = None
     return train, heldout
+
+
+def prefix_fraction(schedule, iteration, iterations):
+    """Linear schedule 'start:end' over the iterations; None when no curriculum."""
+    if not schedule:
+        return None
+    start, end = (float(x) for x in schedule.split(":"))
+    if iterations <= 1:
+        return end
+    return start + (end - start) * iteration / (iterations - 1)
+
+
+def prefix_initializer(task, fraction, seed):
+    """A random subset of the task's prefix source covering ``fraction`` of the variables,
+    as the environment's partial-start initializer; None when nothing to start from."""
+    source = getattr(task, "prefix_source", None)
+    if not source or fraction is None or fraction <= 0:
+        return None
+    rng = np.random.default_rng(seed)
+    variables = sorted(source, key=repr)
+    # at least one variable stays unplaced: a complete prefix would be a valid embedding,
+    # which construction mode must build, not be handed
+    k = min(int(round(fraction * len(variables))), len(variables) - 1)
+    if k <= 0:
+        return None
+    chosen = [variables[i] for i in sorted(rng.choice(len(variables), size=k, replace=False))]
+    partial = {v: frozenset(source[v]) for v in chosen}
+    return lambda logical, host, seed_: partial
 
 
 def make_actor(kind, width, in_dim=FEATURE_WIDTH):
@@ -319,12 +366,13 @@ def run(args, train, heldout):
 
     quality = args.objective == "quality"
 
-    def draw(task, seed, grad, reward=None):
+    def draw(task, seed, grad, reward=None, initializer=None):
         with torch.set_grad_enabled(grad):
             return episode(task, actor, features[task.name], 1., args.max_steps,
                            np.random.default_rng(seed), args.episode_seconds,
                            train=True, objective=args.objective, reward_reads=args.reward_reads,
-                           evaluate_reward=quality if reward is None else reward)
+                           evaluate_reward=quality if reward is None else reward,
+                           initializer=initializer)
 
     def evaluate_quality(tag):
         """The paper's protocol: proposals until the deadline, selection by measurement,
@@ -442,7 +490,9 @@ def run(args, train, heldout):
         "iterations": args.iterations, "instances_per_iteration": args.instances_per_iteration,
         "episodes_per_instance": args.episodes, "eval_episodes": args.eval_episodes,
         "learning_rate": args.learning_rate, "baseline": args.baseline + " within instance",
-        "entropy_coef": 0.,
+        "entropy_coef": 0., "prefix_curriculum": args.prefix_fraction or None,
+        "train_prefix_sources": sum(1 for t in train if getattr(t, "prefix_source", None)),
+        "heldout_prefix_sources": sum(1 for t in heldout if getattr(t, "prefix_source", None)),
         "max_steps": args.max_steps, "episode_seconds": args.episode_seconds,
         "certificate": "minorminer at generation only; forbidden afterwards",
     }), flush=True)
@@ -452,9 +502,12 @@ def run(args, train, heldout):
     for iteration in range(args.iterations):
         picks = order.choice(len(train), size=min(args.instances_per_iteration, len(train)), replace=False)
         losses, valid, rewards, entropies = [], 0, [], []
+        fraction = prefix_fraction(args.prefix_fraction, iteration, args.iterations)
         for slot, idx in enumerate(picks):
             t = train[int(idx)]
-            records = [draw(t, args.seed * 1000000 + iteration * 1000 + slot * 100 + i, True)
+            records = [draw(t, args.seed * 1000000 + iteration * 1000 + slot * 100 + i, True,
+                            initializer=prefix_initializer(
+                                t, fraction, args.seed * 1000000 + iteration * 1000 + slot * 100 + i))
                        for i in range(args.episodes)]
             loss, metrics = constructor_loss(records, baseline=args.baseline, entropy_coef=0.)
             losses.append(loss); valid += sum(r["valid"] for r in records)
@@ -466,7 +519,7 @@ def run(args, train, heldout):
         optimizer.step()
         if iteration % 10 == 9:
             print(json.dumps({"iteration": iteration, "seed": args.seed, "train_valid": valid,
-                              "train_episodes": len(picks) * args.episodes,
+                              "train_episodes": len(picks) * args.episodes, "prefix_fraction": fraction,
                               "reward": float(np.mean(rewards)), "entropy": float(np.mean(entropies)),
                               "grad_norm": float(norm), "seconds": time.monotonic() - started}), flush=True)
         if (iteration + 1) % args.eval_every == 0 and iteration + 1 < args.iterations:
@@ -511,7 +564,11 @@ def parse(argv=None):
     parser.add_argument("--assessment-reads", type=int, default=512)
     parser.add_argument("--select-cap", type=int, default=6)
     parser.add_argument("--deadline", type=float, default=60., help="quality evaluation: seconds an arm may propose and select")
-    parser.add_argument("--comparison", choices=("none", "minorminer", "minorminer_grown"), default="minorminer")
+    parser.add_argument("--comparison", choices=("none", "minorminer", "minorminer_grown"),
+                        default="minorminer_grown")
+    parser.add_argument("--prefix-fraction", default="",
+                        help="training curriculum 'start:end': fraction of a train task's prefix "
+                             "source pre-placed at the first and last iteration; evaluation is from empty")
     parser.add_argument("--grow-extra", type=int, default=1,
                         help="minorminer_grown arm: random contact-growth qubits added to the router's draw")
     parser.add_argument("--baseline-tries", type=int, default=2)
@@ -546,6 +603,13 @@ def parse(argv=None):
         parser.error("learning rate and episode seconds must be positive and finite")
     if (args.stage == "corpus") != bool(args.corpus):
         parser.error("--stage corpus and --corpus PATH go together")
+    if args.prefix_fraction:
+        try:
+            lo, hi = (float(x) for x in args.prefix_fraction.split(":"))
+        except ValueError:
+            parser.error("--prefix-fraction must be 'start:end'")
+        if not (0 <= lo <= 1 and 0 <= hi <= 1):
+            parser.error("--prefix-fraction values must lie in [0, 1]")
     if min(args.reward_reads, args.selection_reads, args.assessment_reads, args.select_cap,
            args.baseline_tries) < 1 or args.deadline <= 0 or args.baseline_router_seconds <= 0 or args.grow_extra < 0:
         parser.error("reads, caps, deadline and router seconds must be positive")

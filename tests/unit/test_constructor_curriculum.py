@@ -241,3 +241,34 @@ def test_grown_minorminer_arm_runs_in_the_quality_protocol():
         # inside the guard the solver stays forbidden after the comparison arms ran
         assert cc.minorminer.find_embedding is not cc._ORIGINAL_FIND_EMBEDDING
     assert set(summary["heldout"]["final_valid"]) == {"policy", "minorminer", "minorminer_grown"}
+
+
+def test_prefix_sources_exist_only_on_train_tasks_and_initializers_are_partial():
+    train, heldout = cc.build_sets("b", 2, 2, seed=13)
+    assert all(t.prefix_source for t in train) and all(t.prefix_source is None for t in heldout)
+    t = train[0]
+    init = cc.prefix_initializer(t, 0.5, seed=1)
+    partial = init(t.logical, t.host, 0)
+    assert 0 < len(partial) < len(t.logical) + 1 and set(partial) <= set(t.logical)
+    used = set()
+    for v, chain in partial.items():
+        assert chain == frozenset(t.prefix_source[v]) and not (used & chain)
+        used |= chain
+    assert cc.prefix_initializer(heldout[0], 0.5, seed=1) is None
+    full = cc.prefix_initializer(t, 1.0, seed=2)
+    assert full is None or len(full(t.logical, t.host, 0)) == len(t.logical) - 1
+    assert cc.prefix_initializer(t, 0.0, seed=1) is None
+    assert cc.prefix_fraction("0.8:0.2", 0, 5) == 0.8 and abs(cc.prefix_fraction("0.8:0.2", 4, 5) - 0.2) < 1e-12
+    assert cc.prefix_fraction("", 0, 5) is None
+
+
+def test_prefix_curriculum_trains_from_partial_starts_and_evaluates_from_empty():
+    args = cc.parse(["--stage", "a", "--train", "2", "--heldout", "1", "--episodes", "2",
+                     "--iterations", "2", "--eval-episodes", "2", "--eval-every", "5", "--seed", "14",
+                     "--max-steps", "16", "--prefix-fraction", "0.9:0.5"])
+    train, heldout = cc.build_sets("a", 2, 1, seed=14)
+    with cc.no_completion_solver():
+        summary = cc.run(args, train, heldout)
+    assert 0. <= summary["heldout"]["final"] <= 1.
+    with pytest.raises(SystemExit):
+        cc.parse(["--prefix-fraction", "1.5:0"])

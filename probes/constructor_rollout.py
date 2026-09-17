@@ -83,7 +83,7 @@ def _context(task, cap, max_steps, reward_reads, quotas, restart_allowance):
 def episode(task, model, fc, temperature, max_steps, rng, deadline, train=True, *,
             qubit_cap=None, objective="quality", reward_reads=256, shaping_coef=0.0,
             measure=None, quotas=None, restart_allowance=2, evaluate_reward=None,
-            build_observation=False):
+            build_observation=False, initializer=None):
     """Construct one embedding; only an on-time, actor-selected COMMIT can succeed.
 
     ``train`` selects stochastic sampling versus greedy inference. ``evaluate_reward``
@@ -121,7 +121,9 @@ def episode(task, model, fc, temperature, max_steps, rng, deadline, train=True, 
     ctx = _context(task, cap, max_steps, reward_reads, quotas, restart_allowance)
     # The constructor scores candidates from ``fc``; the environment's tensor observation
     # is never read here and dominates the step cost on large hosts, so it is off by default.
-    env = EmbeddingEnv(task, ctx, mode=Mode.CONSTRUCTION, initializer=None,
+    # ``initializer`` is a training-time curriculum hook only: a partial embedding to build
+    # from (some chains placed, the rest empty). Deployment and evaluation leave it unset.
+    env = EmbeddingEnv(task, ctx, mode=Mode.CONSTRUCTION, initializer=initializer,
                        selector=fixed_strength_selector(), reward_reads=reward_reads,
                        build_observation=build_observation)
     # Set before reset binds the first support. The context version registers this
