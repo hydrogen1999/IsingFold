@@ -191,14 +191,12 @@ def test_quality_objective_runs_the_deadline_protocol_with_the_comparison_arm(tm
     train, heldout = cc.build_sets("a", 2, 1, seed=8)
     with cc.no_completion_solver():
         summary = cc.run(args, train, heldout)
+        assert cc.minorminer.find_embedding is not cc._ORIGINAL_FIND_EMBEDDING
     assert summary["objective"] == "quality"
     for name in ("train", "heldout"):
         assert set(summary[name]["final_valid"]) == {"policy", "minorminer"}
         assert 0. <= summary[name]["final_valid"]["minorminer"] <= 1.
     assert set(summary["heldout"]["final_shape"]) == {"policy", "minorminer"}
-    # the guard is back in force after the comparison arm ran
-    with pytest.raises(AssertionError):
-        cc.certified_embeddable(train[0].logical, train[0].host, 0) if cc.minorminer.find_embedding is cc.forbidden_solver else (_ for _ in ()).throw(AssertionError())
 
 
 def test_init_accepts_legacy_checkpoints_that_stored_the_feature_width(tmp_path):
@@ -217,3 +215,29 @@ def test_zero_iterations_evaluates_only(tmp_path):
     with cc.no_completion_solver():
         summary = cc.run(args, train, heldout)
     assert summary["heldout"]["init"] == summary["heldout"]["final"]
+
+
+def test_grow_chains_adds_adjacent_free_qubits_and_keeps_chains_disjoint():
+    host = nx.path_graph(6)
+    chains = {0: frozenset({0}), 1: frozenset({3})}
+    grown = cc.grow_chains(chains, host, 2, np.random.default_rng(0))
+    assert sum(len(c) for c in grown.values()) == 4
+    assert set(grown[0]).isdisjoint(grown[1])
+    for c in grown.values():
+        assert nx.is_connected(host.subgraph(c))
+    full = cc.grow_chains({0: frozenset({0, 1, 2, 3, 4, 5})}, host, 3, np.random.default_rng(0))
+    assert len(full[0]) == 6
+
+
+def test_grown_minorminer_arm_runs_in_the_quality_protocol():
+    args = cc.parse(["--stage", "a", "--train", "1", "--heldout", "2", "--episodes", "2",
+                     "--iterations", "0", "--eval-episodes", "2", "--seed", "10", "--max-steps", "16",
+                     "--objective", "quality", "--reward-reads", "16", "--selection-reads", "16",
+                     "--assessment-reads", "16", "--select-cap", "2", "--deadline", "3",
+                     "--comparison", "minorminer_grown", "--grow-extra", "1"])
+    train, heldout = cc.build_sets("a", 1, 2, seed=10)
+    with cc.no_completion_solver():
+        summary = cc.run(args, train, heldout)
+        # inside the guard the solver stays forbidden after the comparison arms ran
+        assert cc.minorminer.find_embedding is not cc._ORIGINAL_FIND_EMBEDDING
+    assert set(summary["heldout"]["final_valid"]) == {"policy", "minorminer", "minorminer_grown"}

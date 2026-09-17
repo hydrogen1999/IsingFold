@@ -348,9 +348,19 @@ def run(args, train, heldout):
                                                  args.baseline_tries, args.baseline_router_seconds)
                     finally:
                         minorminer.find_embedding = forbidden_solver
+
+                def grown(seed, seconds_left, t=t):
+                    minorminer.find_embedding = _ORIGINAL_FIND_EMBEDDING
+                    try:
+                        return grown_baseline_proposal(t, len(t.host), seed, seconds_left, args.grow_extra,
+                                                       args.baseline_tries, args.baseline_router_seconds)
+                    finally:
+                        minorminer.find_embedding = forbidden_solver
                 arms = [("policy", learned)]
-                if args.comparison == "minorminer":
+                if args.comparison in ("minorminer", "minorminer_grown"):
                     arms.append(("minorminer", baseline))
+                if args.comparison == "minorminer_grown":
+                    arms.append(("minorminer_grown", grown))
                 if experiment_seed(args.seed, "arm-order", t.name) % 2:
                     arms.reverse()
                 row = {"instance": t.name}
@@ -381,6 +391,9 @@ def run(args, train, heldout):
             both = [r for r in rows if "minorminer" in r and r["policy"]["valid"] and r["minorminer"]["valid"]
                     and r["policy"]["residual"] is not None and r["minorminer"]["residual"] is not None]
             paired = paired_boot([r["policy"]["residual"] - r["minorminer"]["residual"] for r in both])
+            both_grown = [r for r in rows if "minorminer_grown" in r and r["policy"]["valid"] and r["minorminer_grown"]["valid"]
+                          and r["policy"]["residual"] is not None and r["minorminer_grown"]["residual"] is not None]
+            paired_grown = paired_boot([r["policy"]["residual"] - r["minorminer_grown"]["residual"] for r in both_grown])
             shape = {arm: {"chosen_qubits": float(np.mean([r[arm]["chosen_qubits"] for r in rows if r[arm]["chosen_qubits"] is not None] or [np.nan])),
                            "chosen_longest_chain": float(np.mean([r[arm]["chosen_longest_chain"] for r in rows if r[arm]["chosen_longest_chain"] is not None] or [np.nan]))}
                      for arm in valid}
@@ -389,6 +402,8 @@ def run(args, train, heldout):
                        "mean_residual": {arm: (float(np.mean(v)) if v else None) for arm, v in residual.items()},
                        "measured": {arm: len(v) for arm, v in residual.items()},
                        "paired_residual_policy_minus_minorminer": paired, "paired_over": len(both),
+                       "paired_residual_policy_minus_minorminer_grown": paired_grown,
+                       "paired_grown_over": len(both_grown),
                        "policy_valid_minorminer_not": sum(1 for r in rows if "minorminer" in r
                                                           and r["policy"]["valid"] and not r["minorminer"]["valid"]),
                        "rows": rows}
@@ -496,7 +511,9 @@ def parse(argv=None):
     parser.add_argument("--assessment-reads", type=int, default=512)
     parser.add_argument("--select-cap", type=int, default=6)
     parser.add_argument("--deadline", type=float, default=60., help="quality evaluation: seconds an arm may propose and select")
-    parser.add_argument("--comparison", choices=("none", "minorminer"), default="minorminer")
+    parser.add_argument("--comparison", choices=("none", "minorminer", "minorminer_grown"), default="minorminer")
+    parser.add_argument("--grow-extra", type=int, default=1,
+                        help="minorminer_grown arm: random contact-growth qubits added to the router's draw")
     parser.add_argument("--baseline-tries", type=int, default=2)
     parser.add_argument("--baseline-router-seconds", type=float, default=2.)
     parser.add_argument("--seed", type=int, default=0)
@@ -530,9 +547,50 @@ def parse(argv=None):
     if (args.stage == "corpus") != bool(args.corpus):
         parser.error("--stage corpus and --corpus PATH go together")
     if min(args.reward_reads, args.selection_reads, args.assessment_reads, args.select_cap,
-           args.baseline_tries) < 1 or args.deadline <= 0 or args.baseline_router_seconds <= 0:
+           args.baseline_tries) < 1 or args.deadline <= 0 or args.baseline_router_seconds <= 0 or args.grow_extra < 0:
         parser.error("reads, caps, deadline and router seconds must be positive")
     return args
+
+
+def grow_chains(chains, host, extra, rng):
+    """Add ``extra`` free qubits, each adjacent to an existing chain, keeping chains
+    connected and disjoint: the platform's random contact growth, no learning."""
+    chains = {v: set(c) for v, c in chains.items()}
+    used = set().union(*chains.values()) if chains else set()
+    for _ in range(extra):
+        options = [(v, n) for v, c in chains.items() for q in c for n in host[q] if n not in used]
+        if not options:
+            break
+        v, n = options[int(rng.integers(len(options)))]
+        chains[v].add(n); used.add(n)
+    return {v: frozenset(c) for v, c in chains.items()}
+
+
+def grown_baseline_proposal(task, budget, seed, seconds_left, extra, tries=2, router_seconds=2.0):
+    """minorminer's own draw, then ``extra`` random contact-growth qubits, compiled and
+    validated through the same final gate as every other arm."""
+    import time as _time
+    from seeded_minorminer import attempt
+    from _context import host_context
+    from isingfold.rl.contracts import DecisionState, Opcode
+    from isingfold.rl.env import EmbeddingEnv, Mode, fixed_strength_selector
+    started = _time.monotonic()
+    chains = attempt(task, None, seed, tries, budget=budget, timeout=min(seconds_left, router_seconds))
+    if chains is None:
+        return None
+    chains = grow_chains(chains, task.host, extra, np.random.default_rng(seed))
+    if sum(len(c) for c in chains.values()) > budget or _time.monotonic() - started >= seconds_left:
+        return None
+    env = EmbeddingEnv(task, host_context(budget, quotas={}), mode=Mode.IMPROVEMENT,
+                       initializer=lambda *_: chains, selector=fixed_strength_selector(), reward_reads=8)
+    dec = env.reset(seed)
+    if not isinstance(dec, DecisionState):
+        return None
+    choices = [i for i, (c, ok) in enumerate(zip(dec.candidates, dec.legal_mask)) if ok and c.opcode is Opcode.COMMIT]
+    if not choices:
+        return None
+    terminal = env.step(dec, choices[0], evaluate_training_reward=False).next_decision_or_terminal
+    return terminal if _time.monotonic() - started <= seconds_left else None
 
 
 def forbidden_solver(*args, **kwargs):
