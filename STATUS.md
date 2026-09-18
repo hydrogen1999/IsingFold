@@ -1932,3 +1932,38 @@ spend qubits where they help and not everywhere, and the arms that test it are r
 
 This is the honest before number and it is large: closing it needs about 0.15 solve probability
 on Pegasus and 0.17 on Zephyr. `results/quality_study/*_frozen_s0.log`.
+
+## Why every quality run so far has failed, and it is arithmetic
+
+The sixth review pointed at the utility scale and the number settles the question. The bounded
+per-episode utility is `U = 1 - 0.5 r / B`, so a valid episode scores between 0.5 and 1 and an
+invalid one scores 0. The Pegasus residual gap between the policy and minorminer, 0.046, is worth
+**0.0079** on that scale. An invalid episode is worth **0.99**.
+
+Training-episode validity at the rung that works is 5 of 8 to 8 of 8, so about 0.75
+(`results/quality/r30_*.log`). At that rate the standard deviation the validity coin alone puts
+into a leave-one-out advantage is 0.99 times the square root of 0.75 times 0.25, which is 0.43.
+
+| source of variation in a training batch | size |
+|---|---|
+| the quality signal being learned | 0.0079 |
+| one invalid episode | 0.99 |
+| standard deviation from validity at p = 0.75 | **0.43** |
+
+The quality signal is fifty-four times smaller than the validity noise. Resolving it would need
+about three thousand episodes per comparison, against the four the leave-one-out baseline gets.
+**Quality training cannot learn quality until training-episode validity is essentially one.** At
+validity 1.00 the validity term vanishes and the only remaining noise is the 256-read measurement
+on the residual, whose signal-to-noise the calibration puts at 19 to 40.
+
+This is not a tuning observation. It explains the modern-corpus losses, the borderline
+fragment-rung gains and today's frozen-arm result with one number, and it makes the order of work
+non-negotiable: reach validity one, then train quality. It also rules out the plan of simply
+running more iterations.
+
+**Also corrected here.** The entry above said the mechanism behind the over-spend "is not
+mysterious". The review is right that this overstates it: long chains accompany the loss, and the
+arithmetic shows the rewrites are growths, but nothing measured yet says whether the growth
+compensates for bad placement or is unnecessary in itself, nor that chain breaks are what costs
+the energy. Three diagnostics separate those and none has been run.
+`docs/review/2026-09-18-codex-gpt6-astra-review-six-closing-the-quality-gap.md`.
