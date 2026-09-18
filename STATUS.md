@@ -1913,10 +1913,20 @@ probability is 0.065 for the policy against 0.235 for minorminer. Every arm is v
 instance and the policy is never valid where minorminer is not, so this is a quality gap and
 nothing else.
 
-**The mechanism is not mysterious and it is the reason the paper exists.** The policy was trained
-to be feasible, and the cheapest way to be feasible is to grow chains until everything connects.
-It spends 2.7 times the qubits and builds chains 6.5 times longer, and long chains break, so its
-samples are worse by a factor of two. A resource-first method would fix this by penalising
+**The mechanism is measured, not assumed, and it is the reason the paper exists.** The
+action-family diagnostic on the same frozen policy at the same cell puts 0.576 of its probability
+mass on REWRITE, 0.329 on PLACE and 0.068 on ROUTE, over 101 decisions an episode for instances
+of 29 to 33 variables. The opcode-level grouping is coarser than it looks: `proposal.py:415`
+emits a chain grown by one adjacent free qubit as a REWRITE_ONE and `proposal.py:492` emits a
+chain with one qubit removed as the same opcode, so growth and shrinkage share the label. The
+arithmetic separates them. A mass of 0.576 over 101 decisions is about 58 REWRITE steps, and 84.8
+qubits for about 30 variables is about 55 qubits beyond one a variable. Nearly every REWRITE is a
+growth of one qubit.
+
+So the policy was trained to be feasible, and it learned to be feasible by growing chains one
+qubit at a time until everything connects. It spends 2.7 times the qubits and builds chains 6.5
+times longer, and long chains break, so its samples are worse by a factor of two.
+`results/quality/diag_support_p3_f30.log`. A resource-first method would fix this by penalising
 qubits. The claim under test is that a quality reward fixes it instead, by making the policy
 spend qubits where they help and not everywhere, and the arms that test it are running.
 
