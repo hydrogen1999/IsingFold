@@ -1892,3 +1892,33 @@ scale.
 rerun. They are development diagnostics now, not untouched confirmatory sets, and the paper has
 to reserve fresh lineages for the final comparison. The numbers are also feasibility, not
 quality. `results/transfer/m_*.log`.
+
+## The quality baseline: a feasibility-trained constructor loses, and why
+
+First run of the paired study, frozen arm, at the fill 0.30 rung. Four held-out instances a host,
+empty starts, a 300 second deployment deadline for every arm, selection by a public energy score
+that never reads the certified optimum, assessment on a fresh 4096-read block.
+
+| arm | valid | qubits chosen | longest chain | mean residual | deployment solve probability |
+|---|---|---|---|---|---|
+| policy, feasibility-trained | 1.00 | **84.8** | **9.8** | 0.0877 | 0.237 |
+| minorminer | 1.00 | 31.3 | 1.5 | 0.0417 | **0.391** |
+| minorminer with growth | 1.00 | 33.3 | 2.5 | 0.0435 | 0.397 |
+| minorminer, growth chosen by measurement | 1.00 | 33.3 | 2.0 | 0.0421 | 0.381 |
+
+Paired residual, policy minus minorminer, positive meaning the policy is worse: +0.046 [+0.028,
++0.071] on Pegasus 3 and +0.054 [+0.034, +0.068] on Zephyr 2, over four instances each; against
+the growth control +0.044 [+0.028, +0.067] and +0.048 [+0.030, +0.067]. Zephyr deployment solve
+probability is 0.065 for the policy against 0.235 for minorminer. Every arm is valid on every
+instance and the policy is never valid where minorminer is not, so this is a quality gap and
+nothing else.
+
+**The mechanism is not mysterious and it is the reason the paper exists.** The policy was trained
+to be feasible, and the cheapest way to be feasible is to grow chains until everything connects.
+It spends 2.7 times the qubits and builds chains 6.5 times longer, and long chains break, so its
+samples are worse by a factor of two. A resource-first method would fix this by penalising
+qubits. The claim under test is that a quality reward fixes it instead, by making the policy
+spend qubits where they help and not everywhere, and the arms that test it are running.
+
+This is the honest before number and it is large: closing it needs about 0.15 solve probability
+on Pegasus and 0.17 on Zephyr. `results/quality_study/*_frozen_s0.log`.
