@@ -34,6 +34,7 @@ class ConstructorDecision:
     opcode: str
     provenance: str
     action: int
+    base_value: torch.Tensor | None = None
 
 
 def candidate_tuple(candidate):
@@ -84,7 +85,7 @@ def _context(task, cap, max_steps, reward_reads, quotas, restart_allowance, wide
 def episode(task, model, fc, temperature, max_steps, rng, deadline, train=True, *,
             qubit_cap=None, objective="quality", reward_reads=256, shaping_coef=0.0,
             measure=None, quotas=None, restart_allowance=2, evaluate_reward=None,
-            build_observation=False, initializer=None, wide=False):
+            build_observation=False, initializer=None, wide=False, state_value_model=None):
     """Construct one embedding; only an on-time, actor-selected COMMIT can succeed.
 
     ``train`` selects stochastic sampling versus greedy inference. ``evaluate_reward``
@@ -99,6 +100,9 @@ def episode(task, model, fc, temperature, max_steps, rng, deadline, train=True, 
     Empty-start construction has Phi(initial)=0; a training prefix need not.
     A requested quality label for a valid COMMIT must exist: evaluator failure
     must not silently turn a successful trajectory into a zero-reward failure.
+    An optional independent ``state_value_model`` predicts the unshaped terminal
+    base return before action sampling, using public state context and legal rows.
+    Keep its parameters fixed throughout collection of a loss batch.
     """
     started = time.monotonic()
     if objective not in {"quality", "feasibility"}:
@@ -170,6 +174,11 @@ def episode(task, model, fc, temperature, max_steps, rng, deadline, train=True, 
             reason = "DEADLINE"
             break
         with torch.set_grad_enabled(bool(train) and torch.is_grad_enabled()):
+            base_value = None
+            if state_value_model is not None:
+                base_value = state_value_model(
+                    feats.detach(), remaining_fraction=(max_steps - len(decisions)) / max_steps,
+                    progress=_progress(task, chains))
             if hasattr(model, "distribution_value"):
                 dist, value = model.distribution_value(feats, temperature)
             else:
@@ -188,6 +197,7 @@ def episode(task, model, fc, temperature, max_steps, rng, deadline, train=True, 
                 entropy=dist.entropy(), value=value, support_size=len(legal_indices),
                 opcode=candidate.opcode.value, provenance=candidate.provenance,
                 action=chosen_index,
+                base_value=base_value,
             )
         if time.monotonic() - started >= deadline:
             reason = "DEADLINE"

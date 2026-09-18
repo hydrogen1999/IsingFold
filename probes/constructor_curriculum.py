@@ -43,6 +43,8 @@ from constructor_rollout import episode
 from constructor_features import ConstructorFeatureContext, WIDTH as CONSTRUCTION_WIDTH
 from constructor_protocol import evaluate_search, experiment_seed
 from constructor_checkpoint import ValidationCheckpoint, run_contract
+from constructor_provenance import training_provenance
+from constructor_state_value import ConstructorStateValue
 from constructor_tiny_gate import Actor, Features, no_completion_solver
 from constructor_physics_features import PhysicsFeatures, WIDTH as PHYSICS_WIDTH
 from layout_policy import LayoutActorCritic
@@ -328,6 +330,12 @@ def manifest_split_sets(tasks, split, cells, n_train, n_heldout, seed, heldout_r
                     getattr(t, "ground_energy", None)) for t in train_pool[:n_train] + val_pool[:n_heldout]]
     for w, t in zip(wrapped[:n_train], train_pool[:n_train]):
         w.prefix_source = getattr(t, "witness", None)
+    # Training ancestry must respect every reserved lineage, not just the sampled
+    # validation subset. This metadata never enters the actor's observations.
+    reserved = sorted({t.lineage or t.name for t in tasks
+                       if member(t, val_names) or member(t, test_names)})
+    for w in wrapped:
+        w.reserved_training_lineages = reserved
     return wrapped[:n_train], wrapped[n_train:]
 
 
@@ -505,9 +513,31 @@ def run(args, train, heldout):
     torch.manual_seed(args.seed)
     features = {t.name: make_features(args.features, t) for t in train + heldout}
     actor = make_actor(args.actor, args.width, FEATURE_WIDTHS[args.features])
+    reserved = {lineage for task in train + heldout
+                for lineage in getattr(task, "reserved_training_lineages", ())}
+    provenance = training_provenance(args.init, train, heldout, training=args.iterations > 0,
+                                     forbidden_lineages=reserved)
     init_summary = load_init(args.init, actor, args.actor, args.features, args.expand_features) if args.init else None
     biased = apply_terminal_bias(actor, args.features, args.stop_bias)
     optimizer = torch.optim.Adam(actor.parameters(), lr=args.learning_rate)
+    state_value = None
+    critic_optimizer = None
+    if args.baseline == "loo_value":
+        state_value = ConstructorStateValue(FEATURE_WIDTHS[args.features], width=args.critic_width)
+        if args.init and not args.reset_state_value:
+            previous = torch.load(args.init, map_location="cpu", weights_only=False)
+            if "state_value_state" in previous:
+                if (previous.get("state_value_width") != args.critic_width
+                        or previous.get("features") != args.features
+                        or previous.get("state_value_schema") != "pooled-base-return-v1"):
+                    raise ValueError("critic schema changed; use --reset-state-value explicitly")
+                state_value.load_state_dict(previous["state_value_state"])
+        critic_optimizer = torch.optim.Adam(state_value.parameters(), lr=args.critic_learning_rate)
+
+    def critic_checkpoint():
+        return ({"state_value_state": state_value.state_dict(),
+                 "state_value_width": args.critic_width,
+                 "state_value_schema": "pooled-base-return-v1"} if state_value is not None else {})
 
     evaluation_objective = args.evaluation_objective or args.objective
     quality = evaluation_objective == "quality"
@@ -523,7 +553,8 @@ def run(args, train, heldout):
                            np.random.default_rng(seed), seconds,
                            train=True, objective=args.objective, reward_reads=args.reward_reads,
                            evaluate_reward=(args.objective == "quality") if reward is None else reward,
-                           initializer=initializer, wide=wide)
+                           initializer=initializer, wide=wide,
+                           state_value_model=state_value if grad else None)
 
     def evaluate_quality(tag):
         """The paper's protocol: proposals until the deadline, selection by measurement,
@@ -702,10 +733,16 @@ def run(args, train, heldout):
     metadata = {"actor": args.actor, "width": args.width, "features": args.features,
                 "feature_width": FEATURE_WIDTHS[args.features], "baseline": args.baseline,
                 "stage": args.stage, "seed": args.seed, "support": args.support,
-                "objective": args.objective, "contract": contract}
-    checkpoints = ValidationCheckpoint(args.out, metadata, evaluation_objective, args.heldout_role)
+                "objective": args.objective, "contract": contract,
+                "training_provenance": provenance,
+                "provenance_complete": provenance["complete"]}
+    checkpoints = ValidationCheckpoint(args.out, metadata, evaluation_objective, args.heldout_role,
+                                       extra_state=critic_checkpoint)
     print(json.dumps({
         "protocol": "constructor-quality-v2", "contract": contract,
+        "training_provenance": provenance,
+        "provenance_complete": provenance["complete"],
+        "state_value_training_only": state_value is not None,
         "scope": "empty-start policy construction; external solver in comparison arms only; "
                  "quality evaluated on independent reads" if quality else
                  "feasibility only; empty-start policy evaluation; no quality claim",
@@ -780,9 +817,15 @@ def run(args, train, heldout):
             # Empty trajectories have zero gradient but remain in the batch denominator.
             total = torch.stack(losses).sum() / len(picks)
             optimizer.zero_grad()
+            if critic_optimizer is not None:
+                critic_optimizer.zero_grad()
             total.backward()
             norm = torch.nn.utils.clip_grad_norm_(actor.parameters(), 1.)
+            if state_value is not None:
+                torch.nn.utils.clip_grad_norm_(state_value.parameters(), 1.)
             optimizer.step()
+            if critic_optimizer is not None:
+                critic_optimizer.step()
         if args.prefix_schedule == "mastery" and args.prefix_fraction and mastery_fraction is not None:
             # advance only when the *assisted* episodes are mastered: the empty-start mix is a
             # separate training component and its failures must not hold the curriculum back
@@ -831,7 +874,7 @@ def run(args, train, heldout):
     print(json.dumps(summary), flush=True)
     if args.out:
         Path(args.out).parent.mkdir(parents=True, exist_ok=True)
-        torch.save(dict(metadata, state=actor.state_dict(), summary=summary), args.out)
+        torch.save(dict(metadata, state=actor.state_dict(), summary=summary, **critic_checkpoint()), args.out)
     print("CURRICULUM GATE 2 DONE", flush=True)
     return summary
 
@@ -898,7 +941,11 @@ def parse(argv=None):
     parser.add_argument("--heldout", type=int, default=12)
     parser.add_argument("--actor", choices=("linear", "mlp", "contextual"), default="linear")
     parser.add_argument("--features", choices=("tiny", "local", "physics", "construction"), default="tiny")
-    parser.add_argument("--baseline", choices=("loo", "value"), default="loo")
+    parser.add_argument("--baseline", choices=("loo", "value", "loo_value"), default="loo")
+    parser.add_argument("--critic-width", type=int, default=32)
+    parser.add_argument("--critic-learning-rate", type=float, default=.001)
+    parser.add_argument("--reset-state-value", action="store_true",
+                        help="explicitly reinitialize the independent training-only state critic")
     parser.add_argument("--width", type=int, default=32)
     parser.add_argument("--iterations", type=int, default=200)
     parser.add_argument("--instances-per-iteration", type=int, default=4)
@@ -936,6 +983,10 @@ def parse(argv=None):
         parser.error("leave-one-out requires at least two episodes per instance")
     if args.baseline == "value" and args.actor != "contextual":
         parser.error("--baseline value needs the contextual actor's value head")
+    if args.critic_width < 1 or not np.isfinite(args.critic_learning_rate) or args.critic_learning_rate <= 0:
+        parser.error("critic width and learning rate must be positive and finite")
+    if args.reset_state_value and args.baseline != "loo_value":
+        parser.error("--reset-state-value requires --baseline loo_value")
     if not np.isfinite(args.learning_rate) or args.learning_rate <= 0 or args.episode_seconds <= 0:
         parser.error("learning rate and episode seconds must be positive and finite")
     if args.train_episode_seconds < 0:

@@ -1,0 +1,292 @@
+{
+  "scope": "small generated P2 integration pilot; four validation instances; three continuation seeds from one cloned initialization; not a confirmatory benchmark",
+  "source_dirty_at_run": true,
+  "source_files_at_archive": {
+    "probes/constructor_clone.py": "28b335d5988ccfb108639d5d5c0a0830b34a3f179b44f23f94e906dfd0ecf53a",
+    "probes/constructor_curriculum.py": "b50a3a6a815de7c714abcca99cfed0fab43a941a83442607981f685b70a30a6c",
+    "probes/constructor_checkpoint.py": "9e74e954e06dd3cc518b39deeda99d9053ce05dc1aff4e783f4db1cf58b4f7e0",
+    "probes/constructor_learning.py": "0f2487bb525dc8e3600a6b155dec6815ab9123d960d3aa1c351180e1a72f7947",
+    "probes/constructor_rollout.py": "547d5acb90d3b9853650c377b74ad0773f6517fb941174f2fa20ef4e03be7141",
+    "probes/constructor_state_value.py": "6e8c6067ece631092fa5969daa06c58182b1e80a18504e74fe8311cecc8030b0",
+    "probes/constructor_provenance.py": "03216839cac62107e3343c0bd210d1f0f85d77590f424a5910f3bf97c6a2326d"
+  },
+  "runs": [
+    {
+      "log": "feasibility.log",
+      "arm": "feasibility",
+      "seed": 0,
+      "initial_checkpoint_sha256": "e54e36050c8c1b72376268b4bed0d0507aee4042c527c816e87732cf91433156",
+      "instances": 4,
+      "valid": {
+        "minorminer": 1.0,
+        "policy": 1.0
+      },
+      "mean_residual": {
+        "minorminer": 0.00439453125,
+        "policy": 0.03206380208333333
+      },
+      "deployment_utility": {
+        "minorminer": 0.99912109375,
+        "policy": 0.99482421875
+      },
+      "p_solve": {
+        "policy": 0.96875,
+        "minorminer": 0.9912109375
+      }
+    },
+    {
+      "log": "feasibility_s1.log",
+      "arm": "feasibility",
+      "seed": 1,
+      "initial_checkpoint_sha256": "e54e36050c8c1b72376268b4bed0d0507aee4042c527c816e87732cf91433156",
+      "instances": 4,
+      "valid": {
+        "policy": 1.0,
+        "minorminer": 1.0
+      },
+      "mean_residual": {
+        "policy": 0.006184895833333333,
+        "minorminer": 0.006510416666666666
+      },
+      "deployment_utility": {
+        "policy": 0.998828125,
+        "minorminer": 0.998828125
+      },
+      "p_solve": {
+        "policy": 0.990234375,
+        "minorminer": 0.990234375
+      }
+    },
+    {
+      "log": "feasibility_s2.log",
+      "arm": "feasibility",
+      "seed": 2,
+      "initial_checkpoint_sha256": "e54e36050c8c1b72376268b4bed0d0507aee4042c527c816e87732cf91433156",
+      "instances": 4,
+      "valid": {
+        "minorminer": 1.0,
+        "policy": 1.0
+      },
+      "mean_residual": {
+        "minorminer": 0.005045572916666666,
+        "policy": 0.013020833333333332
+      },
+      "deployment_utility": {
+        "minorminer": 0.99912109375,
+        "policy": 0.9978515625
+      },
+      "p_solve": {
+        "policy": 0.9873046875,
+        "minorminer": 0.9931640625
+      }
+    },
+    {
+      "log": "frozen.log",
+      "arm": "frozen",
+      "seed": 0,
+      "initial_checkpoint_sha256": "e54e36050c8c1b72376268b4bed0d0507aee4042c527c816e87732cf91433156",
+      "instances": 4,
+      "valid": {
+        "minorminer": 1.0,
+        "policy": 1.0
+      },
+      "mean_residual": {
+        "minorminer": 0.00439453125,
+        "policy": 0.03206380208333333
+      },
+      "deployment_utility": {
+        "minorminer": 0.99912109375,
+        "policy": 0.99482421875
+      },
+      "p_solve": {
+        "policy": 0.96875,
+        "minorminer": 0.9912109375
+      }
+    },
+    {
+      "log": "frozen_s1.log",
+      "arm": "frozen",
+      "seed": 1,
+      "initial_checkpoint_sha256": "e54e36050c8c1b72376268b4bed0d0507aee4042c527c816e87732cf91433156",
+      "instances": 4,
+      "valid": {
+        "policy": 1.0,
+        "minorminer": 1.0
+      },
+      "mean_residual": {
+        "policy": 0.006184895833333333,
+        "minorminer": 0.006510416666666666
+      },
+      "deployment_utility": {
+        "policy": 0.998828125,
+        "minorminer": 0.998828125
+      },
+      "p_solve": {
+        "policy": 0.990234375,
+        "minorminer": 0.990234375
+      }
+    },
+    {
+      "log": "frozen_s2.log",
+      "arm": "frozen",
+      "seed": 2,
+      "initial_checkpoint_sha256": "e54e36050c8c1b72376268b4bed0d0507aee4042c527c816e87732cf91433156",
+      "instances": 4,
+      "valid": {
+        "minorminer": 1.0,
+        "policy": 1.0
+      },
+      "mean_residual": {
+        "minorminer": 0.005045572916666666,
+        "policy": 0.005208333333333333
+      },
+      "deployment_utility": {
+        "minorminer": 0.99912109375,
+        "policy": 0.9990234375
+      },
+      "p_solve": {
+        "policy": 0.9921875,
+        "minorminer": 0.9931640625
+      }
+    },
+    {
+      "log": "quality_loo.log",
+      "arm": "quality_loo",
+      "seed": 0,
+      "initial_checkpoint_sha256": "e54e36050c8c1b72376268b4bed0d0507aee4042c527c816e87732cf91433156",
+      "instances": 4,
+      "valid": {
+        "minorminer": 1.0,
+        "policy": 1.0
+      },
+      "mean_residual": {
+        "minorminer": 0.00439453125,
+        "policy": 0.007161458333333333
+      },
+      "deployment_utility": {
+        "minorminer": 0.99912109375,
+        "policy": 0.9988281250000001
+      },
+      "p_solve": {
+        "policy": 0.9921875,
+        "minorminer": 0.9912109375
+      }
+    },
+    {
+      "log": "quality_loo_s1.log",
+      "arm": "quality_loo",
+      "seed": 1,
+      "initial_checkpoint_sha256": "e54e36050c8c1b72376268b4bed0d0507aee4042c527c816e87732cf91433156",
+      "instances": 4,
+      "valid": {
+        "policy": 1.0,
+        "minorminer": 1.0
+      },
+      "mean_residual": {
+        "policy": 0.004069010416666666,
+        "minorminer": 0.006510416666666666
+      },
+      "deployment_utility": {
+        "policy": 0.99931640625,
+        "minorminer": 0.998828125
+      },
+      "p_solve": {
+        "policy": 0.9951171875,
+        "minorminer": 0.990234375
+      }
+    },
+    {
+      "log": "quality_loo_s2.log",
+      "arm": "quality_loo",
+      "seed": 2,
+      "initial_checkpoint_sha256": "e54e36050c8c1b72376268b4bed0d0507aee4042c527c816e87732cf91433156",
+      "instances": 4,
+      "valid": {
+        "minorminer": 1.0,
+        "policy": 1.0
+      },
+      "mean_residual": {
+        "minorminer": 0.005045572916666666,
+        "policy": 0.006510416666666666
+      },
+      "deployment_utility": {
+        "minorminer": 0.99912109375,
+        "policy": 0.998828125
+      },
+      "p_solve": {
+        "policy": 0.9912109375,
+        "minorminer": 0.9931640625
+      }
+    },
+    {
+      "log": "quality_loo_value.log",
+      "arm": "quality_loo_value",
+      "seed": 0,
+      "initial_checkpoint_sha256": "e54e36050c8c1b72376268b4bed0d0507aee4042c527c816e87732cf91433156",
+      "instances": 4,
+      "valid": {
+        "minorminer": 1.0,
+        "policy": 1.0
+      },
+      "mean_residual": {
+        "minorminer": 0.00439453125,
+        "policy": 0.0107421875
+      },
+      "deployment_utility": {
+        "minorminer": 0.99912109375,
+        "policy": 0.998046875
+      },
+      "p_solve": {
+        "policy": 0.9833984375,
+        "minorminer": 0.9912109375
+      }
+    },
+    {
+      "log": "quality_loo_value_s1.log",
+      "arm": "quality_loo_value",
+      "seed": 1,
+      "initial_checkpoint_sha256": "e54e36050c8c1b72376268b4bed0d0507aee4042c527c816e87732cf91433156",
+      "instances": 4,
+      "valid": {
+        "policy": 1.0,
+        "minorminer": 1.0
+      },
+      "mean_residual": {
+        "policy": 0.006184895833333333,
+        "minorminer": 0.006510416666666666
+      },
+      "deployment_utility": {
+        "policy": 0.998828125,
+        "minorminer": 0.998828125
+      },
+      "p_solve": {
+        "policy": 0.990234375,
+        "minorminer": 0.990234375
+      }
+    },
+    {
+      "log": "quality_loo_value_s2.log",
+      "arm": "quality_loo_value",
+      "seed": 2,
+      "initial_checkpoint_sha256": "e54e36050c8c1b72376268b4bed0d0507aee4042c527c816e87732cf91433156",
+      "instances": 4,
+      "valid": {
+        "minorminer": 1.0,
+        "policy": 1.0
+      },
+      "mean_residual": {
+        "minorminer": 0.005045572916666666,
+        "policy": 0.006510416666666666
+      },
+      "deployment_utility": {
+        "minorminer": 0.99912109375,
+        "policy": 0.998828125
+      },
+      "p_solve": {
+        "policy": 0.990234375,
+        "minorminer": 0.9931640625
+      }
+    }
+  ],
+  "initial_checkpoint_sha256": "e54e36050c8c1b72376268b4bed0d0507aee4042c527c816e87732cf91433156"
+}

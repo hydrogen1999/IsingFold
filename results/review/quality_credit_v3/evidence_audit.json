@@ -1,0 +1,474 @@
+{
+  "logs": [
+    {
+      "errors": [],
+      "evaluations": [
+        {
+          "evaluation": "init",
+          "line": 2,
+          "observed_instances": 4,
+          "reported_instances": 4,
+          "set": "heldout",
+          "valid": true
+        },
+        {
+          "evaluation": "final",
+          "line": 5,
+          "observed_instances": 4,
+          "reported_instances": 4,
+          "set": "heldout",
+          "valid": true
+        }
+      ],
+      "header": {
+        "declared_instances": {
+          "heldout": 4,
+          "train": 8
+        },
+        "eval_sets": "heldout",
+        "heldout_role": "validation",
+        "line": 1,
+        "manifest_split": true,
+        "protocol": "constructor-quality-v2",
+        "required_final_sets": [
+          "heldout"
+        ]
+      },
+      "heldout_test_evidence": false,
+      "ok": true,
+      "path": "results/review/quality_credit_v3/quality_loo.log",
+      "require_final": true,
+      "require_heldout_test": false,
+      "schema": "constructor-evidence-audit-v1"
+    },
+    {
+      "errors": [],
+      "evaluations": [
+        {
+          "evaluation": "init",
+          "line": 2,
+          "observed_instances": 4,
+          "reported_instances": 4,
+          "set": "heldout",
+          "valid": true
+        },
+        {
+          "evaluation": "final",
+          "line": 5,
+          "observed_instances": 4,
+          "reported_instances": 4,
+          "set": "heldout",
+          "valid": true
+        }
+      ],
+      "header": {
+        "declared_instances": {
+          "heldout": 4,
+          "train": 8
+        },
+        "eval_sets": "heldout",
+        "heldout_role": "validation",
+        "line": 1,
+        "manifest_split": true,
+        "protocol": "constructor-quality-v2",
+        "required_final_sets": [
+          "heldout"
+        ]
+      },
+      "heldout_test_evidence": false,
+      "ok": true,
+      "path": "results/review/quality_credit_v3/quality_loo_s1.log",
+      "require_final": true,
+      "require_heldout_test": false,
+      "schema": "constructor-evidence-audit-v1"
+    },
+    {
+      "errors": [],
+      "evaluations": [
+        {
+          "evaluation": "init",
+          "line": 2,
+          "observed_instances": 4,
+          "reported_instances": 4,
+          "set": "heldout",
+          "valid": true
+        },
+        {
+          "evaluation": "final",
+          "line": 5,
+          "observed_instances": 4,
+          "reported_instances": 4,
+          "set": "heldout",
+          "valid": true
+        }
+      ],
+      "header": {
+        "declared_instances": {
+          "heldout": 4,
+          "train": 8
+        },
+        "eval_sets": "heldout",
+        "heldout_role": "validation",
+        "line": 1,
+        "manifest_split": true,
+        "protocol": "constructor-quality-v2",
+        "required_final_sets": [
+          "heldout"
+        ]
+      },
+      "heldout_test_evidence": false,
+      "ok": true,
+      "path": "results/review/quality_credit_v3/quality_loo_s2.log",
+      "require_final": true,
+      "require_heldout_test": false,
+      "schema": "constructor-evidence-audit-v1"
+    },
+    {
+      "errors": [],
+      "evaluations": [
+        {
+          "evaluation": "init",
+          "line": 2,
+          "observed_instances": 4,
+          "reported_instances": 4,
+          "set": "heldout",
+          "valid": true
+        },
+        {
+          "evaluation": "final",
+          "line": 5,
+          "observed_instances": 4,
+          "reported_instances": 4,
+          "set": "heldout",
+          "valid": true
+        }
+      ],
+      "header": {
+        "declared_instances": {
+          "heldout": 4,
+          "train": 8
+        },
+        "eval_sets": "heldout",
+        "heldout_role": "validation",
+        "line": 1,
+        "manifest_split": true,
+        "protocol": "constructor-quality-v2",
+        "required_final_sets": [
+          "heldout"
+        ]
+      },
+      "heldout_test_evidence": false,
+      "ok": true,
+      "path": "results/review/quality_credit_v3/quality_loo_value.log",
+      "require_final": true,
+      "require_heldout_test": false,
+      "schema": "constructor-evidence-audit-v1"
+    },
+    {
+      "errors": [],
+      "evaluations": [
+        {
+          "evaluation": "init",
+          "line": 2,
+          "observed_instances": 4,
+          "reported_instances": 4,
+          "set": "heldout",
+          "valid": true
+        },
+        {
+          "evaluation": "final",
+          "line": 5,
+          "observed_instances": 4,
+          "reported_instances": 4,
+          "set": "heldout",
+          "valid": true
+        }
+      ],
+      "header": {
+        "declared_instances": {
+          "heldout": 4,
+          "train": 8
+        },
+        "eval_sets": "heldout",
+        "heldout_role": "validation",
+        "line": 1,
+        "manifest_split": true,
+        "protocol": "constructor-quality-v2",
+        "required_final_sets": [
+          "heldout"
+        ]
+      },
+      "heldout_test_evidence": false,
+      "ok": true,
+      "path": "results/review/quality_credit_v3/quality_loo_value_s1.log",
+      "require_final": true,
+      "require_heldout_test": false,
+      "schema": "constructor-evidence-audit-v1"
+    },
+    {
+      "errors": [],
+      "evaluations": [
+        {
+          "evaluation": "init",
+          "line": 2,
+          "observed_instances": 4,
+          "reported_instances": 4,
+          "set": "heldout",
+          "valid": true
+        },
+        {
+          "evaluation": "final",
+          "line": 5,
+          "observed_instances": 4,
+          "reported_instances": 4,
+          "set": "heldout",
+          "valid": true
+        }
+      ],
+      "header": {
+        "declared_instances": {
+          "heldout": 4,
+          "train": 8
+        },
+        "eval_sets": "heldout",
+        "heldout_role": "validation",
+        "line": 1,
+        "manifest_split": true,
+        "protocol": "constructor-quality-v2",
+        "required_final_sets": [
+          "heldout"
+        ]
+      },
+      "heldout_test_evidence": false,
+      "ok": true,
+      "path": "results/review/quality_credit_v3/quality_loo_value_s2.log",
+      "require_final": true,
+      "require_heldout_test": false,
+      "schema": "constructor-evidence-audit-v1"
+    },
+    {
+      "errors": [],
+      "evaluations": [
+        {
+          "evaluation": "init",
+          "line": 2,
+          "observed_instances": 4,
+          "reported_instances": 4,
+          "set": "heldout",
+          "valid": true
+        },
+        {
+          "evaluation": "final",
+          "line": 5,
+          "observed_instances": 4,
+          "reported_instances": 4,
+          "set": "heldout",
+          "valid": true
+        }
+      ],
+      "header": {
+        "declared_instances": {
+          "heldout": 4,
+          "train": 8
+        },
+        "eval_sets": "heldout",
+        "heldout_role": "validation",
+        "line": 1,
+        "manifest_split": true,
+        "protocol": "constructor-quality-v2",
+        "required_final_sets": [
+          "heldout"
+        ]
+      },
+      "heldout_test_evidence": false,
+      "ok": true,
+      "path": "results/review/quality_credit_v3/feasibility.log",
+      "require_final": true,
+      "require_heldout_test": false,
+      "schema": "constructor-evidence-audit-v1"
+    },
+    {
+      "errors": [],
+      "evaluations": [
+        {
+          "evaluation": "init",
+          "line": 2,
+          "observed_instances": 4,
+          "reported_instances": 4,
+          "set": "heldout",
+          "valid": true
+        },
+        {
+          "evaluation": "final",
+          "line": 5,
+          "observed_instances": 4,
+          "reported_instances": 4,
+          "set": "heldout",
+          "valid": true
+        }
+      ],
+      "header": {
+        "declared_instances": {
+          "heldout": 4,
+          "train": 8
+        },
+        "eval_sets": "heldout",
+        "heldout_role": "validation",
+        "line": 1,
+        "manifest_split": true,
+        "protocol": "constructor-quality-v2",
+        "required_final_sets": [
+          "heldout"
+        ]
+      },
+      "heldout_test_evidence": false,
+      "ok": true,
+      "path": "results/review/quality_credit_v3/feasibility_s1.log",
+      "require_final": true,
+      "require_heldout_test": false,
+      "schema": "constructor-evidence-audit-v1"
+    },
+    {
+      "errors": [],
+      "evaluations": [
+        {
+          "evaluation": "init",
+          "line": 2,
+          "observed_instances": 4,
+          "reported_instances": 4,
+          "set": "heldout",
+          "valid": true
+        },
+        {
+          "evaluation": "final",
+          "line": 5,
+          "observed_instances": 4,
+          "reported_instances": 4,
+          "set": "heldout",
+          "valid": true
+        }
+      ],
+      "header": {
+        "declared_instances": {
+          "heldout": 4,
+          "train": 8
+        },
+        "eval_sets": "heldout",
+        "heldout_role": "validation",
+        "line": 1,
+        "manifest_split": true,
+        "protocol": "constructor-quality-v2",
+        "required_final_sets": [
+          "heldout"
+        ]
+      },
+      "heldout_test_evidence": false,
+      "ok": true,
+      "path": "results/review/quality_credit_v3/feasibility_s2.log",
+      "require_final": true,
+      "require_heldout_test": false,
+      "schema": "constructor-evidence-audit-v1"
+    },
+    {
+      "errors": [],
+      "evaluations": [
+        {
+          "evaluation": "final",
+          "line": 2,
+          "observed_instances": 4,
+          "reported_instances": 4,
+          "set": "heldout",
+          "valid": true
+        }
+      ],
+      "header": {
+        "declared_instances": {
+          "heldout": 4,
+          "train": 8
+        },
+        "eval_sets": "heldout",
+        "heldout_role": "validation",
+        "line": 1,
+        "manifest_split": true,
+        "protocol": "constructor-quality-v2",
+        "required_final_sets": [
+          "heldout"
+        ]
+      },
+      "heldout_test_evidence": false,
+      "ok": true,
+      "path": "results/review/quality_credit_v3/frozen.log",
+      "require_final": true,
+      "require_heldout_test": false,
+      "schema": "constructor-evidence-audit-v1"
+    },
+    {
+      "errors": [],
+      "evaluations": [
+        {
+          "evaluation": "final",
+          "line": 2,
+          "observed_instances": 4,
+          "reported_instances": 4,
+          "set": "heldout",
+          "valid": true
+        }
+      ],
+      "header": {
+        "declared_instances": {
+          "heldout": 4,
+          "train": 8
+        },
+        "eval_sets": "heldout",
+        "heldout_role": "validation",
+        "line": 1,
+        "manifest_split": true,
+        "protocol": "constructor-quality-v2",
+        "required_final_sets": [
+          "heldout"
+        ]
+      },
+      "heldout_test_evidence": false,
+      "ok": true,
+      "path": "results/review/quality_credit_v3/frozen_s1.log",
+      "require_final": true,
+      "require_heldout_test": false,
+      "schema": "constructor-evidence-audit-v1"
+    },
+    {
+      "errors": [],
+      "evaluations": [
+        {
+          "evaluation": "final",
+          "line": 2,
+          "observed_instances": 4,
+          "reported_instances": 4,
+          "set": "heldout",
+          "valid": true
+        }
+      ],
+      "header": {
+        "declared_instances": {
+          "heldout": 4,
+          "train": 8
+        },
+        "eval_sets": "heldout",
+        "heldout_role": "validation",
+        "line": 1,
+        "manifest_split": true,
+        "protocol": "constructor-quality-v2",
+        "required_final_sets": [
+          "heldout"
+        ]
+      },
+      "heldout_test_evidence": false,
+      "ok": true,
+      "path": "results/review/quality_credit_v3/frozen_s2.log",
+      "require_final": true,
+      "require_heldout_test": false,
+      "schema": "constructor-evidence-audit-v1"
+    }
+  ],
+  "ok": true,
+  "schema": "constructor-evidence-audit-v1"
+}
