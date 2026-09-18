@@ -2167,3 +2167,29 @@ observation is the current hypothesis about where they live.
 | minorminer | 31.7 | **0.0671** | **0.0187** |
 
 `results/quality/broken_*.log`.
+
+## The attribution arm lands first, and it takes the credit
+
+The paired study runs its arms in order and the middle one has reported. Same instances, same
+protocol, same twenty updates; the only difference is which reward those updates used.
+
+| Pegasus 3, fill 0.30 | residual | deployment solve probability | qubits | longest chain |
+|---|---|---|---|---|
+| frozen | 0.0877 | 0.237 | 84.8 | 9.8 |
+| **twenty more updates of feasibility reward** | **0.0633** | **0.316** | 71.5 | 6.0 |
+| twenty updates of quality reward | not started |
+| minorminer | 0.0417 | 0.391 | 31.3 | 1.5 |
+
+Twenty updates of the **feasibility** reward move residual from 0.0877 to 0.0633 and solve
+probability from 0.237 to 0.316, which is fifty-three percent of the gap to minorminer, and they
+shorten the longest chain from 9.8 to 6.0. No quality signal was involved.
+
+That is the single most useful thing the paired design has produced so far, and it is a warning
+rather than a win. Every quality improvement this record has reported for a trained constructor
+was measured against a checkpoint that was simply undertrained, and on this evidence more updates
+of any kind would have produced much of it. The bar for the quality arm is now 0.0633, not
+0.0877, and the claim it has to earn is not "better than the frozen policy" but "better than the
+same budget spent on the feasibility reward".
+
+Zephyr 2's continued-feasibility arm has reported only its initial evaluation so far.
+`results/quality_study/*.log`.
