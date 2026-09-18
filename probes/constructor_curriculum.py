@@ -467,9 +467,10 @@ def run(args, train, heldout):
     wide = args.support == "wide"
 
     def draw(task, seed, grad, reward=None, initializer=None):
+        seconds = args.train_episode_seconds if grad and args.train_episode_seconds else args.episode_seconds
         with torch.set_grad_enabled(grad):
             return episode(task, actor, features[task.name], 1., args.max_steps,
-                           np.random.default_rng(seed), args.episode_seconds,
+                           np.random.default_rng(seed), seconds,
                            train=True, objective=args.objective, reward_reads=args.reward_reads,
                            evaluate_reward=quality if reward is None else reward,
                            initializer=initializer, wide=wide)
@@ -563,7 +564,8 @@ def run(args, train, heldout):
         if quality:
             return evaluate_quality(tag)
         out = {}
-        for name, tasks in (("train", train), ("heldout", heldout)):
+        sets = (("train", train), ("heldout", heldout)) if args.eval_sets == "both" else (("heldout", heldout),)
+        for name, tasks in sets:
             rates = {}
             for k, t in enumerate(tasks):
                 records = [draw(t, 100000 + 1000 * k + i, False) for i in range(args.eval_episodes)]
@@ -598,6 +600,7 @@ def run(args, train, heldout):
         "train_prefix_sources": sum(1 for t in train if getattr(t, "prefix_source", None)),
         "heldout_prefix_sources": sum(1 for t in heldout if getattr(t, "prefix_source", None)),
         "max_steps": args.max_steps, "episode_seconds": args.episode_seconds, "support": args.support,
+        "train_episode_seconds": args.train_episode_seconds or args.episode_seconds, "eval_sets": args.eval_sets,
         "certificate": "minorminer at generation only; forbidden afterwards",
     }), flush=True)
     started = time.monotonic()
@@ -649,6 +652,8 @@ def run(args, train, heldout):
     summary = {"summary": "gate2", "stage": args.stage, "seed": args.seed, "actor": args.actor,
                "features": args.features, "baseline": args.baseline, "objective": args.objective}
     for name in ("train", "heldout"):
+        if name not in history["init"]:
+            continue
         before, after = history["init"][name], history["final"][name]
         if quality:
             summary[name] = {"init_valid": before["valid"], "final_valid": after["valid"],
@@ -730,6 +735,10 @@ def parse(argv=None):
     parser.add_argument("--learning-rate", type=float, default=.03)
     parser.add_argument("--max-steps", type=int, default=64)
     parser.add_argument("--episode-seconds", type=float, default=30.)
+    parser.add_argument("--train-episode-seconds", type=float, default=0.,
+                        help="deadline of training episodes when different from the evaluation deadline (0: same)")
+    parser.add_argument("--eval-sets", choices=("both", "heldout"), default="both",
+                        help="heldout: skip the training-set evaluation, which costs as much as the held-out one")
     parser.add_argument("--out", default="")
     args = parser.parse_args(argv)
     if not 0 <= args.seed < 2 ** 32:
@@ -743,6 +752,8 @@ def parse(argv=None):
         parser.error("--baseline value needs the contextual actor's value head")
     if not np.isfinite(args.learning_rate) or args.learning_rate <= 0 or args.episode_seconds <= 0:
         parser.error("learning rate and episode seconds must be positive and finite")
+    if args.train_episode_seconds < 0:
+        parser.error("--train-episode-seconds must be nonnegative")
     if (args.stage == "corpus") != bool(args.corpus):
         parser.error("--stage corpus and --corpus PATH go together")
     if args.heldout_role == "test" and (args.iterations != 0 or not args.init or not args.manifest_split):

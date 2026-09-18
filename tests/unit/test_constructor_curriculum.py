@@ -341,3 +341,15 @@ def test_mastery_schedule_and_options_parse_and_run():
     assert 0. <= summary["heldout"]["final"] <= 1.
     with pytest.raises(SystemExit):
         cc.parse(["--prefix-empty-mix", "1.5"])
+
+
+def test_heldout_only_evaluation_and_a_separate_training_deadline():
+    args = cc.parse(["--stage", "a", "--train", "2", "--heldout", "1", "--episodes", "2", "--iterations", "1",
+                     "--eval-episodes", "1", "--seed", "43", "--max-steps", "12", "--eval-sets", "heldout",
+                     "--episode-seconds", "20", "--train-episode-seconds", "5"])
+    train, heldout = cc.build_sets("a", 2, 1, seed=43)
+    with cc.no_completion_solver():
+        summary = cc.run(args, train, heldout)
+    assert "heldout" in summary and "train" not in summary
+    with pytest.raises(SystemExit):
+        cc.parse(["--train-episode-seconds", "-1"])
