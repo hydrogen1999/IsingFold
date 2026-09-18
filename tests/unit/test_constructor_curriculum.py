@@ -405,3 +405,19 @@ def test_mastery_advances_on_assisted_episodes_only(monkeypatch):
     with cc.no_completion_solver():
         cc.run(args, train, heldout)
     assert seen["assisted"] and seen["empty"]
+
+
+def test_deployment_evaluation_reports_coverage_and_time_to_first_valid():
+    args = cc.parse(["--stage", "a", "--train", "1", "--heldout", "3", "--episodes", "2",
+                     "--iterations", "0", "--eval-episodes", "1", "--seed", "46", "--max-steps", "16",
+                     "--objective", "deployment", "--deadline", "5", "--comparison", "minorminer"])
+    train, heldout = cc.build_sets("a", 1, 3, seed=46)
+    with cc.no_completion_solver():
+        summary = cc.run(args, train, heldout)
+    row = summary["heldout"]
+    assert set(row["coverage"]) == {"policy", "minorminer"}
+    assert 0. <= row["coverage"]["policy"] <= 1. and 0. <= row["coverage"]["minorminer"] <= 1.
+    assert row["instances"] == 3 and row["attempts"]["policy"] >= 1
+    assert row["policy_only"] >= 0 and row["minorminer_only"] >= 0
+    with pytest.raises(SystemExit):
+        cc.parse(["--objective", "deployment", "--iterations", "5"])

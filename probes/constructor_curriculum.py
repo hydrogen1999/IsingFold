@@ -463,6 +463,8 @@ def run(args, train, heldout):
     optimizer = torch.optim.Adam(actor.parameters(), lr=args.learning_rate)
 
     quality = args.objective == "quality"
+    if args.objective == "deployment" and args.iterations:
+        raise ValueError("the deployment evaluation is evaluation only: use --iterations 0")
 
     wide = args.support == "wide"
 
@@ -573,7 +575,57 @@ def run(args, train, heldout):
             out[name] = summary
         return out
 
+    def evaluate_deployment(tag):
+        """What a practitioner gets: each arm proposes until a shared wall-clock deadline and
+        the first valid embedding wins. Coverage is the fraction of held-out instances an arm
+        embedded at all, not a per-episode rate; the time to that first valid output and the
+        attempts it took are reported beside it. minorminer restarts under the same deadline."""
+        rows = []
+        for k, t in enumerate(heldout):
+            def learned(seed, seconds_left, t=t):
+                with torch.no_grad():
+                    result = episode(t, actor, features[t.name], 1., args.max_steps,
+                                     np.random.default_rng(seed), min(seconds_left, args.episode_seconds),
+                                     train=True, objective="feasibility", evaluate_reward=False, wide=wide)
+                return result["terminal"] if result["valid"] else None
+
+            def router(seed, seconds_left, t=t):
+                from constructor_baseline import baseline_proposal
+                minorminer.find_embedding = _ORIGINAL_FIND_EMBEDDING
+                try:
+                    return baseline_proposal(t, len(t.host), seed, seconds_left,
+                                             args.baseline_tries, min(seconds_left, args.baseline_router_seconds))
+                finally:
+                    minorminer.find_embedding = forbidden_solver
+            row = {"instance": t.name, "variables": t.logical.number_of_nodes(), "host": len(t.host)}
+            arms = [("policy", learned)]
+            if args.comparison != "none":
+                arms.append(("minorminer", router))
+            for arm, proposer in arms:
+                row[arm] = evaluate_search(t, proposer, deadline=args.deadline, select_cap=1,
+                                           selection_reads=args.selection_reads,
+                                           assessment_reads=args.assessment_reads, objective="feasibility",
+                                           seed=experiment_seed(args.seed, "deployment", t.name, k))
+            rows.append(row)
+            print(json.dumps({"deployment_instance": row}), flush=True)
+        arms = [a for a in rows[0] if a not in ("instance", "variables", "host")]
+        summary = {"evaluation": tag, "set": "heldout", "objective": "deployment",
+                   "deadline": args.deadline, "instances": len(rows),
+                   "coverage": {a: float(np.mean([r[a]["valid"] for r in rows])) for a in arms},
+                   "seconds_to_first": {a: float(np.mean([r[a]["deployment_seconds"] for r in rows if r[a]["valid"]]))
+                                        if any(r[a]["valid"] for r in rows) else None for a in arms},
+                   "attempts": {a: float(np.mean([r[a]["attempts"] for r in rows])) for a in arms},
+                   "policy_only": sum(1 for r in rows if r["policy"]["valid"]
+                                      and not r.get("minorminer", {"valid": False})["valid"]),
+                   "minorminer_only": sum(1 for r in rows if r.get("minorminer", {"valid": False})["valid"]
+                                          and not r["policy"]["valid"]),
+                   "rows": rows}
+        print(json.dumps(summary), flush=True)
+        return {"heldout": summary}
+
     def evaluate(tag):
+        if args.objective == "deployment":
+            return evaluate_deployment(tag)
         if quality:
             return evaluate_quality(tag)
         out = {}
@@ -674,6 +726,11 @@ def run(args, train, heldout):
         if name not in history["init"]:
             continue
         before, after = history["init"][name], history["final"][name]
+        if args.objective == "deployment":
+            summary[name] = {"coverage": after["coverage"], "seconds_to_first": after["seconds_to_first"],
+                             "attempts": after["attempts"], "instances": after["instances"],
+                             "policy_only": after["policy_only"], "minorminer_only": after["minorminer_only"]}
+            continue
         if quality:
             summary[name] = {"init_valid": before["valid"], "final_valid": after["valid"],
                              "init_residual": before["mean_residual"], "final_residual": after["mean_residual"],
@@ -709,7 +766,10 @@ def parse(argv=None):
     parser.add_argument("--heldout-role", choices=("validation", "test"), default="validation",
                         help="test: the final table only; evaluation-only (--iterations 0) with --init, "
                              "the held-out set is the locked test list, once")
-    parser.add_argument("--objective", choices=("feasibility", "quality"), default="feasibility")
+    parser.add_argument("--objective", choices=("feasibility", "quality", "deployment"),
+                        default="feasibility",
+                        help="deployment: evaluation only; every arm proposes until --deadline and the "
+                             "first valid embedding wins, which is the number a practitioner gets")
     parser.add_argument("--support", choices=("registered", "wide"), default="registered",
                         help="wide: the 512-candidate construction support, every frontier placement offered")
     parser.add_argument("--reward-reads", type=int, default=256)
@@ -777,6 +837,8 @@ def parse(argv=None):
         parser.error("--train-episode-seconds must be nonnegative")
     if (args.stage == "corpus") != bool(args.corpus):
         parser.error("--stage corpus and --corpus PATH go together")
+    if args.objective == "deployment" and args.iterations:
+        parser.error("--objective deployment is evaluation only: use --iterations 0")
     if args.heldout_role == "test" and (args.iterations != 0 or not args.init or not args.manifest_split):
         parser.error("--heldout-role test is evaluation-only: needs --iterations 0, --init and --manifest-split")
     if args.prefix_fraction:
