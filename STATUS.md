@@ -1380,7 +1380,7 @@ The earlier null at 8 absorbed qubits was an underpowered dose, not an insensiti
 `results/frontier/mech_*.log`, `results/frontier/discrim_*.log`.
 
 **The cell the benchmark should sit on.** Pegasus 3 at named fill 0.90 is the only place where
-minorminer fails outright and solve probability still moves: 93 variables, certified fill 0.86,
+minorminer fails outright and solve probability still moves: 93 variables, pruned fill 0.86,
 minorminer 0 of 12 at 200 tries, p_solve 0.018 at 200 sweeps, 0.027 at 2000 and 0.084 at 20000.
 Zephyr 2 at named fill 0.90 is its companion at 116 variables. Below this the congestion claim
 fails, because minorminer solves 0.17 to 0.58 of the smaller instances; above it solve
