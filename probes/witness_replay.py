@@ -36,8 +36,14 @@ def consistent(cand, witness, current):
     return False
 
 
-def replay(task, witness, max_steps, hint, dump=None, scorer=None, quotas=None, wide=False):
-    ctx = construction_context(qubit_budget(witness), task.logical.number_of_nodes(),
+def replay(task, witness, max_steps, hint, dump=None, scorer=None, quotas=None, wide=False,
+           deployment=False):
+    """``deployment=True`` runs the audit through the training rollout's own configuration:
+    the full host as the qubit cap (not a witness-derived budget), no seeded first chain,
+    and satisfied growth enabled. That is the configuration a policy actually faces; the
+    historical replay seeded the highest-degree variable's whole witness chain."""
+    cap = len(task.host) if deployment else qubit_budget(witness)
+    ctx = construction_context(cap, task.logical.number_of_nodes(),
                                task.logical.number_of_edges(), quotas=quotas, wide=wide)
     ctx = scale_caps_for_steps(ctx, task.logical.number_of_nodes(), max_steps)
     first = max(witness, key=lambda v: (task.logical.degree(v), str(v)))
@@ -46,8 +52,11 @@ def replay(task, witness, max_steps, hint, dump=None, scorer=None, quotas=None, 
     def start(logical, host, seed):
         return {first: seed_root}
 
-    env = EmbeddingEnv(task, ctx, mode=Mode.CONSTRUCTION, initializer=start,
+    env = EmbeddingEnv(task, ctx, mode=Mode.CONSTRUCTION,
+                       initializer=None if deployment else start,
                        selector=fixed_strength_selector(), reward_reads=8)
+    if deployment:
+        env.generator.allow_satisfied_growth = True
     if hint:
         env.generator.prefer = lambda v, q: 1.0 if q in witness[v] else 0.0
     elif scorer is not None:
@@ -117,6 +126,9 @@ def main() -> int:
     ap.add_argument("--quotas", default="", help="candidate quotas, e.g. place=48,route=12,grow=2,shrink=2")
     ap.add_argument("--cells", default="", help="comma-separated instance-name filters")
     ap.add_argument("--wide", action="store_true", help="the 512-candidate construction support")
+    ap.add_argument("--deployment", action="store_true",
+                    help="audit through the rollout's own configuration: full-host cap, no seeded "
+                         "first chain, satisfied growth enabled")
     ap.add_argument("--hint", action="store_true",
                     help="let the generator prefer the witness's qubits before truncating its "
                          "offer: measures whether the grammar can express the witness at all, "
@@ -132,7 +144,7 @@ def main() -> int:
     if a.quotas:
         quotas = {k: int(v) for k, v in (item.split("=") for item in a.quotas.split(","))}
     print(json.dumps({"corpus": a.corpus, "instances": len(tasks), "hint": a.hint, "quotas": quotas,
-                      "wide": a.wide}), flush=True)
+                      "wide": a.wide, "deployment": a.deployment}), flush=True)
     cells = defaultdict(list)
     records = [] if a.dump else None
     scorer = None
@@ -154,7 +166,7 @@ def main() -> int:
     for k, task in enumerate(tasks):
         family = task.lineage.rsplit("-", 1)[0].split("-", 1)[1].rsplit("-", 1)[0]
         witness = {v: frozenset(c) for v, c in task.witness.items()}
-        r = replay(task, witness, a.max_steps, a.hint, records, scorer, quotas, a.wide)
+        r = replay(task, witness, a.max_steps, a.hint, records, scorer, quotas, a.wide, a.deployment)
         if records is not None:
             import pickle
             with open(a.dump, "wb") as fh:
