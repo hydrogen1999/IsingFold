@@ -82,7 +82,14 @@ def measure(chains_map, host, problem, ground, ctx, sweeps, reads, seed):
 
 
 def channels(blocks):
-    """The registered strength, and the best strength by each channel's own sign."""
+    """The registered strength, and, clearly separated, the best strength on the same block.
+
+    Only the registered columns may be compared between embeddings. The best-strength columns
+    pick a different strength for each embedding using the very block they are then scored on,
+    which is a same-block maximum: it flatters whichever embedding has the wider strength
+    response and can invent or erase a difference that the fixed policy does not show. They are
+    kept for reporting the achievable range, never for a comparison.
+    """
     best = min(range(len(blocks)), key=lambda i: blocks[i].mean_residual)
     return {"p_registered": blocks[1].rate,
             "p_best": max(b.rate for b in blocks),
@@ -196,13 +203,16 @@ def main() -> int:
                              ("%.3f" % mm_rate) if mm_rate is not None else "-",
                              ("%.3f" % grown_rate) if grown_rate is not None else "-"),
                           flush=True)
-                    print("      residual  witness %.4f  grown %s  minorminer %s   broken "
-                          "witness %.3f  grown %s"
-                          % (wit["residual_best"],
-                             ("%.4f" % grown["residual_best"]) if grown else "-",
-                             ("%.4f" % mm_ch["residual_best"]) if mm_ch else "-",
-                             wit["broken_best"],
-                             ("%.3f" % grown["broken_best"]) if grown else "-"), flush=True)
+                    # Registered strength, because that is the only column comparable
+                    # between embeddings; the best-strength values stay in the JSON row.
+                    print("      registered  residual witness %.4f  grown %s  minorminer %s"
+                          "   p witness %.4f  grown %s   growth %d qubits"
+                          % (wit["residual_registered"],
+                             ("%.4f" % grown["residual_registered"]) if grown else "-",
+                             ("%.4f" % mm_ch["residual_registered"]) if mm_ch else "-",
+                             wit["p_registered"],
+                             ("%.4f" % grown["p_registered"]) if grown else "-",
+                             added), flush=True)
     print("SOLVABILITY FRONTIER DONE", flush=True)
     return 0
 
