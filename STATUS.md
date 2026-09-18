@@ -571,6 +571,35 @@ p_solve 0.4 to 0.6, where the selection result lives) and residual on the fill c
 this table is why. It also bounds the fill claim: at 300 variables the benchmark measures
 feasibility and residual, not solve probability.
 
+## The audit through the deployment configuration, and what it cost
+
+The second GPT-6 astra review was right that the witness replay was not the rollout: it
+seeded the highest-degree variable's whole witness chain, capped qubits by the witness and
+left satisfied growth off. `--deployment` removes all three, so the audit runs the
+configuration a policy actually faces (`results/diag/replay_*_deploy.log`, short-chain
+cells, three instances a cell):
+
+    cell                  valid    decisions    seconds    place candidates a step
+    Pegasus 6, fill 90    3 / 3    579 to 589   1342 to 3018    205 to 215
+    Zephyr 4, fill 90     3 / 3    500 to 502   1028 to 1662    204 to 223
+    Pegasus 6, fill 80    stuck at 1004        4656            112
+    Zephyr 4, fill 80     stuck at 1136        5383             85
+
+At fill 90 the deployment support contains the witness's path on every instance. At fill 80
+the walk places every variable and then sticks: with a fifth of the host free, satisfied
+growth fills the candidate batch with off-witness options and the witness-consistent route
+is crowded out. That is a property of the teacher, not of the policy, which may use any
+valid embedding; but it means the cloning teacher is reliable at 90 and not at 80.
+
+The audit also exposed the real step cost: 2.3 to 4.6 s a step at those sizes, not the 0.16
+measured on small hosts, because two parts of a decision were quadratic in (candidates times
+chains). The legality dry run re-validated all five hundred chains for each of five hundred
+candidates, and each candidate's payload key re-hashed the whole state. Both are now
+incremental with equality tests (`tests/unit/test_incremental_identity.py`), and a wide step
+at fill 90 from a 90 percent prefix costs 0.64 s against 1.36 s before. What remains is the
+feature pass over the candidate batch (1.7 s of 6.4 s over ten steps) and the state
+fingerprint, both linear in the batch.
+
 ## Deployment coverage where minorminer works: the router wins, and by a lot
 
 The number a practitioner gets, not a per-episode rate: each arm proposes until a shared
