@@ -1862,3 +1862,33 @@ second quality cell rather than only a stepping stone.
 Those are the held-out rates of the fragment checkpoints themselves at the new rung, before any
 update, so the gap at the quality cell was the jump in size and not the policy. The cell runs
 (`runs/quality/r50_*.log`) are warm-started from this rung's validation-selected weights.
+
+## The locked test lists at the training budget
+
+Rerun at exactly the budget the training runs used, 400 decisions and 300 seconds, five episodes
+an instance, on frozen checkpoints. Each list holds instances at three sizes and the policies saw
+only 24-variable instances in training.
+
+| checkpoint | Pegasus 16 test list | 24 vars | 48 vars | 100 vars |
+|---|---|---|---|---|
+| trained on Pegasus 16 | **0.60** | 0.90 | 0.65 | 0.43 |
+| trained on Zephyr 15, cross-topology | 0.55 | 0.90 | 0.62 | 0.33 |
+| Pegasus 3 fragment checkpoint, never trained at scale | 0.38 | 0.70 | 0.33 | 0.33 |
+
+| checkpoint | Zephyr 15 test list | 24 vars | 48 vars | 100 vars |
+|---|---|---|---|---|
+| trained on Zephyr 15 | 0.81 | 0.93 | 1.00 | 0.52 |
+| trained on Pegasus 16, cross-topology | **0.84** | 0.95 | 0.93 | 0.60 |
+| Zephyr 2 fragment checkpoint, never trained at scale | 0.73 | 0.93 | 0.80 | 0.36 |
+
+Three things separate at this budget that were identical at the generous one. Training at
+hardware scale is worth +0.22 on Pegasus and +0.08 on Zephyr over the fragment checkpoint it
+started from. Cross-topology transfer costs almost nothing, -0.05 one way and +0.03 the other.
+And a policy trained only on 24-variable instances reaches 0.33 to 0.60 on the 100-variable
+instances of the same lists, against 0.33 and 0.36 for the checkpoints that were never trained at
+scale.
+
+**What this is not.** These lists were already opened once, at the generous budget, before this
+rerun. They are development diagnostics now, not untouched confirmatory sets, and the paper has
+to reserve fresh lineages for the final comparison. The numbers are also feasibility, not
+quality. `results/transfer/m_*.log`.
