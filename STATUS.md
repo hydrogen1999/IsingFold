@@ -1819,3 +1819,46 @@ around dead ends the generator walks into. It has been relaunched on the wide su
 80.7 second witness trajectory, which is 1.1 times, the same ratio that made the 488-variable job
 impossible; they have been relaunched at 300 seconds (goose 3345).
 `results/quality/replay_*.log`, `results/control/replay_p3_f90_*.log`.
+
+## The resource rule against the measurement, at the quality cell
+
+The record's thesis was tested again on the cell the paper will use, not only on the modern
+corpora it was first measured on. Within one instance, across the eight-candidate pool a router
+actually produces, correlated against the mean of seven disjoint 256-read blocks, twelve
+instances a host (`probes/reward_channel.py`, `results/quality/resource_rho_*.log`):
+
+| host | rule | rank correlation with measured quality |
+|---|---|---|
+| Pegasus 3 | fewer qubits | 0.269 [+0.030, +0.508] |
+| Pegasus 3 | **one 256-read block** | **0.821 [+0.719, +0.922]** |
+| Zephyr 2 | fewer qubits | 0.148 [-0.058, +0.354] |
+| Zephyr 2 | **one 256-read block** | **0.639 [+0.442, +0.836]** |
+
+The ratio of three to four is the same one the modern corpora gave, and on Zephyr 2 the resource
+rule's interval crosses zero, so there it orders the pool no better than chance. This is the
+claim the paper can make about resource-first embedding, and it is now measured on two corpora
+and four host-topology combinations.
+
+Why a weak rule still finds embeddings, which is the obvious objection: at this cell the eight
+draws differ by 1.9 to 2.8 qubits, while the perturbation experiment needed 32 to 64 absorbed
+qubits before quality moved measurably. Within a router's own output distribution the resource
+variation is too small to explain the quality variation, so the rule is not wrong in direction,
+it is looking at the wrong quantity. Where feasibility does bind, at fill 0.90 and 93 variables,
+the same router is valid on 0 of 36 instances at 200 tries.
+
+## The quality ladder
+
+Starting the constructor at the quality cell directly gave held-out 0.0. A rung between the
+fragments the F and G checkpoints know, 12 to 20 variables, and the cell itself, 39 to 50
+variables, fixes it. Fill 0.30 on the same two hosts gives 28 and 38 variables on the same
+topology under the same wide support, and minorminer is valid on every instance of it, so it is a
+second quality cell rather than only a stepping stone.
+
+| rung | seed 0 | seed 1 |
+|---|---|---|
+| Pegasus 3, fill 0.30, 28 variables | 0.75 | 0.91 |
+| Zephyr 2, fill 0.30, 38 variables | 0.91 | 1.00 |
+
+Those are the held-out rates of the fragment checkpoints themselves at the new rung, before any
+update, so the gap at the quality cell was the jump in size and not the policy. The cell runs
+(`runs/quality/r50_*.log`) are warm-started from this rung's validation-selected weights.
