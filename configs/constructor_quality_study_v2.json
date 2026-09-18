@@ -1,0 +1,33 @@
+{
+  "protocol": "constructor-quality-v2",
+  "purpose": "Empty-start RL quality attribution; all arms share public resource and measurement caps",
+  "data_seed": 20260918,
+  "seeds": [0, 1, 2],
+  "hosts": {
+    "pegasus3": {"corpus": "runs/quality/pegasus3_f50", "init": "runs/quality/qf_p3_s0.pt"},
+    "zephyr2": {"corpus": "runs/quality/zephyr2_f50", "init": "runs/quality/qf_z2_s0.pt"}
+  },
+  "features": ["local", "physics"],
+  "common": {
+    "cells": "fill50-a3.0", "actor": "linear", "baseline": "loo",
+    "train": 56, "heldout": 12, "instances_per_iteration": 4,
+    "episodes": 6, "eval_episodes": 5, "max_steps": 300,
+    "episode_seconds": 60, "train_episode_seconds": 60,
+    "learning_rate": 0.003, "advantage_scale": 1.0, "entropy_coef": 0.0,
+    "support": "registered", "stop_bias": 0.0,
+    "reward_reads": 256, "selection_reads": 256, "assessment_reads": 4096,
+    "select_cap": 8, "deadline": 300, "proposal_fraction": 0.5,
+    "comparison": "all", "grow_extra": 2,
+    "baseline_tries": 20, "baseline_router_seconds": 2,
+    "evaluation_objective": "quality", "eval_sets": "heldout"
+  },
+  "pilot": {"iterations": 20, "eval_every": 10, "seeds": [0]},
+  "replication": {"iterations": 100, "eval_every": 50},
+  "notes": [
+    "Initial checkpoints must be local-feature feasibility checkpoints selected on validation.",
+    "Physics expansion appends zero weights: same initial distribution, same support and STOP bias.",
+    "Freeze protocol using validation before evaluating a fresh untouched final test.",
+    "Existing transfer test outcomes have already informed changes and are development evidence.",
+    "No claim of quality improvement or physical QPU performance follows from this configuration."
+  ]
+}

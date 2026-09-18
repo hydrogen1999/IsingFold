@@ -1,0 +1,147 @@
+{
+  "source_commit": "d06bf43d67a59f75a7b8585681d1775304820d71",
+  "source_checkout": "/workspace/scratch/667fc8e0bab0/IsingFold_fix_cf31efc",
+  "recorded_date_utc": "2026-09-17",
+  "script_is_exact_executed_python_stdin": true,
+  "rerun_to_save_artifacts": false,
+  "configuration": {
+    "host": "dwave_networkx.pegasus_graph(3)",
+    "hardware_qubits": 128,
+    "logical_graph": "networkx.cycle_graph(20)",
+    "logical_variables": 20,
+    "fields": "all zero",
+    "couplings": "all -1",
+    "model": "LayoutActorCritic(width=64, in_dim=230), random initialization",
+    "features": "ConstructorFeatureContext",
+    "torch_seed": 0,
+    "numpy_rng_seed": 0,
+    "torch_num_threads": 1,
+    "max_steps": 5,
+    "deadline_seconds": 20.0,
+    "temperature": 1.0,
+    "train_sampling": true,
+    "optimizer_updates": 0,
+    "objective": "feasibility",
+    "reward_reads_argument": 8
+  },
+  "observed_stdout_summary": {
+    "host_qubits": 128,
+    "logical_variables": 20,
+    "steps": 5,
+    "reason": "HORIZON",
+    "total_profiled_seconds": 2.1887,
+    "constructor_feature_seconds": 1.2742,
+    "rows": 216,
+    "actions": [
+      {
+        "support": {
+          "PLACE": 52,
+          "STOP": 1
+        },
+        "chosen": "PLACE"
+      },
+      {
+        "support": {
+          "PLACE": 12,
+          "grow": 10,
+          "RESTART": 1,
+          "STOP": 1
+        },
+        "chosen": "PLACE"
+      },
+      {
+        "support": {
+          "PLACE": 12,
+          "grow": 22,
+          "RESTART": 1,
+          "STOP": 1
+        },
+        "chosen": "PLACE"
+      },
+      {
+        "support": {
+          "PLACE": 12,
+          "grow": 32,
+          "RESTART": 1,
+          "STOP": 1
+        },
+        "chosen": "grow"
+      },
+      {
+        "support": {
+          "PLACE": 12,
+          "grow": 42,
+          "shrink": 1,
+          "RESTART": 1,
+          "STOP": 1
+        },
+        "chosen": "grow"
+      }
+    ]
+  },
+  "observed_cprofile_rows": {
+    "_prepare": [
+      [
+        "env.py",
+        6,
+        0.8395
+      ]
+    ],
+    "build_observation": [
+      [
+        "tensorize.py",
+        6,
+        0.5149
+      ]
+    ],
+    "_assert_search_state": [
+      [
+        "env.py",
+        57,
+        0.067
+      ]
+    ],
+    "distribution_value": [
+      [
+        "layout_policy.py",
+        5,
+        0.0087
+      ]
+    ],
+    "_local": [
+      [
+        "constructor_features.py",
+        432,
+        0.2167
+      ]
+    ],
+    "_summary": [
+      [
+        "constructor_features.py",
+        432,
+        0.8884
+      ]
+    ],
+    "generate": [
+      [
+        "proposal.py",
+        6,
+        0.0636
+      ]
+    ]
+  },
+  "cprofile_row_fields": [
+    "source_basename",
+    "total_call_count",
+    "cumulative_seconds_rounded_4dp"
+  ],
+  "caveats": [
+    "cProfile and the timing wrapper perturb execution time; timings are diagnostic, not production throughput.",
+    "Cumulative timings are nested: build_observation is included in _prepare, and _local/_summary are included in constructor feature time. Do not add them as disjoint buckets.",
+    "This is one fixed toy graph and random policy seed with five steps, not a success-rate benchmark or a trained policy evaluation.",
+    "Raw observations are transcribed from the completed command's stdout, preserving its four-decimal timing precision.",
+    "The relevant source files had no diff against source_commit when these artifacts were saved.",
+    "No minorminer call, training update, or annealing-quality measurement was requested."
+  ],
+  "reproduce_from_source_checkout": "ISINGFOLD_SRC=$PWD/src PYTHONPATH=$PWD/probes:$PWD/src python results/audit/constructor_support_profile.py"
+}

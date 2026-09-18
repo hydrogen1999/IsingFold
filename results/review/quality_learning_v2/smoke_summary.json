@@ -1,0 +1,393 @@
+{
+  "scope": "implementation smoke only; two synthetic held-out instances; not a paper benchmark or learned superiority result",
+  "source_status": "development worktree; contracts explicitly mark source_dirty=true; synthetic lineage naming subsequently corrected",
+  "runs": {
+    "feas": {
+      "options": {
+        "stage": "a",
+        "corpus": "",
+        "cells": "",
+        "init": "",
+        "expand_features": false,
+        "manifest_split": false,
+        "heldout_role": "validation",
+        "objective": "feasibility",
+        "evaluation_objective": null,
+        "support": "registered",
+        "reward_reads": 256,
+        "selection_reads": 256,
+        "assessment_reads": 512,
+        "select_cap": 6,
+        "proposal_fraction": 0.0,
+        "deadline": 60.0,
+        "comparison": "minorminer_grown",
+        "prefix_fraction": "",
+        "prefix_unit": "qubits",
+        "prefix_schedule": "linear",
+        "mastery_threshold": 0.8,
+        "mastery_step": 0.1,
+        "prefix_per_episode": false,
+        "prefix_empty_mix": 0.25,
+        "stop_bias": -6.0,
+        "grow_extra": 1,
+        "baseline_tries": 2,
+        "baseline_router_seconds": 2.0,
+        "seed": 3,
+        "data_seed": 42,
+        "train": 2,
+        "heldout": 2,
+        "actor": "linear",
+        "features": "local",
+        "baseline": "loo",
+        "width": 32,
+        "iterations": 40,
+        "instances_per_iteration": 2,
+        "episodes": 4,
+        "eval_episodes": 5,
+        "eval_every": 20,
+        "learning_rate": 0.03,
+        "advantage_scale": 1.0,
+        "entropy_coef": 0.0,
+        "max_steps": 32,
+        "episode_seconds": 3.0,
+        "train_episode_seconds": 0.0,
+        "eval_sets": "heldout"
+      },
+      "evaluations": [
+        {
+          "tag": "init",
+          "valid": 0.7,
+          "residual": null,
+          "p_solve": null
+        },
+        {
+          "tag": "iter 19",
+          "valid": 0.7,
+          "residual": null,
+          "p_solve": null
+        },
+        {
+          "tag": "final",
+          "valid": 0.8,
+          "residual": null,
+          "p_solve": null
+        }
+      ],
+      "summary": {
+        "summary": "gate2",
+        "stage": "a",
+        "seed": 3,
+        "actor": "linear",
+        "features": "local",
+        "baseline": "loo",
+        "objective": "feasibility",
+        "heldout": {
+          "init": 0.7,
+          "final": 0.8,
+          "gain": 0.09999999999999998,
+          "gain_ci": [
+            0.0,
+            0.19999999999999996
+          ],
+          "instances": 2
+        },
+        "seconds": 24.715586982999866,
+        "selected_checkpoint": {
+          "tag": "final",
+          "validation_score": 0.8
+        }
+      }
+    },
+    "quality": {
+      "options": {
+        "stage": "a",
+        "corpus": "",
+        "cells": "",
+        "init": "runs/review_20260918/feas.best.pt",
+        "expand_features": true,
+        "manifest_split": false,
+        "heldout_role": "validation",
+        "objective": "quality",
+        "evaluation_objective": "quality",
+        "support": "registered",
+        "reward_reads": 32,
+        "selection_reads": 32,
+        "assessment_reads": 128,
+        "select_cap": 2,
+        "proposal_fraction": 0.0,
+        "deadline": 1.0,
+        "comparison": "all",
+        "prefix_fraction": "",
+        "prefix_unit": "qubits",
+        "prefix_schedule": "linear",
+        "mastery_threshold": 0.8,
+        "mastery_step": 0.1,
+        "prefix_per_episode": false,
+        "prefix_empty_mix": 0.25,
+        "stop_bias": 0.0,
+        "grow_extra": 1,
+        "baseline_tries": 2,
+        "baseline_router_seconds": 2.0,
+        "seed": 3,
+        "data_seed": 42,
+        "train": 2,
+        "heldout": 2,
+        "actor": "linear",
+        "features": "physics",
+        "baseline": "loo",
+        "width": 32,
+        "iterations": 20,
+        "instances_per_iteration": 2,
+        "episodes": 4,
+        "eval_episodes": 20,
+        "eval_every": 10,
+        "learning_rate": 0.003,
+        "advantage_scale": 1.0,
+        "entropy_coef": 0.0,
+        "max_steps": 32,
+        "episode_seconds": 3.0,
+        "train_episode_seconds": 0.0,
+        "eval_sets": "heldout"
+      },
+      "evaluations": [
+        {
+          "tag": "init",
+          "valid": 1.0,
+          "residual": 0.072265625,
+          "p_solve": 0.93359375
+        },
+        {
+          "tag": "iter 9",
+          "valid": 1.0,
+          "residual": 0.072265625,
+          "p_solve": 0.93359375
+        },
+        {
+          "tag": "final",
+          "valid": 1.0,
+          "residual": 0.072265625,
+          "p_solve": 0.93359375
+        }
+      ],
+      "summary": {
+        "summary": "gate2",
+        "stage": "a",
+        "seed": 3,
+        "actor": "linear",
+        "features": "physics",
+        "baseline": "loo",
+        "objective": "quality",
+        "heldout": {
+          "init_valid": {
+            "minorminer_grown_heuristic": 1.0,
+            "minorminer_grown_selected": 1.0,
+            "minorminer_grown": 1.0,
+            "minorminer": 1.0,
+            "policy": 1.0
+          },
+          "final_valid": {
+            "minorminer_grown_heuristic": 1.0,
+            "minorminer_grown_selected": 1.0,
+            "minorminer_grown": 1.0,
+            "minorminer": 1.0,
+            "policy": 1.0
+          },
+          "init_residual": {
+            "minorminer_grown_heuristic": 0.083984375,
+            "minorminer_grown_selected": 0.107421875,
+            "minorminer_grown": 0.091796875,
+            "minorminer": 0.044921875,
+            "policy": 0.072265625
+          },
+          "final_residual": {
+            "minorminer_grown_heuristic": 0.083984375,
+            "minorminer_grown_selected": 0.107421875,
+            "minorminer_grown": 0.091796875,
+            "minorminer": 0.044921875,
+            "policy": 0.072265625
+          },
+          "final_shape": {
+            "minorminer_grown_heuristic": {
+              "chosen_qubits": 7.0,
+              "chosen_longest_chain": 3.0
+            },
+            "minorminer_grown_selected": {
+              "chosen_qubits": 6.5,
+              "chosen_longest_chain": 2.5
+            },
+            "minorminer_grown": {
+              "chosen_qubits": 6.5,
+              "chosen_longest_chain": 2.5
+            },
+            "minorminer": {
+              "chosen_qubits": 6.0,
+              "chosen_longest_chain": 2.0
+            },
+            "policy": {
+              "chosen_qubits": 6.0,
+              "chosen_longest_chain": 3.0
+            }
+          },
+          "final_paired_policy_minus_minorminer": [
+            0.02734375,
+            0.0,
+            0.0546875
+          ],
+          "paired_over": 2,
+          "instances": 2
+        },
+        "seconds": 17.85759042399968,
+        "selected_checkpoint": {
+          "tag": "init",
+          "validation_score": 0.98193359375
+        }
+      }
+    },
+    "control": {
+      "options": {
+        "stage": "a",
+        "corpus": "",
+        "cells": "",
+        "init": "runs/review_20260918/feas.best.pt",
+        "expand_features": true,
+        "manifest_split": false,
+        "heldout_role": "validation",
+        "objective": "feasibility",
+        "evaluation_objective": "quality",
+        "support": "registered",
+        "reward_reads": 32,
+        "selection_reads": 32,
+        "assessment_reads": 128,
+        "select_cap": 2,
+        "proposal_fraction": 0.0,
+        "deadline": 1.0,
+        "comparison": "all",
+        "prefix_fraction": "",
+        "prefix_unit": "qubits",
+        "prefix_schedule": "linear",
+        "mastery_threshold": 0.8,
+        "mastery_step": 0.1,
+        "prefix_per_episode": false,
+        "prefix_empty_mix": 0.25,
+        "stop_bias": 0.0,
+        "grow_extra": 1,
+        "baseline_tries": 2,
+        "baseline_router_seconds": 2.0,
+        "seed": 3,
+        "data_seed": 42,
+        "train": 2,
+        "heldout": 2,
+        "actor": "linear",
+        "features": "physics",
+        "baseline": "loo",
+        "width": 32,
+        "iterations": 20,
+        "instances_per_iteration": 2,
+        "episodes": 4,
+        "eval_episodes": 20,
+        "eval_every": 10,
+        "learning_rate": 0.003,
+        "advantage_scale": 1.0,
+        "entropy_coef": 0.0,
+        "max_steps": 32,
+        "episode_seconds": 3.0,
+        "train_episode_seconds": 0.0,
+        "eval_sets": "heldout"
+      },
+      "evaluations": [
+        {
+          "tag": "init",
+          "valid": 1.0,
+          "residual": 0.072265625,
+          "p_solve": 0.93359375
+        },
+        {
+          "tag": "iter 9",
+          "valid": 1.0,
+          "residual": 0.072265625,
+          "p_solve": 0.93359375
+        },
+        {
+          "tag": "final",
+          "valid": 1.0,
+          "residual": 0.072265625,
+          "p_solve": 0.93359375
+        }
+      ],
+      "summary": {
+        "summary": "gate2",
+        "stage": "a",
+        "seed": 3,
+        "actor": "linear",
+        "features": "physics",
+        "baseline": "loo",
+        "objective": "feasibility",
+        "heldout": {
+          "init_valid": {
+            "minorminer_grown_heuristic": 1.0,
+            "minorminer_grown_selected": 1.0,
+            "minorminer_grown": 1.0,
+            "minorminer": 1.0,
+            "policy": 1.0
+          },
+          "final_valid": {
+            "minorminer_grown_heuristic": 1.0,
+            "minorminer_grown_selected": 1.0,
+            "minorminer_grown": 1.0,
+            "minorminer": 1.0,
+            "policy": 1.0
+          },
+          "init_residual": {
+            "minorminer_grown_heuristic": 0.083984375,
+            "minorminer_grown_selected": 0.107421875,
+            "minorminer_grown": 0.091796875,
+            "minorminer": 0.044921875,
+            "policy": 0.072265625
+          },
+          "final_residual": {
+            "minorminer_grown_heuristic": 0.083984375,
+            "minorminer_grown_selected": 0.107421875,
+            "minorminer_grown": 0.091796875,
+            "minorminer": 0.044921875,
+            "policy": 0.072265625
+          },
+          "final_shape": {
+            "minorminer_grown_heuristic": {
+              "chosen_qubits": 7.0,
+              "chosen_longest_chain": 3.0
+            },
+            "minorminer_grown_selected": {
+              "chosen_qubits": 6.5,
+              "chosen_longest_chain": 2.5
+            },
+            "minorminer_grown": {
+              "chosen_qubits": 6.5,
+              "chosen_longest_chain": 2.5
+            },
+            "minorminer": {
+              "chosen_qubits": 6.0,
+              "chosen_longest_chain": 2.0
+            },
+            "policy": {
+              "chosen_qubits": 6.0,
+              "chosen_longest_chain": 3.0
+            }
+          },
+          "final_paired_policy_minus_minorminer": [
+            0.02734375,
+            0.0,
+            0.0546875
+          ],
+          "paired_over": 2,
+          "instances": 2
+        },
+        "seconds": 16.436993192000045,
+        "selected_checkpoint": {
+          "tag": "init",
+          "validation_score": 0.98193359375
+        }
+      }
+    }
+  },
+  "conclusion": "Both 20-update quality and continued-feasibility smoke runs complete; held-out quality unchanged and equal between arms. No learned improvement is demonstrated by this smoke."
+}

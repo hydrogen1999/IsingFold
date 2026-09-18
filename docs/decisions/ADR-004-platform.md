@@ -1,7 +1,10 @@
 # ADR-004: The platform is propose, complete, select; the learned part sits inside the search
 
 ## Status
-Accepted, 2026-09-17.
+Historical hybrid decision. Superseded as the primary method by
+[ADR-005](ADR-005-independent-constructor.md), following the author's explicit requirement
+that RL construct the full embedding without a minorminer completion stage. The experiments
+below remain hybrid comparison probes and are not independent-constructor evidence.
 
 ## Context
 The objective is measured solution quality under the registered schedule; the standard tools

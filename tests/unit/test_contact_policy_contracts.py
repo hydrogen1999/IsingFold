@@ -71,6 +71,43 @@ def test_selection_uses_only_growth_candidates_and_fresh_assessment():
     assert not ({seed for _, seed, assess in calls if not assess} & {100})
 
 
+def test_failed_restart_slots_are_not_replaced_or_measured():
+    from train_contact_policy import select_and_assess
+    chains = {0: frozenset([0])}
+    over_cap = {0: frozenset([0, 1])}
+    calls, accounting = [], {}
+
+    def measure(candidate, seed, assess):
+        calls.append((candidate, seed, assess))
+        return 0.4
+
+    score, failures, failed_arm = select_and_assess(
+        [None, {}, over_cap, chains], measure, lambda i: 10 + i, 100,
+        0.8, 0.05, 1, accounting=accounting)
+    assert score == 0.4 and failures == 3 and not failed_arm
+    # Failed proposal slots do not get recycled into draws or selection read blocks.
+    assert calls == [(chains, 13, False), (chains, 100, True)]
+    assert accounting == {
+        "candidate_attempts": 4, "unavailable_candidates": 2,
+        "over_cap_candidates": 1, "selection_calls": 1,
+        "selection_successes": 1, "assessment_calls": 1, "assessment_failures": 0}
+
+
+def test_all_failed_restarts_use_penalty_without_sampling_start():
+    from train_contact_policy import select_and_assess
+    accounting = {}
+
+    def measure(*args):
+        pytest.fail("A failed router proposal must not call the objective evaluator")
+
+    score, failures, failed_arm = select_and_assess(
+        [None, None], measure, lambda i: 10 + i, 100, 0.8, 0.05, 2,
+        accounting=accounting)
+    assert score == pytest.approx(0.75) and failures == 2 and failed_arm
+    assert accounting["candidate_attempts"] == accounting["unavailable_candidates"] == 2
+    assert accounting["selection_calls"] == accounting["assessment_calls"] == 0
+
+
 @pytest.mark.parametrize("failure_mode", ["selection", "assessment", "nan", "over_cap"])
 def test_failed_arm_is_penalized_not_silently_excluded(failure_mode):
     from train_contact_policy import select_and_assess
@@ -124,6 +161,7 @@ def test_sampling_uses_explicit_rng_without_touching_torch_global_rng():
 
 
 def test_main_smoke_records_occupancy_and_validation_checkpoint(monkeypatch, tmp_path, capsys):
+    import json
     import networkx as nx
     import torch
     import train_contact_policy as probe
@@ -133,6 +171,13 @@ def test_main_smoke_records_occupancy_and_validation_checkpoint(monkeypatch, tmp
                              logical=nx.Graph([(0, 1)]), host=host, problem=None,
                              witness={0: frozenset([0]), 1: frozenset([1])}) for i in range(2)]
     monkeypatch.setattr(probe, "load_instances", lambda _: tasks)
+    restart_attempts = []
+
+    def failed_restart(logical, host, seed):
+        restart_attempts.append(seed)
+        return None
+
+    monkeypatch.setattr(probe, "minorminer_initializer", lambda _: failed_restart)
     calls = []
 
     def controller(tasks, context, policy, **kwargs):
@@ -155,17 +200,30 @@ def test_main_smoke_records_occupancy_and_validation_checkpoint(monkeypatch, tmp
     assert "force_spend" not in checkpoint
     assert len(checkpoint["validation_lineages"]) == 1
     assert Path(str(out) + ".last").exists()
-    assert '"mean_actual_start_occupancy": 0.5' in capsys.readouterr().out
+    output = capsys.readouterr().out
+    assert '"mean_actual_start_occupancy": 0.5' in output
+    diagnostics = [json.loads(line) for line in output.splitlines()
+                   if line.startswith('{"validation_tag"')]
+    assert len(diagnostics) == 2 and len(restart_attempts) == 4
+    for report in diagnostics:
+        assert report["failed_candidates"]["restart"] == 2
+        assert report["failed_arms"]["restart"] == 1
+        assert report["successful_arms"]["restart"] == 0
+        assert report["candidate_measurement_coverage"]["restart"] == 0
+        assert report["candidate_measurement_coverage"]["policy"] == 1
+        cost = report["arm_costs"]["restart"]
+        assert cost["candidate_attempts"] == cost["unavailable_candidates"] == 2
+        assert cost["selection_reads_requested"] == cost["assessment_reads_requested"] == 0
+        assert report["arm_costs"]["policy"]["selection_reads_requested"] == 4
+        assert report["arm_costs"]["random"]["selection_reads_requested"] == 4
     # A fresh assessment stream cannot accidentally reuse a selection stream.
     assert not ({seed for seed, reads, _ in calls if reads == 2} &
                 {seed for seed, reads, _ in calls if reads == 3})
-    # Each of two validation calls has K=2 candidates for each of three arms: policy and
-    # random grow the start by one qubit, the restart control draws the router afresh
-    # (the smoke router returns nothing, so its candidates are the two-qubit start).
-    # The supplied start is evaluated only as a separate assessment reference.
+    # Each validation call has exactly K=2 proposals per arm. Failed restarts are
+    # retained as failures, with no selection/assessment calls or start fallback.
     for t in tasks:
         for candidate in range(2):
             seed = probe.block_seed(0, "validation-selection", t.name, candidate)
             matching = [used for observed, reads, used in calls if observed == seed]
             if matching:  # Only the held-out representative is evaluated.
-                assert len(matching) == 6 and matching == [3, 3, 2, 3, 3, 2]
+                assert matching == [3, 3, 3, 3]

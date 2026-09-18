@@ -48,6 +48,7 @@ from isingfold.rl.proposal import (
 )
 from isingfold.rl.tensorize import Ages, build_observation
 from isingfold.rl.validate import (
+    SearchStateCache,
     ValidationReceipt,
     occupancy,
     p_embed,
@@ -174,10 +175,15 @@ class EmbeddingEnv:
         restart_cache_manifest_digest: str | None = None,
         improvement_restart_protocol: str = AUTHENTICATED_RESTART_CACHE_V1,
         seed: int = 0,
+        build_observation: bool = True,
     ) -> None:
         self.task = task
         self.ctx = ctx
         self.mode = mode
+        # A caller that scores candidates from its own features (the constructor probes)
+        # can skip the full tensor observation; budgets, candidates, legality, fingerprints
+        # and transitions are identical either way, only DecisionState.observation is None.
+        self.build_observation = bool(build_observation)
         self.initializer = initializer
         self.selector = selector or fixed_strength_selector()
         self.reward_reads = ctx.n_est_reads if reward_reads is None else reward_reads
@@ -265,6 +271,7 @@ class EmbeddingEnv:
         self._prepared_state_fingerprint: str | None = None
         self._prepared_support_fingerprint: str | None = None
         self._integrity_seal: str | None = None
+        self._search_cache: tuple | None = None
         # Return validation is deterministic for a fixed task and context.  Keep an
         # environment-private copy so invariant checks do not silently add unmetered
         # compiler calls at every state boundary.  Public state never aliases this cache.
@@ -493,6 +500,14 @@ class EmbeddingEnv:
         self._charge(feature_work)
 
         candidates = raw_candidates
+        # One cached search state per preparation: every candidate's dry run differs from it
+        # in the chains it touches, and SearchStateCache returns the same verdict as the
+        # direct p_search for such a successor (tests/unit/test_incremental_identity.py).
+        self._search_cache = (
+            st.chains,
+            SearchStateCache(st.chains, self.task.logical, self.task.host, self.ctx.qubit_cap,
+                             self.ctx.overlap, self.mode is Mode.CONSTRUCTION),
+        )
         mask = [
             (
                 self._is_legal(candidate)
@@ -511,7 +526,7 @@ class EmbeddingEnv:
 
         program = st.reference_program if st.workspace_valid else None
 
-        observation = build_observation(
+        observation = None if not self.build_observation else build_observation(
             ctx=self.ctx,
             logical=self.task.logical,
             host=self.task.host,
@@ -590,7 +605,9 @@ class EmbeddingEnv:
 
         successor = dict(st.chains)
         successor.update({i: frozenset(cand.new_chains[i]) for i in affected})
-        if cand.payload_key != bound_successor_key(
+        # The payload key was computed by the generator from this same successor; the
+        # recomputation is a defensive re-check, skipped on the timing fast path.
+        if not _SKIP_INTERNAL_ASSERTS and cand.payload_key != bound_successor_key(
             successor,
             cand.work,
             restart=cand.opcode is Opcode.RESTART,
@@ -752,16 +769,24 @@ class EmbeddingEnv:
         else:
             return False
 
-        receipt = p_search(
-            successor,
-            self.task.logical,
-            self.task.host,
-            self.ctx.qubit_cap,
-            self.ctx.overlap,
-            allow_empty=self.mode is Mode.CONSTRUCTION,
-        )
-        if not receipt.valid:
-            return False
+        cache = self._search_cache
+        if cache is not None and cache[0] is st.chains:
+            if not cache[1].successor_is_admissible(
+                {i: frozenset(cand.new_chains[i]) for i in affected}
+            ):
+                return False
+        else:
+            receipt = p_search(
+                successor,
+                self.task.logical,
+                self.task.host,
+                self.ctx.qubit_cap,
+                self.ctx.overlap,
+                allow_empty=self.mode is Mode.CONSTRUCTION,
+                count_demands=False,
+            )
+            if not receipt.valid:
+                return False
         return cand.work.fits_in(self._free_budget())
 
     def _is_legal_terminal(self, cand: Candidate) -> bool:
@@ -863,8 +888,16 @@ class EmbeddingEnv:
 
         st = self._require_state()
         calls = sum(1 for entry in st.archive if entry.admissible)
+        empties = {node for node, chain in st.chains.items() if not chain}
         for candidate in candidates:
             if not candidate.changes_workspace:
+                continue
+            # A successor with an empty chain cannot be a complete embedding (p_embed
+            # rejects it on that ground alone), so only near-complete states pay the check.
+            still_empty = (empties - {v for v, c in candidate.new_chains.items() if c}) | {
+                v for v, c in candidate.new_chains.items() if not c
+            }
+            if still_empty:
                 continue
             successor = dict(st.chains)
             successor.update(candidate.new_chains)
@@ -1287,6 +1320,11 @@ class EmbeddingEnv:
 
     def _refresh_integrity_seal(self) -> None:
         self._assert_search_state(verify_seal=False)
+        if _SKIP_INTERNAL_ASSERTS:
+            # The seal exists only to be verified by _assert_search_state, which the fast
+            # path skips; computing it would be a third of a step at four hundred chains.
+            self._integrity_seal = None
+            return
         self._integrity_seal = self._search_state_digest()
 
     @staticmethod

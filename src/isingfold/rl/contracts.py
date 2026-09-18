@@ -149,6 +149,12 @@ class OverlapProfile:
         return int(math.ceil(self.excess_fraction_of_qubit_cap * qubit_cap))
 
 
+# The wide construction support: a decision may see every frontier placement of a large
+# instance instead of a 64-candidate shortlist. Registered by its own context version so
+# no measurement under the 64-candidate registration is ever mistaken for one under this.
+WIDE_STATE_CHANGING = 512
+WIDE_SUFFIX = "-wide512"
+
 DEFAULT_CAPS = WorkVector(
     decisions=32,
     route_expansions=200_000,
@@ -261,7 +267,16 @@ class Context:
             value = getattr(self, name)
             if isinstance(value, bool) or not isinstance(value, int) or value < 0:
                 raise ValueError(f"{name} must be a nonnegative integer")
-        if self.max_state_changing != 64 or self.max_commit != 8 or self.padded_actions != 73:
+        if self.max_commit != 8:
+            raise ValueError("IF-Core-v1 fixes the COMMIT capacity at 8")
+        if self.max_state_changing not in (64, WIDE_STATE_CHANGING):
+            raise ValueError(
+                "IF-Core-v1 fixes the state-changing capacity at 64; the wide construction "
+                f"registration allows {WIDE_STATE_CHANGING}"
+            )
+        if self.max_state_changing == WIDE_STATE_CHANGING and WIDE_SUFFIX not in str(self.context_version):
+            raise ValueError("a wide support must be registered by its context version")
+        if self.max_state_changing == 64 and self.padded_actions != 73:
             raise ValueError("IF-Core-v1 fixes the action capacities at 64 + 8 + 1 = 73")
         if self.archive_protected != 1 or self.archive_fifo != 7:
             raise ValueError("IF-Core-v1 fixes the improvement archive at 1 protected + 7 FIFO")
@@ -518,8 +533,30 @@ class StepResult:
     work_receipt: WorkVector = WorkVector()
 
 
-def chain_key(chains: Mapping[Node, Sequence[Qubit] | frozenset[Qubit]]) -> str:
-    """A stable, order-free identity of a complete assignment, for dedup and archives."""
+_CHAIN_ROW_MEMO: dict = {}
+_NODE_ORDER_MEMO: dict = {}
+
+
+def _chain_row_json(node: Node, chain) -> str:
+    """The canonical JSON of one chain's identity row, memoised by node and exact chain: a
+    decision at hundreds of placed chains keys thousands of successors that differ in one
+    chain, and the digest of the whole assignment is the digest of these rows joined."""
+    key = (node, frozenset(chain))
+    text = _CHAIN_ROW_MEMO.get(key)
+    if text is None:
+        row = [
+            _typed_identity(node),
+            sorted((_typed_identity(qubit) for qubit in chain), key=lambda item: item),
+        ]
+        text = json.dumps(row, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False)
+        if len(_CHAIN_ROW_MEMO) > 200_000:
+            _CHAIN_ROW_MEMO.clear()
+        _CHAIN_ROW_MEMO[key] = text
+    return text
+
+
+def chain_key_reference(chains: Mapping[Node, Sequence[Qubit] | frozenset[Qubit]]) -> str:
+    """The direct computation, kept for the equality test."""
 
     payload = [
         [
@@ -529,6 +566,42 @@ def chain_key(chains: Mapping[Node, Sequence[Qubit] | frozenset[Qubit]]) -> str:
         for node in sorted(chains, key=_typed_identity)
     ]
     return stable_digest(payload)
+
+
+class ChainKeyBuilder:
+    """The rows of one state in their fixed node order, so a successor's identity costs the
+    rows it changes. ``key`` returns exactly ``chain_key`` of that successor."""
+
+    __slots__ = ("order", "index", "rows")
+
+    def __init__(self, chains: Mapping[Node, Sequence[Qubit] | frozenset[Qubit]]):
+        self.order = sorted(chains, key=_typed_identity)
+        self.index = {node: i for i, node in enumerate(self.order)}
+        self.rows = [_chain_row_json(node, chains[node]) for node in self.order]
+
+    def key(self, changed: Mapping[Node, Sequence[Qubit] | frozenset[Qubit]] | None = None) -> str:
+        rows = self.rows
+        if changed:
+            rows = list(rows)
+            for node, chain in changed.items():
+                rows[self.index[node]] = _chain_row_json(node, chain)
+        return hashlib.sha256(("[" + ",".join(rows) + "]").encode("utf-8")).hexdigest()
+
+
+def chain_key(chains: Mapping[Node, Sequence[Qubit] | frozenset[Qubit]]) -> str:
+    """A stable, order-free identity of a complete assignment, for dedup and archives.
+    Byte-identical to ``stable_digest`` of the row payload: canonical JSON of a list of
+    rows is the rows' canonical JSON joined by commas inside brackets."""
+
+    nodes = frozenset(chains)
+    order = _NODE_ORDER_MEMO.get(nodes)
+    if order is None:
+        order = sorted(chains, key=_typed_identity)
+        if len(_NODE_ORDER_MEMO) > 64:
+            _NODE_ORDER_MEMO.clear()
+        _NODE_ORDER_MEMO[nodes] = order
+    encoded = "[" + ",".join(_chain_row_json(node, chains[node]) for node in order) + "]"
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 
 def candidate_support_key(candidates: Sequence[Candidate], legal_mask: Sequence[bool]) -> str:

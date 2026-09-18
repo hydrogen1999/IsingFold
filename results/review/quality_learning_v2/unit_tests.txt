@@ -1,0 +1,16 @@
+........................................................................ [ 25%]
+........................................................................ [ 50%]
+........................................................................ [ 75%]
+.......................................................................  [100%]
+=============================== warnings summary ===============================
+tests/unit/test_constructor_clone.py::test_clone_loss_is_the_negative_log_mass_of_the_good_rows
+  /workspace/scratch/667fc8e0bab0/IsingFold/tests/unit/test_constructor_clone.py:24: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+  Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+    assert abs(float(loss) - float(expected)) < 1e-5
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+287 passed, 1 warning in 25.40s
+
+Additional integration checks follow the final manifest/lineage guard correction.
+........................................................................ [ 54%]
+............................................................             [100%]

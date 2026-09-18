@@ -11,6 +11,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Hashable, Mapping
 
+import weakref
+
 import networkx as nx
 
 from isingfold.embedding import LogicalProblem
@@ -51,6 +53,73 @@ class ValidationReceipt:
         }
 
 
+# Per-host memo of chain connectivity and of chain-pair contacts. A search state validates
+# every chain on every candidate's dry run; between candidates only the affected chains
+# change, so the answers for the others are the same. Keyed by the host graph object (never
+# mutated once built) and the exact frozen chains; bounded so a long run cannot grow it
+# without limit. Results are identical to the direct computation by construction.
+_CONNECTED_MEMO: "weakref.WeakKeyDictionary[nx.Graph, dict]" = weakref.WeakKeyDictionary()
+_CONTACT_MEMO: "weakref.WeakKeyDictionary[nx.Graph, dict]" = weakref.WeakKeyDictionary()
+_MEMO_LIMIT = 200_000
+
+
+def _memo(table: "weakref.WeakKeyDictionary", host: nx.Graph) -> dict:
+    try:
+        cache = table.get(host)
+    except TypeError:
+        return {}
+    if cache is None:
+        cache = {}
+        try:
+            table[host] = cache
+        except TypeError:
+            pass
+    if len(cache) > _MEMO_LIMIT:
+        cache.clear()
+    return cache
+
+
+def chain_is_connected(chain: frozenset[Qubit], host: nx.Graph) -> bool:
+    """``nx.is_connected(host.subgraph(chain))`` for a nonempty chain inside the host,
+    by a breadth-first walk over the adjacency dict, memoised per host and chain."""
+    chain = frozenset(chain)
+    if len(chain) <= 1:
+        return True
+    cache = _memo(_CONNECTED_MEMO, host)
+    hit = cache.get(chain)
+    if hit is not None:
+        return hit
+    adj = host._adj
+    start = next(iter(chain))
+    seen = {start}
+    stack = [start]
+    while stack:
+        q = stack.pop()
+        for r in adj[q]:
+            if r in chain and r not in seen:
+                seen.add(r)
+                stack.append(r)
+    hit = len(seen) == len(chain)
+    cache[chain] = hit
+    return hit
+
+
+def chains_touch(cu: frozenset[Qubit], cv: frozenset[Qubit], host: nx.Graph) -> bool:
+    """Whether some qubit of ``cu`` and some *other* qubit of ``cv`` share a host edge,
+    memoised per host and chain pair."""
+    cu, cv = frozenset(cu), frozenset(cv)
+    cache = _memo(_CONTACT_MEMO, host)
+    key = (cu, cv) if len(cu) <= len(cv) else (cv, cu)
+    hit = cache.get(key)
+    if hit is not None:
+        return hit
+    small, big = key
+    adj = host._adj
+    hit = any(r != q and r in big for q in small if q in adj for r in adj[q])
+    cache[key] = hit
+    return hit
+
+
 def unrealized_demands(
     chains: Mapping[Node, frozenset[Qubit]],
     logical: nx.Graph,
@@ -64,7 +133,7 @@ def unrealized_demands(
         if not cu or not cv:
             count += 1
             continue
-        if not any(host.has_edge(q, r) for q in cu for r in cv if q != r):
+        if not chains_touch(cu, cv, host):
             count += 1
     return count
 
@@ -87,13 +156,14 @@ def chains_are_connected(
     chains: Mapping[Node, frozenset[Qubit]], host: nx.Graph
 ) -> tuple[Node, ...]:
     bad = []
+    adj = host._adj
     for i, chain in chains.items():
         if not chain:
             continue
-        if not set(chain) <= set(host.nodes):
+        if any(q not in adj for q in chain):
             bad.append(i)
             continue
-        if len(chain) > 1 and not nx.is_connected(host.subgraph(chain)):
+        if len(chain) > 1 and not chain_is_connected(chain, host):
             bad.append(i)
     return tuple(bad)
 
@@ -106,8 +176,13 @@ def p_search(
     overlap: OverlapProfile,
     remaining: WorkVector | None = None,
     allow_empty: bool = False,
+    count_demands: bool = True,
 ) -> ValidationReceipt:
-    """Search-state admissibility. Neither ``U = 0`` nor disjointness is required here."""
+    """Search-state admissibility. Neither ``U = 0`` nor disjointness is required here.
+
+    ``count_demands=False`` leaves the receipt's demand count at -1: the legality dry run
+    of every candidate only reads ``valid``, and the count was the dominant cost of a
+    decision at hundreds of placed chains."""
 
     reasons: list[str] = []
     if set(chains) != set(logical.nodes()):
@@ -137,8 +212,88 @@ def p_search(
         reasons=tuple(reasons),
         qubits=unique,
         max_chain=max(lengths),
-        unrealized_demands=unrealized_demands(chains, logical, host),
+        unrealized_demands=unrealized_demands(chains, logical, host) if count_demands else -1,
     )
+
+
+class SearchStateCache:
+    """Cached occupancy and connectivity of one search state, so the admissibility of a
+    successor that changes a few chains costs those chains rather than all of them.
+
+    ``successor_is_admissible`` returns exactly ``p_search(successor, ...).valid`` for a
+    successor that differs from the cached state only in ``new_chains`` (the node set is
+    fixed). The proof obligation is a test against the direct call on random states.
+    """
+
+    __slots__ = ("chains", "logical", "host", "qubit_cap", "overlap", "allow_empty",
+                 "_occupancy", "_unique", "_bad", "_nodes")
+
+    def __init__(self, chains, logical, host, qubit_cap, overlap, allow_empty):
+        self.chains = chains
+        self.logical = logical
+        self.host = host
+        self.qubit_cap = qubit_cap
+        self.overlap = overlap
+        self.allow_empty = allow_empty
+        self._nodes = host._adj
+        self._occupancy = occupancy(chains)
+        self._unique = len(self._occupancy)
+        self._bad = set(chains_are_connected(chains, host))
+
+    def successor_is_admissible(self, new_chains) -> bool:
+        chains, occ = self.chains, self._occupancy
+        if set(new_chains) - set(chains):
+            return False
+        # occupancy differences, only for the qubits the affected chains gain or lose
+        delta: dict = {}
+        for node, chain in new_chains.items():
+            old = chains.get(node, frozenset())
+            for q in chain - old:
+                delta[q] = delta.get(q, 0) + 1
+            for q in old - chain:
+                delta[q] = delta.get(q, 0) - 1
+        unique = self._unique
+        worst = 0
+        excess_delta = 0
+        for q, change in delta.items():
+            before = occ.get(q, 0)
+            after = before + change
+            if after < 0:
+                return False
+            unique += (after > 0) - (before > 0)
+            excess_delta += max(0, after - 1) - max(0, before - 1)
+            worst = max(worst, after)
+        if worst > self.overlap.max_occupancy:
+            return False
+        # the unchanged qubits keep their occupancy, so the maximum over them is the state's
+        unchanged_worst = 0
+        for q, value in occ.items():
+            if q not in delta and value > unchanged_worst:
+                unchanged_worst = value
+        if max(worst, unchanged_worst) > self.overlap.max_occupancy:
+            return False
+        excess = sum(value - 1 for value in occ.values() if value > 1) + excess_delta
+        if excess > self.overlap.excess_cap(self.qubit_cap):
+            return False
+        if unique > self.qubit_cap:
+            return False
+        if not self.allow_empty:
+            for node, chain in new_chains.items():
+                if not chain:
+                    return False
+            if any(not c for node, c in chains.items() if node not in new_chains):
+                return False
+        bad = self._bad - set(new_chains)
+        if bad:
+            return False
+        for node, chain in new_chains.items():
+            if not chain:
+                continue
+            if any(q not in self._nodes for q in chain):
+                return False
+            if len(chain) > 1 and not chain_is_connected(chain, self.host):
+                return False
+        return True
 
 
 def p_embed(
