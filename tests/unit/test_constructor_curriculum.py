@@ -353,3 +353,32 @@ def test_heldout_only_evaluation_and_a_separate_training_deadline():
     assert "heldout" in summary and "train" not in summary
     with pytest.raises(SystemExit):
         cc.parse(["--train-episode-seconds", "-1"])
+
+
+def test_heuristic_growth_extends_the_most_strongly_coupled_chain_with_room():
+    import networkx as nx
+    from isingfold.embedding import LogicalProblem
+    host = nx.path_graph(8)
+    logical = nx.path_graph(3)
+    problem = LogicalProblem.from_dicts({0: 0., 1: 0., 2: 0.}, {(0, 1): -0.2, (1, 2): -3.0})
+    chains = {0: frozenset({0}), 1: frozenset({2}), 2: frozenset({4})}
+    grown = cc.heuristic_growth(chains, host, logical, problem, 1)
+    assert len(grown[1]) == 2 and len(grown[0]) == 1 and len(grown[2]) == 1   # variable 1 has mass 3.2
+    more = cc.heuristic_growth(chains, host, logical, problem, 3)
+    assert sum(len(c) for c in more.values()) == 6
+    used = set()
+    for c in more.values():
+        assert not (used & c); used |= c
+
+
+def test_the_all_comparison_reports_every_arm():
+    args = cc.parse(["--stage", "a", "--train", "1", "--heldout", "2", "--episodes", "2", "--iterations", "0",
+                     "--eval-episodes", "2", "--seed", "44", "--max-steps", "16", "--objective", "quality",
+                     "--reward-reads", "16", "--selection-reads", "16", "--assessment-reads", "16",
+                     "--select-cap", "2", "--deadline", "4", "--comparison", "all"])
+    train, heldout = cc.build_sets("a", 1, 2, seed=44)
+    with cc.no_completion_solver():
+        summary = cc.run(args, train, heldout)
+    arms = set(summary["heldout"]["final_valid"])
+    assert arms == {"policy", "minorminer", "minorminer_grown", "minorminer_grown_selected",
+                    "minorminer_grown_heuristic"}

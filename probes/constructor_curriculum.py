@@ -498,18 +498,26 @@ def run(args, train, heldout):
                     finally:
                         minorminer.find_embedding = forbidden_solver
 
-                def grown(seed, seconds_left, t=t):
+                def grown(seed, seconds_left, t=t, rule="random", extra=args.grow_extra):
                     minorminer.find_embedding = _ORIGINAL_FIND_EMBEDDING
                     try:
-                        return grown_baseline_proposal(t, len(t.host), seed, seconds_left, args.grow_extra,
-                                                       args.baseline_tries, args.baseline_router_seconds)
+                        return grown_baseline_proposal(t, len(t.host), seed, seconds_left, extra,
+                                                       args.baseline_tries, args.baseline_router_seconds,
+                                                       rule=rule)
                     finally:
                         minorminer.find_embedding = forbidden_solver
                 arms = [("policy", learned)]
-                if args.comparison in ("minorminer", "minorminer_grown"):
+                if args.comparison in ("minorminer", "minorminer_grown", "all"):
                     arms.append(("minorminer", baseline))
-                if args.comparison == "minorminer_grown":
+                if args.comparison in ("minorminer_grown", "all"):
                     arms.append(("minorminer_grown", grown))
+                if args.comparison == "all":
+                    # the platform's own best: growth of one to four qubits, the count drawn per
+                    # candidate, with the same measured selection; and a deterministic heuristic
+                    arms.append(("minorminer_grown_selected",
+                                 lambda seed, left, t=t: grown(seed, left, t, "random", None)))
+                    arms.append(("minorminer_grown_heuristic",
+                                 lambda seed, left, t=t: grown(seed, left, t, "heuristic", 2)))
                 if experiment_seed(args.seed, "arm-order", t.name) % 2:
                     arms.reverse()
                 row = {"instance": t.name}
@@ -540,9 +548,12 @@ def run(args, train, heldout):
             both = [r for r in rows if "minorminer" in r and r["policy"]["valid"] and r["minorminer"]["valid"]
                     and r["policy"]["residual"] is not None and r["minorminer"]["residual"] is not None]
             paired = paired_boot([r["policy"]["residual"] - r["minorminer"]["residual"] for r in both])
-            both_grown = [r for r in rows if "minorminer_grown" in r and r["policy"]["valid"] and r["minorminer_grown"]["valid"]
-                          and r["policy"]["residual"] is not None and r["minorminer_grown"]["residual"] is not None]
-            paired_grown = paired_boot([r["policy"]["residual"] - r["minorminer_grown"]["residual"] for r in both_grown])
+            def paired_against(arm):
+                both = [r for r in rows if arm in r and r["policy"]["valid"] and r[arm]["valid"]
+                        and r["policy"]["residual"] is not None and r[arm]["residual"] is not None]
+                return paired_boot([r["policy"]["residual"] - r[arm]["residual"] for r in both]), len(both)
+            paired_grown, n_grown = paired_against("minorminer_grown")
+            paired_all = {arm: paired_against(arm) for arm in rows[0] if arm not in ("instance", "policy")}
             shape = {arm: {"chosen_qubits": float(np.mean([r[arm]["chosen_qubits"] for r in rows if r[arm]["chosen_qubits"] is not None] or [np.nan])),
                            "chosen_longest_chain": float(np.mean([r[arm]["chosen_longest_chain"] for r in rows if r[arm]["chosen_longest_chain"] is not None] or [np.nan]))}
                      for arm in valid}
@@ -552,7 +563,9 @@ def run(args, train, heldout):
                        "measured": {arm: len(v) for arm, v in residual.items()},
                        "paired_residual_policy_minus_minorminer": paired, "paired_over": len(both),
                        "paired_residual_policy_minus_minorminer_grown": paired_grown,
-                       "paired_grown_over": len(both_grown),
+                       "paired_grown_over": n_grown,
+                       "paired_residual_policy_minus": {arm: value for arm, (value, _) in paired_all.items()},
+                       "paired_over_by_arm": {arm: n for arm, (_, n) in paired_all.items()},
                        "policy_valid_minorminer_not": sum(1 for r in rows if "minorminer" in r
                                                           and r["policy"]["valid"] and not r["minorminer"]["valid"]),
                        "rows": rows}
@@ -698,8 +711,10 @@ def parse(argv=None):
     parser.add_argument("--assessment-reads", type=int, default=512)
     parser.add_argument("--select-cap", type=int, default=6)
     parser.add_argument("--deadline", type=float, default=60., help="quality evaluation: seconds an arm may propose and select")
-    parser.add_argument("--comparison", choices=("none", "minorminer", "minorminer_grown"),
-                        default="minorminer_grown")
+    parser.add_argument("--comparison", choices=("none", "minorminer", "minorminer_grown", "all"),
+                        default="minorminer_grown",
+                        help="all: minorminer, plus fixed random growth, plus growth of 1 to 4 chosen by "
+                             "the same measured selection, plus deterministic coupling-mass growth")
     parser.add_argument("--prefix-fraction", default="",
                         help="training curriculum 'start:end': fraction of a train task's prefix "
                              "source pre-placed at the first and last iteration; evaluation is from empty")
@@ -789,9 +804,36 @@ def grow_chains(chains, host, extra, rng):
     return {v: frozenset(c) for v, c in chains.items()}
 
 
-def grown_baseline_proposal(task, budget, seed, seconds_left, extra, tries=2, router_seconds=2.0):
-    """minorminer's own draw, then ``extra`` random contact-growth qubits, compiled and
-    validated through the same final gate as every other arm."""
+def heuristic_growth(chains, host, logical, problem, extra):
+    """Deterministic growth: add each qubit adjacent to the chain of the variable with the
+    largest total coupling magnitude that still has room, the platform's own rule of thumb
+    (a strongly coupled variable is the one whose chain breaking costs most)."""
+    mass = {}
+    for (u, v), j in dict(getattr(problem, "j", {}) or {}).items():
+        mass[u] = mass.get(u, 0.0) + abs(float(j))
+        mass[v] = mass.get(v, 0.0) + abs(float(j))
+    chains = {v: set(c) for v, c in chains.items()}
+    used = set().union(*chains.values()) if chains else set()
+    for _ in range(extra):
+        best = None
+        for v in sorted(chains, key=lambda v: (-mass.get(v, 0.0), repr(v))):
+            options = [n for q in chains[v] for n in host[q] if n not in used]
+            if options:
+                best = (v, min(options, key=repr))
+                break
+        if best is None:
+            break
+        v, q = best
+        chains[v].add(q); used.add(q)
+    return {v: frozenset(c) for v, c in chains.items()}
+
+
+def grown_baseline_proposal(task, budget, seed, seconds_left, extra, tries=2, router_seconds=2.0,
+                            rule="random"):
+    """minorminer's own draw, then ``extra`` growth qubits by ``rule`` (random contact growth
+    or the coupling-mass heuristic), compiled and validated through the same final gate as
+    every other arm. With ``extra=None`` the caller's seed picks the count from 1 to 4, so the
+    arm's measured selection chooses among spends the way the platform would."""
     import time as _time
     from seeded_minorminer import attempt
     from _context import host_context
@@ -801,7 +843,12 @@ def grown_baseline_proposal(task, budget, seed, seconds_left, extra, tries=2, ro
     chains = attempt(task, None, seed, tries, budget=budget, timeout=min(seconds_left, router_seconds))
     if chains is None:
         return None
-    chains = grow_chains(chains, task.host, extra, np.random.default_rng(seed))
+    rng = np.random.default_rng(seed)
+    count = int(rng.integers(1, 5)) if extra is None else extra
+    if rule == "heuristic":
+        chains = heuristic_growth(chains, task.host, task.logical, task.problem, count)
+    else:
+        chains = grow_chains(chains, task.host, count, rng)
     if sum(len(c) for c in chains.values()) > budget or _time.monotonic() - started >= seconds_left:
         return None
     env = EmbeddingEnv(task, host_context(budget, quotas={}), mode=Mode.IMPROVEMENT,
