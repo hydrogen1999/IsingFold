@@ -65,3 +65,19 @@ def test_pair_and_chain_primitives():
     assert chains_touch(frozenset({0}), frozenset({1}), host) and not chains_touch(frozenset({0}), frozenset({2}), host)
     assert not chains_touch(frozenset({3}), frozenset({3}), host)     # sharing a qubit is not a contact
     assert chains_touch(frozenset({3}), frozenset({3, 4}), host)
+
+
+def test_chain_key_equals_the_reference_digest():
+    from isingfold.rl.contracts import chain_key, chain_key_reference
+    import numpy as np
+    rng = np.random.default_rng(5)
+    for _ in range(50):
+        n = int(rng.integers(1, 12))
+        chains = {}
+        for v in range(n):
+            node = v if rng.random() < 0.7 else ("x", v)
+            chains[node] = frozenset(int(q) for q in rng.integers(0, 40, size=int(rng.integers(0, 5))))
+        if rng.random() < 0.3:
+            chains[("t", 1, 2)] = frozenset({(3, 4), (5, 6)})
+        assert chain_key(chains) == chain_key_reference(chains)
+        assert chain_key(dict(reversed(list(chains.items())))) == chain_key_reference(chains)

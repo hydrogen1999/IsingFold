@@ -45,11 +45,11 @@ def family(opcode):
     return "OTHER"
 
 
-def support_episode(task, actor, fc, max_steps, seconds, rng, initializer=None):
+def support_episode(task, actor, fc, max_steps, seconds, rng, initializer=None, wide=False):
     """Mirror of constructor_rollout.episode that records the support and the policy mass."""
     torch.set_num_threads(1)
     started = time.monotonic()
-    ctx = _context(task, len(task.host), max_steps, 8, None, 2)
+    ctx = _context(task, len(task.host), max_steps, 8, None, 2, wide=wide)
     env = EmbeddingEnv(task, ctx, mode=Mode.CONSTRUCTION, initializer=initializer,
                        selector=fixed_strength_selector(), reward_reads=8, build_observation=False)
     env.generator.allow_satisfied_growth = True
@@ -109,7 +109,8 @@ def run_support(args, tasks):
             seed = args.seed * 1000 + k * 100 + e
             init = cc.prefix_initializer(t, args.prefix_fraction, seed) if args.prefix_fraction else None
             steps, reason, valid, chains, secs = support_episode(
-                t, actor, fc, args.max_steps, args.episode_seconds, np.random.default_rng(seed), init)
+                t, actor, fc, args.max_steps, args.episode_seconds, np.random.default_rng(seed), init,
+                wide=args.support == "wide")
             row = {"task": t.name, "variables": t.logical.number_of_nodes(), "host": len(t.host),
                    "episode": e, "prefix_fraction": args.prefix_fraction or 0.0, "init": args.init or None,
                    "reason": reason, "valid": valid, "seconds": secs,
@@ -196,6 +197,7 @@ def main(argv=None):
     ap.add_argument("--repeats", type=int, default=6)
     ap.add_argument("--reads", type=int, default=256)
     ap.add_argument("--episodes-per-instance", type=int, default=8)
+    ap.add_argument("--support", choices=("registered", "wide"), default="registered")
     args = ap.parse_args(argv)
     if args.stage == "corpus":
         if not args.corpus:

@@ -534,29 +534,54 @@ class StepResult:
 
 
 _CHAIN_ROW_MEMO: dict = {}
+_NODE_ORDER_MEMO: dict = {}
 
 
-def _chain_row(node: Node, chain) -> list:
-    """The identity row of one chain, memoised by node and exact chain: a decision at
-    hundreds of placed chains keys thousands of successors that differ in one chain."""
+def _chain_row_json(node: Node, chain) -> str:
+    """The canonical JSON of one chain's identity row, memoised by node and exact chain: a
+    decision at hundreds of placed chains keys thousands of successors that differ in one
+    chain, and the digest of the whole assignment is the digest of these rows joined."""
     key = (node, frozenset(chain))
-    row = _CHAIN_ROW_MEMO.get(key)
-    if row is None:
+    text = _CHAIN_ROW_MEMO.get(key)
+    if text is None:
         row = [
             _typed_identity(node),
             sorted((_typed_identity(qubit) for qubit in chain), key=lambda item: item),
         ]
+        text = json.dumps(row, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False)
         if len(_CHAIN_ROW_MEMO) > 200_000:
             _CHAIN_ROW_MEMO.clear()
-        _CHAIN_ROW_MEMO[key] = row
-    return row
+        _CHAIN_ROW_MEMO[key] = text
+    return text
+
+
+def chain_key_reference(chains: Mapping[Node, Sequence[Qubit] | frozenset[Qubit]]) -> str:
+    """The direct computation, kept for the equality test."""
+
+    payload = [
+        [
+            _typed_identity(node),
+            sorted((_typed_identity(qubit) for qubit in chains[node]), key=lambda item: item),
+        ]
+        for node in sorted(chains, key=_typed_identity)
+    ]
+    return stable_digest(payload)
 
 
 def chain_key(chains: Mapping[Node, Sequence[Qubit] | frozenset[Qubit]]) -> str:
-    """A stable, order-free identity of a complete assignment, for dedup and archives."""
+    """A stable, order-free identity of a complete assignment, for dedup and archives.
+    Byte-identical to ``stable_digest`` of the row payload: canonical JSON of a list of
+    rows is the rows' canonical JSON joined by commas inside brackets."""
 
-    payload = [_chain_row(node, chains[node]) for node in sorted(chains, key=_typed_identity)]
-    return stable_digest(payload)
+    nodes = frozenset(chains)
+    order = _NODE_ORDER_MEMO.get(nodes)
+    if order is None:
+        order = sorted(chains, key=_typed_identity)
+        if len(_NODE_ORDER_MEMO) > 64:
+            _NODE_ORDER_MEMO.clear()
+        _NODE_ORDER_MEMO[nodes] = order
+    encoded = "[" + ",".join(_chain_row_json(node, chains[node]) for node in order) + "]"
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 
 def candidate_support_key(candidates: Sequence[Candidate], legal_mask: Sequence[bool]) -> str:
