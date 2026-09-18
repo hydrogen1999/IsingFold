@@ -1327,23 +1327,36 @@ congestion, and the decay rate is invariant to anneal depth over two decades:
 | 20000 | -0.0457 | 80 |
 
 Fitted on cells with a resolvable rate, so the zeros are censored and the true slope is at
-least this steep. A hundredfold increase in sweeps moves the intercept, not the slope, so
-reaching 434 variables at p_solve 0.05 needs roughly twenty-four further decades of sampling.
-That is the quantitative reason the congested regime reports residual, and it replaces the
-earlier hand-wave.
+least this steep. A hundredfold increase in sweeps moves the intercept, not the slope.
+
+Depth then stops buying anything at all. At Pegasus 3, 94 variables, named fill 0.90: 20000
+sweeps gives 0.084 and 200000 sweeps gives 0.082. Another decade of annealing returns nothing,
+so the barrier is not a compute budget that a longer run crosses. That is the quantitative
+answer to "anneal longer", and it replaces the earlier hand-wave.
+`results/frontier/pegasus3_deep.log`.
 
 **The named fill overstates the congestion.** The witness certifies a sufficient occupancy,
 not a necessary one. Greedy pruning, keeping every chain connected and every logical contact
 realised:
 
-| host, named fill | witness qubits | pruned | certified fill | lower bound | minorminer valid at 200 tries |
-|---|---|---|---|---|---|
-| Pegasus 2, 0.90 | 36.0 | 33.5 | 0.84 | 0.75 | 0.58 |
-| Pegasus 2, 0.95 | 38.0 | 34.8 | 0.87 | 0.78 | 0.58 |
-| Zephyr 1, 0.90 | 43.0 | 41.2 | 0.86 | 0.74 | 0.25 |
-| Zephyr 1, 0.95 | 46.0 | 44.2 | 0.92 | 0.79 | 0.17 |
+| host, named fill | variables | certified fill | lower bound | minorminer valid at 200 tries |
+|---|---|---|---|---|
+| Pegasus 2, 0.80 | 27 | 0.74 | 0.67 | 0.92 |
+| Pegasus 2, 0.90 | 30 | 0.84 | 0.75 | 0.58 |
+| Pegasus 2, 0.95 | 31 | 0.87 | 0.78 | 0.58 |
+| Pegasus 3, 0.80 | 80 | 0.75 | 0.63 | 0.25 |
+| **Pegasus 3, 0.90** | **93** | **0.86** | **0.72** | **0.00** |
+| **Pegasus 3, 0.95** | **102** | **0.92** | **0.80** | **0.00** |
+| Pegasus 6, 0.90 | 488 | 0.87 | 0.72 | 0.00 (4 instances, 50 tries) |
+| Zephyr 1, 0.80 | 30 | 0.75 | 0.63 | 0.92 |
+| Zephyr 1, 0.90 | 36 | 0.86 | 0.74 | 0.25 |
+| Zephyr 1, 0.95 | 38 | 0.92 | 0.79 | 0.17 |
+| Zephyr 2, 0.80 | 103 | 0.77 | 0.64 | 0.33 |
+| **Zephyr 2, 0.90** | **116** | **0.87** | **0.72** | **0.00** |
+| **Zephyr 2, 0.95** | **120** | **0.91** | **0.75** | **0.00** |
 
-Named fill runs 5 to 7 points above what is certified. Where minorminer succeeds it uses about
+Twelve instances a row except where noted. Named fill runs 5 to 7 points above what is
+certified. Where minorminer succeeds it uses about
 as many qubits as the pruned witness (33.6 against 33.5, 42.3 against 41.2), so its failures
 are failures to find anything, not failures to pack tightly. Corpus cells should be reported by
 pruned fill from here. `results/frontier/prune_*.log`.
@@ -1360,7 +1373,16 @@ chains lengthened by absorbing free qubits, Pegasus 3 at fill 0.50, 2000 sweeps:
 The earlier null at 8 absorbed qubits was an underpowered dose, not an insensitive channel.
 `results/frontier/mech_*.log`, `results/frontier/discrim_*.log`.
 
-**The one congested cell where both conditions hold.** Zephyr 1 at named fill 0.95, 38
+**The cell the benchmark should sit on.** Pegasus 3 at named fill 0.90 is the only place where
+minorminer fails outright and solve probability still moves: 93 variables, certified fill 0.86,
+minorminer 0 of 12 at 200 tries, p_solve 0.018 at 200 sweeps, 0.027 at 2000 and 0.084 at 20000.
+Zephyr 2 at named fill 0.90 is its companion at 116 variables. Below this the congestion claim
+fails, because minorminer solves 0.17 to 0.58 of the smaller instances; above it solve
+probability does. Whether it is earned depends on the discrimination gate now running
+(`results/frontier/gate_*.log`, 12 instances, 2048 reads, witness against a 24-qubit growth on
+the same instance, gate at 0.05 absolute with a paired interval above zero).
+
+**A smaller congested cell, for reference.** Zephyr 1 at named fill 0.95, 38
 variables, 12 instances, 200-try minorminer: p_solve 0.225 at the registered strength and 0.368
 at the best of four, residual 0.0325, minorminer valid on 0.08 to 0.17 of instances. Pegasus 2
 does not qualify: minorminer solves 0.55 to 0.58 of its fill-0.95 instances, so the earlier
@@ -1377,3 +1399,15 @@ is itself a result, with the depth and field arms as the evidence that it is not
 graph fixed; named fill is not certified congestion; and the earlier table compared the
 witness at the registered strength against minorminer at its best strength, which is two
 different strength policies and not a like-for-like comparison.
+
+## Board, 2026-09-18
+
+| task | what it decides | host, log | state |
+|---|---|---|---|
+| solvability frontier | whether solve probability can be restored on the congestion axis | apollo `runs/frontier/*_f90.log`, `*_field.log`, `*_deep.log` -> `results/frontier/` | **done**: no. Exponential decay in variables at 0.038 to 0.050 per variable, invariant to depth; fields dead from 195 variables; depth saturates at 94 variables between 20000 and 200000 sweeps |
+| witness pruning audit | whether named fill is the certified congestion | apollo `runs/frontier/prune_*.log` -> `results/frontier/` | **done**: it is not. Named fill overstates the certificate by 5 to 7 points on every host and fill measured; minorminer, where it succeeds, uses as many qubits as the pruned witness |
+| discrimination gate | whether the restored solve probability separates embeddings at the chosen cell | apollo `runs/frontier/gate_pegasus3_f90.log`, `gate_zephyr2_f90.log`, `gate_pegasus3_f90_registered.log` | running: 12 instances, 2048 reads at 20000 sweeps and 8192 reads at the registered 200, witness against a 24-qubit growth on the same instance. Gate: 0.05 absolute with a paired 95 percent interval above zero |
+| congested training, measurable cell | held-out validity where minorminer is 0 and solve probability is readable | apollo `runs/congested/c3_f{90,95}_s*.log`, `z2_f{90,95}_s0.log` | running: Pegasus 3 and Zephyr 2 fill 90 and 95, 93 to 120 variables, wide support, warm start from the F and G checkpoints, held-out evaluation every 5 iterations |
+| congested training, large cell | the same at 488 variables, feasibility only | goose Slurm 3338, `runs/curriculum/sfill*_s*.log` | at risk: no training iteration in the first hour. The witness needs 500 to 589 decisions at about 0.64 s a step, against a 400 s training deadline, so an untrained policy should be timing out before COMMIT. Diagnose before trusting any number from it |
+| behaviour cloning at fill 80 | whether a teacher trajectory exists to imitate on the large hosts | apollo `runs/clone/fill80_*_clone_s0.log` | **done, negative**: teacher records end in `stuck` or at the 6000-step horizon with validity false on almost every instance, so there is no successful trajectory to clone at that cell |
+| local-feature ladder | whether the 4 local-capacity channels earn their place | apollo `runs/curriculum/{b,F,G}_local_s*.log` | stage b **done, positive**: +0.146 [+0.054, +0.263] and +0.238 [+0.150, +0.325] over two seeds, both intervals above zero. F and G still at their initial evaluations |
