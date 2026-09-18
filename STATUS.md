@@ -1427,13 +1427,28 @@ and 0 of 24 on Zephyr 2 at 200 tries, so the congestion claim is intact and is n
 larger sample. What does not stand is any quality claim at that cell. The reason is measurable
 rather than mysterious: at named fill 0.90 only about a tenth of the host is free, so the largest
 degradation available is thirteen absorbed qubits, which moves the mean chain from about 1.22 to
-1.36. At fill 0.50, where sixty-four qubits can be absorbed and the mean chain reaches 2.46, the
-channels did move; that experiment rested on four to six instances a dose and is being replicated
-at eighteen before anything rests on it (`runs/frontier/mech2_*.log`).
+1.36. At fill 0.50, where the host is half free, both channels do move, and the replication at
+eighteen instances a dose holds it up (`results/frontier/mech2_*.log`, registered strength,
+registered 200-sweep schedule, 4096 reads):
 
-The honest two-regime statement is therefore about what each regime can measure at all. At high
-congestion the binding constraint is feasibility, because the host leaves embeddings almost no
-room to differ; quality comparisons belong at fills where they do differ. Solve probability
+| absorbed qubits | residual, witness minus grown | solve probability | favour witness |
+|---|---|---|---|
+| 32 | +0.0099 [+0.0024, +0.0174] | **+0.0208 [+0.0088, +0.0327]** | 13 of 18 |
+| 64 | +0.0122 [+0.0006, +0.0239] | +0.0304 [+0.0049, +0.0558] | 13 of 18 |
+
+Solve probability is the stronger discriminator where it is large, not the weaker one, which
+reverses the reading this record carried this morning. Witness solve probability at that cell is
+about 0.18 against about 0.015 at named fill 0.90.
+
+**Measuring embedding quality needs two conditions at once, and they were being read as one.**
+The embeddings compared must actually differ, and the sampler's solve probability must be large
+enough to resolve the difference. At named fill 0.50 both hold: the host is half free so a
+sixty-four qubit perturbation is available, solve probability is about 0.18, and both channels
+separate. At named fill 0.90 neither holds: a tenth of the host is free so the largest
+perturbation is thirteen qubits, solve probability is about 0.015, and neither channel separates
+over thirty-six instances. So the congested regime measures feasibility, which is where
+minorminer returns nothing, and the quality regime lives at fills where embeddings have room to
+differ. Solve probability
 separates nothing at the congested cell at either depth, -0.0008 [-0.0043, +0.0028] and +0.0002
 [-0.0047, +0.0052]. `results/frontier/gate_*.log`, `results/frontier/gate2_*.log`.
 
