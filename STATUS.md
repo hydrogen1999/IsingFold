@@ -2129,3 +2129,41 @@ of its mass on the witness-consistent candidates against 9.6, which is fifteen p
 relative terms. Both hold held-out validity 1.00 at every evaluation. Whether the better fit
 becomes better samples is being measured now on the same twenty instances.
 `results/quality/broken_pre_p3.log`, `results/quality/clone_long_*_p3.log`.
+
+## What predicts embedding quality, measured on 180 embeddings
+
+Nine embeddings of each of twenty instances at Pegasus 3 fill 0.30: three checkpoints, each one's
+greedily pruned version, and minorminer, every one assessed on its own 4096-read block. Within an
+instance, so instance difficulty cannot drive it:
+
+| correlation with residual, within instance | r |
+|---|---|
+| **broken-chain fraction** | **+0.728 [+0.568, +0.888]** |
+| qubit count | +0.439 [+0.303, +0.576] |
+| qubit count with broken-chain fraction | +0.686 [+0.602, +0.769] |
+
+Chain breaking predicts solution quality far better than resource count does, and both intervals
+clear zero over twenty instances. This is the paper's thesis stated mechanically rather than
+through selection rules: the quantity that separates a good embedding from a bad one is whether
+its chains hold, and counting qubits sees that only at second hand, through a correlation of 0.69
+between the two.
+
+**And a puzzle that has to be reported with it.** Two interventions reduce breaking without
+reducing residual. Greedy pruning cuts qubits by forty percent, breaking by twelve, and residual
+by nothing. Cloning cuts qubits by forty-two percent, breaking by eighteen, and residual by two.
+At a within-instance slope of about 1.17, an 0.013 reduction in breaking should be worth 0.015 of
+residual; the observed change is 0.002, seven times smaller.
+
+So breaking is the strongest correlate of quality yet measured here and it is not, by itself, the
+lever. The embeddings that break less within an instance are better for reasons the two
+interventions do not reach. Naming those reasons is the method question, and the physics
+observation is the current hypothesis about where they live.
+
+| checkpoint, 20 instances | qubits | residual | broken |
+|---|---|---|---|
+| before cloning | 76.3 | 0.1015 | 0.0734 |
+| cloned, 20 channels, 250 epochs | 53.5 | 0.1017 | 0.0620 |
+| cloned, 32 physics channels, 250 epochs | **44.6** | **0.0996** | **0.0605** |
+| minorminer | 31.7 | **0.0671** | **0.0187** |
+
+`results/quality/broken_*.log`.
