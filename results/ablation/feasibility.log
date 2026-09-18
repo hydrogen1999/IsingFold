@@ -1,18 +1,23 @@
-  rung                   arm                seeds    init   final     gain note
-  F, 20 vars             linear                 1    0.08    0.80    0.717 one seed, not a comparison
-  G, 24 vars             ctx_lr3e3              1    0.15    0.93    0.783 one seed, not a comparison
-  G, 24 vars             lin230                 1    0.17    0.94    0.775 one seed, not a comparison
-  G, 24 vars             linear                 1    0.17    0.88    0.708 one seed, not a comparison
+  rung                   arm                seeds    init   FINAL     gain note
+  F, 20 vars             ctx_lr3e3              1    0.07    0.83    0.767 one seed, not a comparison; inits differ by 0.35 in this rung, compare FINAL not gain
+  F, 20 vars             lin230                 1    0.08    0.83    0.750 one seed, not a comparison; inits differ by 0.35 in this rung, compare FINAL not gain
+  F, 20 vars             local                  2    0.42    0.83    0.417 final [+0.833, +0.833]; inits differ by 0.35 in this rung, compare FINAL not gain
+  F, 20 vars             linear                 1    0.08    0.80    0.717 one seed, not a comparison; inits differ by 0.35 in this rung, compare FINAL not gain
+  G, 24 vars             local                  2    0.54    0.96    0.417 final [+0.931, +0.986]; inits differ by 0.41 in this rung, compare FINAL not gain
+  G, 24 vars             lin230                 1    0.17    0.94    0.775 one seed, not a comparison; inits differ by 0.41 in this rung, compare FINAL not gain
+  G, 24 vars             ctx_lr3e3              1    0.15    0.93    0.783 one seed, not a comparison; inits differ by 0.41 in this rung, compare FINAL not gain
+  G, 24 vars             linear                 1    0.17    0.88    0.708 one seed, not a comparison; inits differ by 0.41 in this rung, compare FINAL not gain
   Pegasus 16 full        lin230                 1    0.09    0.96    0.871 one seed, not a comparison
-  Pegasus 16 full        linear                 3    0.07    0.73    0.656 [+0.540, +0.771]
-  Zephyr 15 full         ctx_value              1    0.10    0.86    0.754 one seed, not a comparison
+  Pegasus 16 full        linear                 3    0.07    0.73    0.656 final [+0.608, +0.850]
   Zephyr 15 full         lin230                 1    0.06    0.96    0.900 one seed, not a comparison
-  Zephyr 15 full         linear                 3    0.08    0.83    0.751 [+0.685, +0.817]
-  a, 2 to 4 vars         linear                 3    0.40    0.97    0.576 [+0.539, +0.614]
-  b, 4 to 8 vars         ctx_loo                3    0.13    0.52    0.388 [-0.093, +0.868]
-  b, 4 to 8 vars         ctx_loo_lr3e3          2    0.12    0.90    0.775 [+0.751, +0.799]
-  b, 4 to 8 vars         ctx_value              3    0.13    0.39    0.257 [-0.112, +0.626]
-  b, 4 to 8 vars         lin230                 3    0.13    0.89    0.760 [+0.696, +0.823]
-  b, 4 to 8 vars         linear                 3    0.13    0.74    0.607 [+0.566, +0.648]
-  b, 4 to 8 vars         mlp                    1    0.15    0.70    0.546 one seed, not a comparison
+  Zephyr 15 full         ctx_value              1    0.10    0.86    0.754 one seed, not a comparison
+  Zephyr 15 full         linear                 3    0.08    0.83    0.751 final [+0.767, +0.891]
+  a, 2 to 4 vars         linear                 3    0.40    0.97    0.576 final [+0.959, +0.988]
+  b, 4 to 8 vars         ctx_loo_lr3e3          2    0.12    0.90    0.775 final [+0.812, +0.984]; inits differ by 0.56 in this rung, compare FINAL not gain
+  b, 4 to 8 vars         lin230                 3    0.13    0.89    0.760 final [+0.809, +0.969]; inits differ by 0.56 in this rung, compare FINAL not gain
+  b, 4 to 8 vars         local                  2    0.58    0.77    0.192 final [+0.728, +0.818]; inits differ by 0.56 in this rung, compare FINAL not gain
+  b, 4 to 8 vars         linear                 3    0.13    0.74    0.607 final [+0.660, +0.812]; inits differ by 0.56 in this rung, compare FINAL not gain
+  b, 4 to 8 vars         mlp                    1    0.15    0.70    0.546 one seed, not a comparison; inits differ by 0.56 in this rung, compare FINAL not gain
+  b, 4 to 8 vars         ctx_loo                3    0.13    0.52    0.388 final [-0.001, +1.034]; inits differ by 0.56 in this rung, compare FINAL not gain
+  b, 4 to 8 vars         ctx_value              3    0.13    0.39    0.257 final [-0.015, +0.787]; inits differ by 0.56 in this rung, compare FINAL not gain
 ABLATION TABLE DONE

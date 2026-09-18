@@ -44,22 +44,32 @@ def main() -> int:
             {"init": held["init"], "final": held["final"], "gain": held.get("gain"),
              "seed": summary.get("seed"), "log": p.name})
 
+    # Final rate is the comparison, not gain. Arms within a rung start from different
+    # checkpoints, so a larger gain can simply mean a worse starting point; the local-feature
+    # arms begin at 0.42 and 0.54 where the others begin near 0.10.
+    inits: dict[str, list[float]] = {}
+    for (stage, name), rows in groups.items():
+        inits.setdefault(stage, []).extend(r["init"] for r in rows)
+
     print("  %-22s %-18s %5s %7s %7s %8s %s"
-          % ("rung", "arm", "seeds", "init", "final", "gain", "note"), flush=True)
-    for (stage, name) in sorted(groups, key=lambda k: (k[0], k[1])):
+          % ("rung", "arm", "seeds", "init", "FINAL", "gain", "note"), flush=True)
+    for (stage, name) in sorted(groups, key=lambda k: (k[0], -sum(r["final"] for r in k and groups[k]) / len(groups[k]))):
         rows = groups[(stage, name)]
         n = len(rows)
         mean = lambda k: sum(r[k] for r in rows) / n
-        gains = [r["gain"] for r in rows if r["gain"] is not None]
-        if len(gains) > 1:
-            sd = statistics.stdev(gains)
-            h = 1.96 * sd / math.sqrt(len(gains))
-            note = "[%+.3f, %+.3f]" % (sum(gains) / len(gains) - h, sum(gains) / len(gains) + h)
+        finals = [r["final"] for r in rows]
+        if n > 1:
+            h = 1.96 * statistics.stdev(finals) / math.sqrt(n)
+            note = "final [%+.3f, %+.3f]" % (mean("final") - h, mean("final") + h)
         else:
             note = "one seed, not a comparison"
+        spread = max(inits[stage]) - min(inits[stage])
+        if spread > 0.15:
+            note += "; inits differ by %.2f in this rung, compare FINAL not gain" % spread
         print("  %-22s %-18s %5d %7.2f %7.2f %8.3f %s"
               % (RUNG.get(stage, stage), name, n, mean("init"), mean("final"),
-                 mean("gain") if gains else float("nan"), note), flush=True)
+                 mean("gain") if all(r["gain"] is not None for r in rows) else float("nan"),
+                 note), flush=True)
     print("ABLATION TABLE DONE", flush=True)
     return 0
 
