@@ -1649,3 +1649,55 @@ stage to a fragment of a small host: P and Z are 32 to 64 qubit fragments of Peg
 2, F and G are 64 to 128 qubit fragments of the same two. The only full-host results in this
 record come from the ink-drop corpora. Nothing in the ladder is a full-host result and the table
 now says so.
+
+## The learned-quality plan, 2026-09-18
+
+The target is fixed: a main-track learned-method paper whose objective is solution quality, not
+resource count. Design review in
+`docs/review/2026-09-18-codex-gpt6-astra-review-five-learned-quality-design.md`. The sentence to
+earn: a reinforcement-learned constructor produces embedding pools that improve independently
+assessed solution quality on unseen instances, beating tuned anytime minorminer under matched
+time, qubit and measurement budgets.
+
+**The cell, chosen on measurement.** Pegasus 3 and Zephyr 2 at named fill 0.50: 39 to 50 logical
+variables, half the host free so embeddings have room to differ, and **minorminer valid on every
+instance using 50 to 64 qubits against the witness's 63 to 64**. Both arms are always valid there,
+so the comparison is about quality and not about feasibility, which is what the claim needs.
+Corpora `runs/quality/{pegasus3,zephyr2}_f50`, 80 instances each, split 56 train, 12 validation,
+12 test. Generation logs in `results/quality/gen_*.log`.
+
+**The reward channel, settled before training rather than after.** `probes/reward_channel.py`
+builds a pool of eight valid embeddings an instance, measures each with eight independent
+256-read blocks, removes the measurement variance from the between-candidate variance, and then
+asks the question that matters: rank the pool with one block, score the winner on the disjoint
+blocks. Twelve instances a host:
+
+| host | channel | signal-to-noise at 256 reads | assessed gain from ranking | usable |
+|---|---|---|---|---|
+| Pegasus 3 | solve probability | 2.75 | +0.038 | yes |
+| Pegasus 3 | **residual** | **19.1** | +0.027 | yes |
+| Zephyr 2 | solve probability | 0.73 | +0.007 | **no** |
+| Zephyr 2 | **residual** | **39.8** | +0.032 | yes |
+
+Residual is the training reward. The reason is arithmetic rather than a preference: residual is a
+mean over 256 reads, while solve probability is the rate of a rare event, and at a rate near 0.18
+a 256-read block has a standard error of 0.024, which is larger than the differences between
+candidates. Solve probability remains the assessment channel, where 4096 reads are affordable.
+`results/quality/reward_*.log`.
+
+**Where a quality comparison still works, on the size axis.** At named fill 0.50 with a 64-qubit
+perturbation, 12 instances a cell, registered strength and schedule:
+
+| host | variables | witness solve probability | residual gap |
+|---|---|---|---|
+| Pegasus 4 | 108 | 0.0030 | +0.0083 [-0.0010, +0.0176] |
+| Pegasus 5 | 180 | 0.0001 | +0.0050 [-0.0012, +0.0111] |
+| **Pegasus 6** | **274** | **0.0000** | **+0.0047 [+0.0022, +0.0073]** |
+| **Zephyr 3** | **138** | 0.0008 | **+0.0063 [+0.0023, +0.0103]** |
+| Zephyr 4 | 228 | 0.0000 | -0.0003 [-0.0048, +0.0042] |
+
+Residual still separates embeddings at 274 variables, where solve probability is exactly zero, so
+the quality claim is not capped at the fifty variables solve probability allows. Three of five
+cells cross zero at twelve instances and the effect sizes are all near +0.005, so these intervals
+are wide rather than contradictory; the cells that matter need more instances before anything
+rests on them. `results/frontier/qscale_*.log`.

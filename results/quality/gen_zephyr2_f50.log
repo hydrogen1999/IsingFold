@@ -1,0 +1,6 @@
+{"host": "zephyr2", "qubits": 160, "fills": [0.5], "alphas": [3.0, 2.0], "per_cell": 40}
+  fill  alpha   vars  witness minfill  mmvalid  mmqubits   mmsecs    mmfill
+  0.50  3.0       63       80    0.40     1.00        83      0.0      0.52
+  0.50  2.0       50       80    0.31     1.00        64      0.0      0.40
+{"generator_version": "rev2-inkdrop-frustrated-1", "instances": 80, "strength_records": 68, "split": {"train": 56, "validation": 12, "test": 12, "ood": 0}, "files": ["evaluator_only.jsonl", "instances.jsonl", "splits.json", "strength_counts.jsonl"], "digest": "b941e0b1182eaa2a"}
+FILL CORPUS DONE
