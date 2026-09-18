@@ -1,0 +1,4 @@
+{"corpus": "/home/nguyencongt/prj_IsingFold/runs/fill/pegasus6/corpus", "instances": 24, "hint": false, "quotas": null}
+    1/24 pegasus6-fill80-a3.0-0     stuck   steps    71   141.6s  placed 0.15  place offered 34.0  stuck: 32 PLACE for 8 vars, frontier 47
+    2/24 pegasus6-fill80-a3.0-1     stuck   steps   634  1089.4s  placed 0.00  place offered 32.9  stuck: 0 PLACE for 0 vars, frontier 20
+    3/24 pegasus6-fill80-a3.0-2     stuck   steps   629   766.5s  placed 0.00  place offered 32.9  stuck: 0 PLACE for 0 vars, frontier 27

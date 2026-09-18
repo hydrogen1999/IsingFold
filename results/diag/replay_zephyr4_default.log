@@ -1,0 +1,4 @@
+{"corpus": "/home/nguyencongt/prj_IsingFold/runs/fill/zephyr4/corpus", "instances": 24, "hint": false, "quotas": null}
+    1/24 zephyr4-fill80-a3.0-0      stuck   steps    14    21.8s  placed 0.02  place offered 34.4  stuck: 36 PLACE for 10 vars, frontier 46
+    2/24 zephyr4-fill80-a3.0-1      stuck   steps   645  1042.3s  placed 0.18  place offered 34.7  stuck: 0 PLACE for 0 vars, frontier 79
+    3/24 zephyr4-fill80-a3.0-2      stuck   steps   638   895.7s  placed 0.32  place offered 32.3  stuck: 0 PLACE for 0 vars, frontier 75

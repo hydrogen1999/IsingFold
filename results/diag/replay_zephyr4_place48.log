@@ -1,0 +1,16 @@
+{"corpus": "/home/nguyencongt/prj_IsingFold/runs/fill/zephyr4/corpus", "instances": 24, "hint": false, "quotas": {"place": 48, "route": 12, "grow": 2, "shrink": 2}}
+    1/24 zephyr4-fill80-a3.0-0      stuck   steps    17    31.3s  placed 0.03  place offered 50.3  stuck: 54 PLACE for 14 vars, frontier 48
+    2/24 zephyr4-fill80-a3.0-1      stuck   steps   108   204.6s  placed 0.26  place offered 48.1  stuck: 48 PLACE for 8 vars, frontier 92
+    3/24 zephyr4-fill80-a3.0-2      stuck   steps    81   115.8s  placed 0.22  place offered 48.6  stuck: 48 PLACE for 8 vars, frontier 56
+    4/24 zephyr4-fill80-a3.0-3      stuck   steps    49    65.7s  placed 0.12  place offered 51.2  stuck: 48 PLACE for 8 vars, frontier 55
+    5/24 zephyr4-fill80-a3.0-4      stuck   steps    29    25.2s  placed 0.07  place offered 50.1  stuck: 48 PLACE for 8 vars, frontier 46
+    6/24 zephyr4-fill80-a3.0-5      stuck   steps     5     3.7s  placed 0.00  place offered 52.3  stuck: 54 PLACE for 14 vars, frontier 26
+    7/24 zephyr4-fill80-a2.0-0      stuck   steps    49    36.7s  placed 0.15  place offered 48.8  stuck: 48 PLACE for 8 vars, frontier 42
+    8/24 zephyr4-fill80-a2.0-1      stuck   steps    12    15.1s  placed 0.03  place offered 50.8  stuck: 52 PLACE for 12 vars, frontier 45
+    9/24 zephyr4-fill80-a2.0-2      stuck   steps    27    55.9s  placed 0.06  place offered 48.9  stuck: 48 PLACE for 8 vars, frontier 54
+   10/24 zephyr4-fill80-a2.0-3      stuck   steps    69   125.1s  placed 0.19  place offered 48.3  stuck: 48 PLACE for 8 vars, frontier 53
+   11/24 zephyr4-fill80-a2.0-4      stuck   steps     6     6.9s  placed 0.01  place offered 52.6  stuck: 54 PLACE for 14 vars, frontier 28
+   12/24 zephyr4-fill80-a2.0-5      stuck   steps    27    49.3s  placed 0.06  place offered 49.9  stuck: 54 PLACE for 14 vars, frontier 29
+   13/24 zephyr4-fill90-a3.0-0      stuck   steps   655   926.7s  placed 0.00  place offered 52.9  stuck: 0 PLACE for 0 vars, frontier 24
+   14/24 zephyr4-fill90-a3.0-1      stuck   steps    13    16.0s  placed 0.03  place offered 49.7  stuck: 48 PLACE for 8 vars, frontier 55
+   15/24 zephyr4-fill90-a3.0-2      stuck   steps   189   279.9s  placed 0.44  place offered 47.8  stuck: 48 PLACE for 8 vars, frontier 100

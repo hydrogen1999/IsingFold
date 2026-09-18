@@ -1,0 +1,33 @@
+{"corpus": "/home/nguyencongt/prj_IsingFold/runs/fill/zephyr4/corpus", "instances": 24, "hint": false, "quotas": {"place": 56, "route": 8, "grow": 0, "shrink": 0}}
+    1/24 zephyr4-fill80-a3.0-0      stuck   steps    70   119.5s  placed 0.18  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 67
+    2/24 zephyr4-fill80-a3.0-1      stuck   steps   130   223.6s  placed 0.32  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 96
+    3/24 zephyr4-fill80-a3.0-2      stuck   steps   130   187.6s  placed 0.35  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 73
+    4/24 zephyr4-fill80-a3.0-3      stuck   steps     1     2.2s  placed 0.01  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 23
+    5/24 zephyr4-fill80-a3.0-4      stuck   steps     4     9.3s  placed 0.01  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 26
+    6/24 zephyr4-fill80-a3.0-5      stuck   steps     0     0.0s  placed 0.00  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 26
+    7/24 zephyr4-fill80-a2.0-0      stuck   steps    17    26.9s  placed 0.06  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 24
+    8/24 zephyr4-fill80-a2.0-1      stuck   steps     5     7.3s  placed 0.02  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 40
+    9/24 zephyr4-fill80-a2.0-2      stuck   steps     0     0.0s  placed 0.00  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 21
+   10/24 zephyr4-fill80-a2.0-3      stuck   steps    25    44.2s  placed 0.08  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 44
+   11/24 zephyr4-fill80-a2.0-4      stuck   steps     0     0.0s  placed 0.00  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 21
+   12/24 zephyr4-fill80-a2.0-5      stuck   steps     5     7.7s  placed 0.02  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 28
+   13/24 zephyr4-fill90-a3.0-0      stuck   steps     0     0.0s  placed 0.00  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 24
+   14/24 zephyr4-fill90-a3.0-1      stuck   steps    14    27.1s  placed 0.04  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 66
+   15/24 zephyr4-fill90-a3.0-2      stuck   steps   216   491.9s  placed 0.47  place offered 55.4  stuck: 56 PLACE for 8 vars, frontier 108
+   16/24 zephyr4-fill90-a3.0-3      stuck   steps   135   180.7s  placed 0.28  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 64
+   17/24 zephyr4-fill90-a3.0-4      stuck   steps     0     0.0s  placed 0.00  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 19
+   18/24 zephyr4-fill90-a3.0-5      stuck   steps   154   271.7s  placed 0.37  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 90
+   19/24 zephyr4-fill90-a2.0-0      stuck   steps     0     0.0s  placed 0.00  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 20
+   20/24 zephyr4-fill90-a2.0-1      stuck   steps     0     0.0s  placed 0.00  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 23
+   21/24 zephyr4-fill90-a2.0-2      stuck   steps    15    11.9s  placed 0.05  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 38
+   22/24 zephyr4-fill90-a2.0-3      stuck   steps     1     0.7s  placed 0.01  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 26
+   23/24 zephyr4-fill90-a2.0-4      stuck   steps    18    13.3s  placed 0.06  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 49
+   24/24 zephyr4-fill90-a2.0-5      stuck   steps     1     0.8s  placed 0.01  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 26
+
+  cell               n  reached    steps     secs stops
+  fill80-a2.0        6     0.00        9     14.3 {'stuck': 6}
+  fill80-a3.0        6     0.00       56     90.4 {'stuck': 6}
+  fill90-a2.0        6     0.00        6      4.5 {'stuck': 6}
+  fill90-a3.0        6     0.00       86    161.9 {'stuck': 6}
+
+WITNESS REPLAY DONE

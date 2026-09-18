@@ -1,0 +1,9 @@
+{"corpus": "/home/nguyencongt/prj_IsingFold/runs/fill/pegasus6/corpus", "instances": 3, "hint": false, "quotas": null, "wide": true}
+    1/3 pegasus6-fill80-a3.0-0     valid   steps   523  1550.4s  placed 1.00  place offered 234.0
+    2/3 pegasus6-fill80-a3.0-1     valid   steps   509  1646.5s  placed 1.00  place offered 226.9
+    3/3 pegasus6-fill80-a3.0-2     valid   steps   515  2073.3s  placed 1.00  place offered 236.2
+
+  cell               n  reached    steps     secs stops
+  fill80-a3.0        3     1.00      516   1756.7 {}
+
+WITNESS REPLAY DONE

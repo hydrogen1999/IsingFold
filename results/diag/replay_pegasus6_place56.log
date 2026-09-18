@@ -1,0 +1,16 @@
+{"corpus": "/home/nguyencongt/prj_IsingFold/runs/fill/pegasus6/corpus", "instances": 24, "hint": false, "quotas": {"place": 56, "route": 8, "grow": 0, "shrink": 0}}
+    1/24 pegasus6-fill80-a3.0-0     stuck   steps    89   171.2s  placed 0.21  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 40
+    2/24 pegasus6-fill80-a3.0-1     stuck   steps     0     0.0s  placed 0.00  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 20
+    3/24 pegasus6-fill80-a3.0-2     stuck   steps     1     2.5s  placed 0.00  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 27
+    4/24 pegasus6-fill80-a3.0-3     stuck   steps     0     0.0s  placed 0.00  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 18
+    5/24 pegasus6-fill80-a3.0-4     stuck   steps    91   179.4s  placed 0.19  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 74
+    6/24 pegasus6-fill80-a3.0-5     stuck   steps     0     0.0s  placed 0.00  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 23
+    7/24 pegasus6-fill80-a2.0-0     stuck   steps    17    21.3s  placed 0.06  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 25
+    8/24 pegasus6-fill80-a2.0-1     stuck   steps     0     0.0s  placed 0.00  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 22
+    9/24 pegasus6-fill80-a2.0-2     stuck   steps     0     0.0s  placed 0.00  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 16
+   10/24 pegasus6-fill80-a2.0-3     stuck   steps     4     4.3s  placed 0.02  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 35
+   11/24 pegasus6-fill80-a2.0-4     stuck   steps     0     0.0s  placed 0.00  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 20
+   12/24 pegasus6-fill80-a2.0-5     stuck   steps     2     4.0s  placed 0.01  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 28
+   13/24 pegasus6-fill90-a3.0-0     stuck   steps     2     4.1s  placed 0.01  place offered 56.0  stuck: 56 PLACE for 8 vars, frontier 28
+   14/24 pegasus6-fill90-a3.0-1     stuck   steps   388  1165.2s  placed 0.75  place offered 55.9  stuck: 56 PLACE for 8 vars, frontier 43
+   15/24 pegasus6-fill90-a3.0-2     stuck   steps    72   115.6s  placed 0.14  place offered 55.9  stuck: 56 PLACE for 8 vars, frontier 41
