@@ -2193,3 +2193,36 @@ same budget spent on the feasibility reward".
 
 Zephyr 2's continued-feasibility arm has reported only its initial evaluation so far.
 `results/quality_study/*.log`.
+
+## Congestion under a wall clock, and it is chain shape more than fill
+
+minorminer restarting until a shared 300-second deadline, twelve instances a cell, both small
+hosts. This is the fair-budget version of the congestion claim: not a fixed try count but a
+deployment deadline, with the router free to spend all of it on restarts.
+
+| cell | Pegasus 3 at 60 s | at 300 s | attempts | Zephyr 2 at 300 s |
+|---|---|---|---|---|
+| fill 0.70, long chains | 1.00 | 1.00 | 1 | 1.00 |
+| fill 0.70, short chains | 1.00 | 1.00 | 3 | 1.00 |
+| fill 0.80, long chains | 0.83 | 0.92 | 81 | 1.00 |
+| fill 0.80, short chains | 0.33 | 0.42 | 345 | 0.08 |
+| fill 0.85, long chains | 1.00 | 1.00 | 10 | 1.00 |
+| **fill 0.85, short chains** | **0.00** | **0.00** | 479 | **0.00** |
+| fill 0.90, long chains | 0.50 | 0.58 | 280 | 0.83 |
+| **fill 0.90, short chains** | **0.00** | **0.00** | 488 | **0.00** |
+| fill 0.95, long chains | 0.17 | 0.25 | 410 | 0.25 |
+| **fill 0.95, short chains** | **0.00** | **0.00** | 453 | **0.00** |
+
+**The shape of the target embedding decides this, more than its occupancy does.** Where the
+planted partition has long chains the router still finds something on a quarter of instances at
+fill 0.95, after four hundred restarts. Where it has short chains the router finds nothing at all
+from fill 0.85 up, on both hosts, after four to five hundred restarts inside five minutes.
+
+So the congestion claim has to be stated more precisely than this record has been stating it. It
+is not that high occupancy defeats minorminer. It is that high occupancy with a short-chain
+target defeats it, while high occupancy with long chains does not, and the reason is that many
+small chains packed tightly is a different problem from fewer long ones. Every corpus cell this
+project calls congested is a short-chain cell, which is why the earlier numbers looked like a
+pure fill effect.
+
+`results/control/anytime_*_300.log`.

@@ -1,0 +1,138 @@
+{"corpus": "/home/nguyencongt/prj_IsingFold/runs/small/zephyr2/corpus", "instances": 120, "qubits": 160, "tries_per_call": 10, "deadlines": [60.0, 300.0]}
+    1/120 zephyr2-fill70-a3.0-0    valid at 1s attempts 1
+    2/120 zephyr2-fill70-a3.0-1    valid at 0s attempts 1
+    3/120 zephyr2-fill70-a3.0-2    valid at 0s attempts 1
+    4/120 zephyr2-fill70-a3.0-3    valid at 0s attempts 1
+    5/120 zephyr2-fill70-a3.0-4    valid at 0s attempts 1
+    6/120 zephyr2-fill70-a3.0-5    valid at 0s attempts 1
+    7/120 zephyr2-fill70-a3.0-6    valid at 1s attempts 2
+    8/120 zephyr2-fill70-a3.0-7    valid at 1s attempts 2
+    9/120 zephyr2-fill70-a3.0-8    valid at 0s attempts 1
+   10/120 zephyr2-fill70-a3.0-9    valid at 0s attempts 1
+   11/120 zephyr2-fill70-a3.0-10   valid at 0s attempts 1
+   12/120 zephyr2-fill70-a3.0-11   valid at 1s attempts 1
+   13/120 zephyr2-fill70-a2.0-0    valid at 0s attempts 1
+   14/120 zephyr2-fill70-a2.0-1    valid at 0s attempts 1
+   15/120 zephyr2-fill70-a2.0-2    valid at 0s attempts 1
+   16/120 zephyr2-fill70-a2.0-3    valid at 0s attempts 1
+   17/120 zephyr2-fill70-a2.0-4    valid at 0s attempts 1
+   18/120 zephyr2-fill70-a2.0-5    valid at 0s attempts 1
+   19/120 zephyr2-fill70-a2.0-6    valid at 0s attempts 1
+   20/120 zephyr2-fill70-a2.0-7    valid at 0s attempts 1
+   21/120 zephyr2-fill70-a2.0-8    valid at 0s attempts 1
+   22/120 zephyr2-fill70-a2.0-9    valid at 0s attempts 1
+   23/120 zephyr2-fill70-a2.0-10   valid at 0s attempts 1
+   24/120 zephyr2-fill70-a2.0-11   valid at 0s attempts 1
+   25/120 zephyr2-fill80-a3.0-0    none within 300s attempts 341
+   26/120 zephyr2-fill80-a3.0-1    none within 300s attempts 301
+   27/120 zephyr2-fill80-a3.0-2    none within 300s attempts 265
+   28/120 zephyr2-fill80-a3.0-3    none within 300s attempts 252
+   29/120 zephyr2-fill80-a3.0-4    none within 300s attempts 238
+   30/120 zephyr2-fill80-a3.0-5    none within 300s attempts 297
+   31/120 zephyr2-fill80-a3.0-6    valid at 70s attempts 64
+   32/120 zephyr2-fill80-a3.0-7    none within 300s attempts 319
+   33/120 zephyr2-fill80-a3.0-8    none within 300s attempts 257
+   34/120 zephyr2-fill80-a3.0-9    none within 300s attempts 299
+   35/120 zephyr2-fill80-a3.0-10   none within 300s attempts 316
+   36/120 zephyr2-fill80-a3.0-11   none within 300s attempts 302
+   37/120 zephyr2-fill80-a2.0-0    valid at 0s attempts 1
+   38/120 zephyr2-fill80-a2.0-1    valid at 0s attempts 1
+   39/120 zephyr2-fill80-a2.0-2    valid at 0s attempts 1
+   40/120 zephyr2-fill80-a2.0-3    valid at 0s attempts 1
+   41/120 zephyr2-fill80-a2.0-4    valid at 1s attempts 1
+   42/120 zephyr2-fill80-a2.0-5    valid at 0s attempts 1
+   43/120 zephyr2-fill80-a2.0-6    valid at 0s attempts 1
+   44/120 zephyr2-fill80-a2.0-7    valid at 0s attempts 1
+   45/120 zephyr2-fill80-a2.0-8    valid at 0s attempts 1
+   46/120 zephyr2-fill80-a2.0-9    valid at 0s attempts 1
+   47/120 zephyr2-fill80-a2.0-10   valid at 0s attempts 1
+   48/120 zephyr2-fill80-a2.0-11   valid at 0s attempts 1
+   49/120 zephyr2-fill85-a3.0-0    none within 300s attempts 269
+   50/120 zephyr2-fill85-a3.0-1    none within 300s attempts 193
+   51/120 zephyr2-fill85-a3.0-2    none within 300s attempts 290
+   52/120 zephyr2-fill85-a3.0-3    none within 300s attempts 299
+   53/120 zephyr2-fill85-a3.0-4    none within 300s attempts 244
+   54/120 zephyr2-fill85-a3.0-5    none within 300s attempts 337
+   55/120 zephyr2-fill85-a3.0-6    none within 300s attempts 247
+   56/120 zephyr2-fill85-a3.0-7    none within 300s attempts 352
+   57/120 zephyr2-fill85-a3.0-8    none within 300s attempts 304
+   58/120 zephyr2-fill85-a3.0-9    none within 300s attempts 341
+   59/120 zephyr2-fill85-a3.0-10   none within 300s attempts 309
+   60/120 zephyr2-fill85-a3.0-11   none within 300s attempts 314
+   61/120 zephyr2-fill85-a2.0-0    valid at 0s attempts 1
+   62/120 zephyr2-fill85-a2.0-1    valid at 0s attempts 1
+   63/120 zephyr2-fill85-a2.0-2    valid at 0s attempts 1
+   64/120 zephyr2-fill85-a2.0-3    valid at 2s attempts 2
+   65/120 zephyr2-fill85-a2.0-4    valid at 0s attempts 1
+   66/120 zephyr2-fill85-a2.0-5    valid at 10s attempts 12
+   67/120 zephyr2-fill85-a2.0-6    valid at 0s attempts 1
+   68/120 zephyr2-fill85-a2.0-7    valid at 0s attempts 1
+   69/120 zephyr2-fill85-a2.0-8    valid at 0s attempts 1
+   70/120 zephyr2-fill85-a2.0-9    valid at 0s attempts 1
+   71/120 zephyr2-fill85-a2.0-10   valid at 0s attempts 1
+   72/120 zephyr2-fill85-a2.0-11   valid at 0s attempts 1
+   73/120 zephyr2-fill90-a3.0-0    none within 300s attempts 272
+   74/120 zephyr2-fill90-a3.0-1    none within 300s attempts 238
+   75/120 zephyr2-fill90-a3.0-2    none within 300s attempts 305
+   76/120 zephyr2-fill90-a3.0-3    none within 300s attempts 231
+   77/120 zephyr2-fill90-a3.0-4    none within 300s attempts 281
+   78/120 zephyr2-fill90-a3.0-5    none within 300s attempts 245
+   79/120 zephyr2-fill90-a3.0-6    none within 300s attempts 250
+   80/120 zephyr2-fill90-a3.0-7    none within 300s attempts 277
+   81/120 zephyr2-fill90-a3.0-8    none within 300s attempts 305
+   82/120 zephyr2-fill90-a3.0-9    none within 300s attempts 255
+   83/120 zephyr2-fill90-a3.0-10   none within 300s attempts 254
+   84/120 zephyr2-fill90-a3.0-11   none within 300s attempts 237
+   85/120 zephyr2-fill90-a2.0-0    valid at 0s attempts 1
+   86/120 zephyr2-fill90-a2.0-1    none within 300s attempts 305
+   87/120 zephyr2-fill90-a2.0-2    valid at 0s attempts 1
+   88/120 zephyr2-fill90-a2.0-3    valid at 15s attempts 13
+   89/120 zephyr2-fill90-a2.0-4    valid at 0s attempts 1
+   90/120 zephyr2-fill90-a2.0-5    valid at 0s attempts 1
+   91/120 zephyr2-fill90-a2.0-6    valid at 69s attempts 68
+   92/120 zephyr2-fill90-a2.0-7    none within 300s attempts 320
+   93/120 zephyr2-fill90-a2.0-8    valid at 0s attempts 1
+   94/120 zephyr2-fill90-a2.0-9    valid at 2s attempts 3
+   95/120 zephyr2-fill90-a2.0-10   valid at 0s attempts 1
+   96/120 zephyr2-fill90-a2.0-11   valid at 0s attempts 1
+   97/120 zephyr2-fill95-a3.0-0    none within 300s attempts 199
+   98/120 zephyr2-fill95-a3.0-1    none within 300s attempts 224
+   99/120 zephyr2-fill95-a3.0-2    none within 300s attempts 192
+  100/120 zephyr2-fill95-a3.0-3    none within 300s attempts 207
+  101/120 zephyr2-fill95-a3.0-4    none within 300s attempts 192
+  102/120 zephyr2-fill95-a3.0-5    none within 300s attempts 237
+  103/120 zephyr2-fill95-a3.0-6    none within 300s attempts 248
+  104/120 zephyr2-fill95-a3.0-7    none within 300s attempts 213
+  105/120 zephyr2-fill95-a3.0-8    none within 300s attempts 218
+  106/120 zephyr2-fill95-a3.0-9    none within 300s attempts 238
+  107/120 zephyr2-fill95-a3.0-10   none within 300s attempts 232
+  108/120 zephyr2-fill95-a3.0-11   none within 300s attempts 285
+  109/120 zephyr2-fill95-a2.0-0    valid at 146s attempts 167
+  110/120 zephyr2-fill95-a2.0-1    none within 300s attempts 350
+  111/120 zephyr2-fill95-a2.0-2    valid at 196s attempts 235
+  112/120 zephyr2-fill95-a2.0-3    none within 300s attempts 267
+  113/120 zephyr2-fill95-a2.0-4    none within 300s attempts 317
+  114/120 zephyr2-fill95-a2.0-5    none within 300s attempts 269
+  115/120 zephyr2-fill95-a2.0-6    none within 300s attempts 329
+  116/120 zephyr2-fill95-a2.0-7    none within 300s attempts 268
+  117/120 zephyr2-fill95-a2.0-8    none within 300s attempts 339
+  118/120 zephyr2-fill95-a2.0-9    none within 300s attempts 298
+  119/120 zephyr2-fill95-a2.0-10   valid at 22s attempts 22
+  120/120 zephyr2-fill95-a2.0-11   none within 300s attempts 337
+
+  cell               n   <=60s  <=300s  attempts   mmfill
+  fill70-a2.0       12    1.00    1.00       1.0     0.66
+  fill70-a3.0       12    1.00    1.00       1.2     0.79
+  fill80-a2.0       12    1.00    1.00       1.0     0.75
+  fill80-a3.0       12    0.00    0.08     270.9     0.82
+  fill85-a2.0       12    1.00    1.00       2.0     0.78
+  fill85-a3.0       12    0.00    0.00     291.6        -
+  fill90-a2.0       12    0.75    0.83      59.7     0.83
+  fill90-a3.0       12    0.00    0.00     262.5        -
+  fill95-a2.0       12    0.08    0.25     266.5     0.88
+  fill95-a3.0       12    0.00    0.00     223.8        -
+
+  Validity at each deadline is the fraction of instances whose first valid embedding
+  arrived within it; every attempt, including failures, is counted in wall time.
+
+ANYTIME BASELINE DONE
