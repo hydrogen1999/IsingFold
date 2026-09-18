@@ -382,3 +382,26 @@ def test_the_all_comparison_reports_every_arm():
     arms = set(summary["heldout"]["final_valid"])
     assert arms == {"policy", "minorminer", "minorminer_grown", "minorminer_grown_selected",
                     "minorminer_grown_heuristic"}
+
+
+def test_mastery_advances_on_assisted_episodes_only(monkeypatch):
+    """A failed empty-start group must not hold the curriculum back."""
+    args = cc.parse(["--stage", "a", "--train", "2", "--heldout", "1", "--episodes", "2",
+                     "--iterations", "3", "--eval-episodes", "1", "--eval-every", "9", "--seed", "45",
+                     "--max-steps", "12", "--prefix-fraction", "0.9:0.0", "--prefix-schedule", "mastery",
+                     "--mastery-threshold", "1.0", "--mastery-step", "0.3", "--prefix-empty-mix", "0.5",
+                     "--instances-per-iteration", "2"])
+    train, heldout = cc.build_sets("a", 2, 1, seed=45)
+    real_episode = cc.episode
+    seen = {"assisted": 0, "empty": 0}
+
+    def fake_episode(task, model, fc, temperature, max_steps, rng, deadline, **kw):
+        record = real_episode(task, model, fc, temperature, 4, rng, deadline, **kw)
+        assisted = kw.get("initializer") is not None
+        seen["assisted" if assisted else "empty"] += 1
+        record["valid"] = assisted            # assisted always succeeds, empty never does
+        return record
+    monkeypatch.setattr(cc, "episode", fake_episode)
+    with cc.no_completion_solver():
+        cc.run(args, train, heldout)
+    assert seen["assisted"] and seen["empty"]

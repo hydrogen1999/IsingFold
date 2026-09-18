@@ -30,7 +30,11 @@ def host_context(qubit_cap: int, beta_range=_UNSET, **kw) -> Context:
 LEAN_QUOTAS = {"place": 8, "route": 8, "grow": 4, "shrink": 2}
 
 
-WIDE_QUOTAS = {"place": 320, "route": 128, "grow": 48, "shrink": 16}
+# A family whose quota is zero is never built (proposal.generate filters on quotas > 0), so
+# the wide registration must name every family it wants, recovery included: without rewrite,
+# repair and restart the policy can place and route but can never undo a mistake.
+WIDE_QUOTAS = {"place": 288, "route": 128, "grow": 48, "shrink": 16,
+               "rewrite": 16, "repair": 12, "restart": 4}
 
 
 def scale_caps_for_steps(ctx: Context, n_vars: int, steps: int) -> Context:

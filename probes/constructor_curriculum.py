@@ -627,6 +627,7 @@ def run(args, train, heldout):
     for iteration in range(args.iterations):
         picks = order.choice(len(train), size=min(args.instances_per_iteration, len(train)), replace=False)
         losses, valid, rewards, entropies = [], 0, [], []
+        assisted_valid = assisted_episodes = 0
         if args.prefix_schedule == "mastery" and args.prefix_fraction:
             fraction = mastery_fraction
         else:
@@ -642,6 +643,9 @@ def run(args, train, heldout):
                                 t, slot_fraction, group_seed + (i if args.prefix_per_episode else 0),
                                 unit=args.prefix_unit))
                        for i in range(args.episodes)]
+            if slot_fraction:
+                assisted_episodes += len(records)
+                assisted_valid += sum(r["valid"] for r in records)
             loss, metrics = constructor_loss(records, baseline=args.baseline, entropy_coef=0.)
             losses.append(loss); valid += sum(r["valid"] for r in records)
             rewards.append(metrics["reward_mean"]); entropies.append(metrics["normalized_entropy"])
@@ -651,12 +655,14 @@ def run(args, train, heldout):
         norm = torch.nn.utils.clip_grad_norm_(actor.parameters(), 1.)
         optimizer.step()
         if args.prefix_schedule == "mastery" and args.prefix_fraction and mastery_fraction is not None:
-            # advance the curriculum only when the current assistance is mastered
-            if valid / max(1, len(picks) * args.episodes) >= args.mastery_threshold:
+            # advance only when the *assisted* episodes are mastered: the empty-start mix is a
+            # separate training component and its failures must not hold the curriculum back
+            if assisted_episodes and assisted_valid / assisted_episodes >= args.mastery_threshold:
                 mastery_fraction = max(schedule_end, mastery_fraction - args.mastery_step)
         if iteration % 10 == 9:
             print(json.dumps({"iteration": iteration, "seed": args.seed, "train_valid": valid,
                               "train_episodes": len(picks) * args.episodes, "prefix_fraction": fraction,
+                              "assisted_valid": assisted_valid, "assisted_episodes": assisted_episodes,
                               "reward": float(np.mean(rewards)), "entropy": float(np.mean(entropies)),
                               "grad_norm": float(norm), "seconds": time.monotonic() - started}), flush=True)
         if (iteration + 1) % args.eval_every == 0 and iteration + 1 < args.iterations:

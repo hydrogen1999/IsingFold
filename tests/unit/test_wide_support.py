@@ -93,3 +93,20 @@ def test_ground_energy_enumerates_twenty_variables():
     n = 18
     problem = LogicalProblem.from_dicts({i: 0. for i in range(n)}, {(i, i + 1): -1. for i in range(n - 1)})
     assert cc.exact_ground_energy(problem) == -(n - 1)
+
+
+def test_the_wide_registration_keeps_every_recovery_family():
+    from isingfold.rl.contracts import Opcode
+    quotas = dict(construction_context(64, 8, 10, wide=True).construction_quotas)
+    assert set(quotas) >= {"place", "route", "grow", "shrink", "rewrite", "repair", "restart"}
+    assert all(v > 0 for v in quotas.values())
+    task, placed = _frontier_state()
+    ctx = construction_context(len(task.host), task.logical.number_of_nodes(),
+                               task.logical.number_of_edges(), wide=True)
+    ctx = scale_caps_for_steps(ctx, task.logical.number_of_nodes(), 64)
+    env = EmbeddingEnv(task, ctx, mode=Mode.CONSTRUCTION, initializer=lambda *_: placed,
+                       selector=fixed_strength_selector(), reward_reads=8, build_observation=False)
+    dec = env.reset(0)
+    assert isinstance(dec, DecisionState)
+    opcodes = {c.opcode for c in dec.candidates}
+    assert Opcode.PLACE in opcodes and Opcode.STOP in opcodes
