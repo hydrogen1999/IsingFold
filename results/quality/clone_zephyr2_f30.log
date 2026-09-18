@@ -1,0 +1,37 @@
+{"protocol": "constructor-behaviour-cloning-v1", "corpus": "runs/quality/zephyr2_f30", "cells": ["fill30-a3.0"], "train": ["zephyr2-fill30-a3.0-10", "zephyr2-fill30-a3.0-19", "zephyr2-fill30-a3.0-6", "zephyr2-fill30-a3.0-28", "zephyr2-fill30-a3.0-18", "zephyr2-fill30-a3.0-12", "zephyr2-fill30-a3.0-8", "zephyr2-fill30-a3.0-23", "zephyr2-fill30-a3.0-3", "zephyr2-fill30-a3.0-14", "zephyr2-fill30-a3.0-25", "zephyr2-fill30-a3.0-5", "zephyr2-fill30-a3.0-11", "zephyr2-fill30-a3.0-9", "zephyr2-fill30-a3.0-16", "zephyr2-fill30-a3.0-0", "zephyr2-fill30-a3.0-26", "zephyr2-fill30-a3.0-2", "zephyr2-fill30-a3.0-27", "zephyr2-fill30-a3.0-20"], "heldout": ["zephyr2-fill30-a3.0-15", "zephyr2-fill30-a3.0-13", "zephyr2-fill30-a3.0-24", "zephyr2-fill30-a3.0-21"], "support": "wide", "actor": "linear", "features": "local", "epochs": 40, "teacher": "set-valued over witness-consistent candidates; train lineages only", "evaluation": "from empty, no witness, no completion solver", "learning_rate": 0.01, "stop_bias": -6.0, "max_steps": 900, "config": {"corpus": "runs/quality/zephyr2_f30", "cells": "fill30-a3.0", "train": 20, "heldout": 4, "seed": 0, "actor": "linear", "features": "local", "width": 32, "init": "runs/curriculum/G_local_s0.pt", "epochs": 40, "learning_rate": 0.01, "max_steps": 900, "teacher_seconds": 300.0, "eval_episodes": 3, "eval_every": 10, "episode_seconds": 120.0, "support": "wide", "stop_bias": -6.0, "keep_incomplete": false, "out": "runs/quality/clone_zephyr2_f30.pt"}}
+{"teacher": "zephyr2-fill30-a3.0-10", "steps": 49, "reason": "valid", "valid": true, "progress": 1.0, "seconds": 6.891473744995892}
+{"teacher": "zephyr2-fill30-a3.0-19", "steps": 49, "reason": "valid", "valid": true, "progress": 1.0, "seconds": 5.562151576858014}
+{"teacher": "zephyr2-fill30-a3.0-6", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.6873737373737374, "seconds": 63.258035603910685}
+{"dropped": "zephyr2-fill30-a3.0-6", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.6873737373737374}
+{"teacher": "zephyr2-fill30-a3.0-28", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.8373573309920983, "seconds": 98.9818580551073}
+{"dropped": "zephyr2-fill30-a3.0-28", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.8373573309920983}
+{"teacher": "zephyr2-fill30-a3.0-18", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.7515379357484621, "seconds": 94.3379537970759}
+{"dropped": "zephyr2-fill30-a3.0-18", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.7515379357484621}
+{"teacher": "zephyr2-fill30-a3.0-12", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.2378240377062058, "seconds": 31.355518151074648}
+{"dropped": "zephyr2-fill30-a3.0-12", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.2378240377062058}
+{"teacher": "zephyr2-fill30-a3.0-8", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.6574726134585289, "seconds": 80.58078646287322}
+{"dropped": "zephyr2-fill30-a3.0-8", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.6574726134585289}
+{"teacher": "zephyr2-fill30-a3.0-23", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.7283372365339578, "seconds": 73.94531548721716}
+{"dropped": "zephyr2-fill30-a3.0-23", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.7283372365339578}
+{"teacher": "zephyr2-fill30-a3.0-3", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.4539650537634409, "seconds": 47.48697273712605}
+{"dropped": "zephyr2-fill30-a3.0-3", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.4539650537634409}
+{"teacher": "zephyr2-fill30-a3.0-14", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.7431818181818182, "seconds": 76.07714758021757}
+{"dropped": "zephyr2-fill30-a3.0-14", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.7431818181818182}
+{"teacher": "zephyr2-fill30-a3.0-25", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.6712121212121211, "seconds": 75.40638602571562}
+{"dropped": "zephyr2-fill30-a3.0-25", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.6712121212121211}
+{"teacher": "zephyr2-fill30-a3.0-5", "steps": 50, "reason": "valid", "valid": true, "progress": 1.0, "seconds": 5.329794774763286}
+{"teacher": "zephyr2-fill30-a3.0-11", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.3213759213759214, "seconds": 39.79949813336134}
+{"dropped": "zephyr2-fill30-a3.0-11", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.3213759213759214}
+{"teacher": "zephyr2-fill30-a3.0-9", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.8808503625576796, "seconds": 89.28629876486957}
+{"dropped": "zephyr2-fill30-a3.0-9", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.8808503625576796}
+{"teacher": "zephyr2-fill30-a3.0-16", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.6752015173067805, "seconds": 83.31923328898847}
+{"dropped": "zephyr2-fill30-a3.0-16", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.6752015173067805}
+{"teacher": "zephyr2-fill30-a3.0-0", "steps": 46, "reason": "valid", "valid": true, "progress": 1.0, "seconds": 4.777239941991866}
+{"teacher": "zephyr2-fill30-a3.0-26", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.6451388888888889, "seconds": 79.77761848503724}
+{"dropped": "zephyr2-fill30-a3.0-26", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.6451388888888889}
+{"teacher": "zephyr2-fill30-a3.0-2", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.9102564102564102, "seconds": 109.46457923203707}
+{"dropped": "zephyr2-fill30-a3.0-2", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.9102564102564102}
+{"teacher": "zephyr2-fill30-a3.0-27", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.5447198275862069, "seconds": 67.13649507891387}
+{"dropped": "zephyr2-fill30-a3.0-27", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.5447198275862069}
+{"teacher": "zephyr2-fill30-a3.0-20", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.5700757575757576, "seconds": 73.43953303154558}
+{"dropped": "zephyr2-fill30-a3.0-20", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.5700757575757576}

@@ -90,7 +90,11 @@ def main(argv=None):
     ap.add_argument("--heldout", type=int, default=4)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--actor", choices=("linear", "mlp", "contextual"), default="linear")
-    ap.add_argument("--features", choices=("tiny", "local", "construction"), default="tiny")
+    # Taken from the curriculum so a new schema does not have to be listed twice.
+    ap.add_argument("--features", choices=tuple(cc.FEATURE_WIDTHS), default="tiny")
+    ap.add_argument("--expand-features", action="store_true",
+                    help="zero-pad a narrower checkpoint into this schema, so the added "
+                         "channels start with no influence on any action logit")
     ap.add_argument("--width", type=int, default=32)
     ap.add_argument("--init", default="")
     ap.add_argument("--epochs", type=int, default=20)
@@ -119,7 +123,7 @@ def main(argv=None):
     wide = a.support == "wide"
     actor = cc.make_actor(a.actor, a.width, cc.FEATURE_WIDTHS[a.features])
     if a.init:
-        cc.load_init(a.init, actor, a.actor, a.features)
+        cc.load_init(a.init, actor, a.actor, a.features, expand=a.expand_features)
     cc.apply_terminal_bias(actor, a.features, a.stop_bias)
     optimizer = torch.optim.Adam(actor.parameters(), lr=a.learning_rate)
     features = {t.name: cc.make_features(a.features, t) for t in train + heldout}

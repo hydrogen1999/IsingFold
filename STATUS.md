@@ -2002,3 +2002,33 @@ plan of expecting a quality reward to teach restraint is not the fix, because re
 0.0022 here.
 
 `results/quality/excess_p3_f30.log`.
+
+## Cloning the placement, and what the teacher walk costs
+
+The placement diagnostic makes supervision of placement the cheapest lever, so the witness's own
+construction is cloned as an initialisation. Deployment is unchanged: empty start, every action
+chosen by the policy, minorminer never called.
+
+**Teacher coverage is the first cost and it is not small.** The clone walks the environment from
+an empty host, deployment style, and keeps only walks that reach a valid COMMIT; the previous
+behaviour kept every non-empty walk, which taught the prefix of constructions that fail. At
+Pegasus 3 fill 0.30 that keeps 9 of 20 teachers and at Zephyr 2 it keeps 4 of 20, the rest
+stopping at HORIZON or stuck with 25 to 97 percent of variables placed.
+
+The horizon is not the binding constraint, and finding that out corrected a wrong fix. Raising it
+from 250 to 900 decisions changed nothing, because the hinted replay of the same witnesses takes
+**28 decisions** and the unhinted replay with a seeded first chain takes 18 to 35 and succeeds on
+4 of 6. The difference is the start: `witness_replay` seeds the first chain from the witness while
+the clone starts empty as deployment does, and the empty start is where the walks die.
+
+**Cloning learns, slowly, and had not converged.** Over forty epochs on the nine Pegasus teachers
+the set-valued loss fell from 3.411 to 2.522, which is the probability mass the actor puts on the
+witness-consistent candidates rising from 3.3 to 8.0 percent against roughly a hundred offered,
+and it was still falling. Held-out validity was 1.00 at every evaluation.
+
+That last number matters more than it looks. The arithmetic above says quality training cannot
+begin until training validity is essentially one, and cloning reaches one. Whether the cloned
+policy also places better is the open question, and two 250-epoch runs are answering it together
+with the representation question: the same teachers, local 20 channels against physics 32
+channels zero-padded from the same checkpoint so the added channels start with no influence.
+`results/quality/clone_*_f30.log`.

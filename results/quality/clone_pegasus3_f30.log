@@ -1,0 +1,77 @@
+{"protocol": "constructor-behaviour-cloning-v1", "corpus": "runs/quality/pegasus3_f30", "cells": ["fill30-a3.0"], "train": ["pegasus3-fill30-a3.0-10", "pegasus3-fill30-a3.0-19", "pegasus3-fill30-a3.0-6", "pegasus3-fill30-a3.0-28", "pegasus3-fill30-a3.0-18", "pegasus3-fill30-a3.0-12", "pegasus3-fill30-a3.0-8", "pegasus3-fill30-a3.0-23", "pegasus3-fill30-a3.0-3", "pegasus3-fill30-a3.0-14", "pegasus3-fill30-a3.0-25", "pegasus3-fill30-a3.0-5", "pegasus3-fill30-a3.0-11", "pegasus3-fill30-a3.0-9", "pegasus3-fill30-a3.0-16", "pegasus3-fill30-a3.0-0", "pegasus3-fill30-a3.0-26", "pegasus3-fill30-a3.0-2", "pegasus3-fill30-a3.0-27", "pegasus3-fill30-a3.0-20"], "heldout": ["pegasus3-fill30-a3.0-15", "pegasus3-fill30-a3.0-13", "pegasus3-fill30-a3.0-24", "pegasus3-fill30-a3.0-21"], "support": "wide", "actor": "linear", "features": "local", "epochs": 40, "teacher": "set-valued over witness-consistent candidates; train lineages only", "evaluation": "from empty, no witness, no completion solver", "learning_rate": 0.01, "stop_bias": -6.0, "max_steps": 900, "config": {"corpus": "runs/quality/pegasus3_f30", "cells": "fill30-a3.0", "train": 20, "heldout": 4, "seed": 0, "actor": "linear", "features": "local", "width": 32, "init": "runs/curriculum/F_local_s0.pt", "epochs": 40, "learning_rate": 0.01, "max_steps": 900, "teacher_seconds": 300.0, "eval_episodes": 3, "eval_every": 10, "episode_seconds": 120.0, "support": "wide", "stop_bias": -6.0, "keep_incomplete": false, "out": "runs/quality/clone_pegasus3_f30.pt"}}
+{"teacher": "pegasus3-fill30-a3.0-10", "steps": 34, "reason": "valid", "valid": true, "progress": 1.0, "seconds": 2.478535016067326}
+{"teacher": "pegasus3-fill30-a3.0-19", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.7124999999999999, "seconds": 47.86172652663663}
+{"dropped": "pegasus3-fill30-a3.0-19", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.7124999999999999}
+{"teacher": "pegasus3-fill30-a3.0-6", "steps": 35, "reason": "valid", "valid": true, "progress": 1.0, "seconds": 1.9893608172424138}
+{"teacher": "pegasus3-fill30-a3.0-28", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.9736842105263157, "seconds": 176.18152684532106}
+{"dropped": "pegasus3-fill30-a3.0-28", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.9736842105263157}
+{"teacher": "pegasus3-fill30-a3.0-18", "steps": 33, "reason": "valid", "valid": true, "progress": 1.0, "seconds": 3.5905363499186933}
+{"teacher": "pegasus3-fill30-a3.0-12", "steps": 22, "reason": "stuck", "valid": false, "progress": 0.6979638009049773, "seconds": 0.8316004518419504}
+{"dropped": "pegasus3-fill30-a3.0-12", "why": "teacher did not reach a valid COMMIT", "reason": "stuck", "progress": 0.6979638009049773}
+{"teacher": "pegasus3-fill30-a3.0-8", "steps": 37, "reason": "valid", "valid": true, "progress": 1.0, "seconds": 2.586046088952571}
+{"teacher": "pegasus3-fill30-a3.0-23", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.7744708994708995, "seconds": 50.437008576933295}
+{"dropped": "pegasus3-fill30-a3.0-23", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.7744708994708995}
+{"teacher": "pegasus3-fill30-a3.0-3", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.9230769230769231, "seconds": 88.7352705989033}
+{"dropped": "pegasus3-fill30-a3.0-3", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.9230769230769231}
+{"teacher": "pegasus3-fill30-a3.0-14", "steps": 36, "reason": "valid", "valid": true, "progress": 1.0, "seconds": 2.1120257857255638}
+{"teacher": "pegasus3-fill30-a3.0-25", "steps": 36, "reason": "valid", "valid": true, "progress": 1.0, "seconds": 2.7234698329120874}
+{"teacher": "pegasus3-fill30-a3.0-5", "steps": 37, "reason": "valid", "valid": true, "progress": 1.0, "seconds": 2.235358815640211}
+{"teacher": "pegasus3-fill30-a3.0-11", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.7095238095238096, "seconds": 77.9468923797831}
+{"dropped": "pegasus3-fill30-a3.0-11", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.7095238095238096}
+{"teacher": "pegasus3-fill30-a3.0-9", "steps": 32, "reason": "stuck", "valid": false, "progress": 0.921875, "seconds": 1.5390538228675723}
+{"dropped": "pegasus3-fill30-a3.0-9", "why": "teacher did not reach a valid COMMIT", "reason": "stuck", "progress": 0.921875}
+{"teacher": "pegasus3-fill30-a3.0-16", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.5325670498084292, "seconds": 30.928312887903303}
+{"dropped": "pegasus3-fill30-a3.0-16", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.5325670498084292}
+{"teacher": "pegasus3-fill30-a3.0-0", "steps": 20, "reason": "valid", "valid": true, "progress": 1.0, "seconds": 0.8314181207679212}
+{"teacher": "pegasus3-fill30-a3.0-26", "steps": 0, "reason": "stuck", "valid": false, "progress": 0.0, "seconds": 0.03245685435831547}
+{"teacher": "pegasus3-fill30-a3.0-2", "steps": 7, "reason": "stuck", "valid": false, "progress": 0.2463054187192118, "seconds": 0.21198138408362865}
+{"dropped": "pegasus3-fill30-a3.0-2", "why": "teacher did not reach a valid COMMIT", "reason": "stuck", "progress": 0.2463054187192118}
+{"teacher": "pegasus3-fill30-a3.0-27", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.41346153846153844, "seconds": 28.68223325489089}
+{"dropped": "pegasus3-fill30-a3.0-27", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.41346153846153844}
+{"teacher": "pegasus3-fill30-a3.0-20", "steps": 32, "reason": "valid", "valid": true, "progress": 1.0, "seconds": 2.6523093818686903}
+{"evaluation": "init", "set": "heldout", "rate": 1.0, "instances": 4, "per_instance": {"pegasus3-fill30-a3.0-15": 1.0, "pegasus3-fill30-a3.0-13": 1.0, "pegasus3-fill30-a3.0-24": 1.0, "pegasus3-fill30-a3.0-21": 1.0}}
+{"epoch": 0, "loss": 3.411201318105062, "trajectories": 9}
+{"epoch": 1, "loss": 3.3746204906039767, "trajectories": 9}
+{"epoch": 2, "loss": 3.3416820102267795, "trajectories": 9}
+{"epoch": 3, "loss": 3.310806804233127, "trajectories": 9}
+{"epoch": 4, "loss": 3.2789008617401123, "trajectories": 9}
+{"epoch": 5, "loss": 3.250357018576728, "trajectories": 9}
+{"epoch": 6, "loss": 3.2210147380828857, "trajectories": 9}
+{"epoch": 7, "loss": 3.1902643044789634, "trajectories": 9}
+{"epoch": 8, "loss": 3.158123360739814, "trajectories": 9}
+{"epoch": 9, "loss": 3.125000476837158, "trajectories": 9}
+{"evaluation": "epoch 9", "set": "heldout", "rate": 1.0, "instances": 4, "per_instance": {"pegasus3-fill30-a3.0-15": 1.0, "pegasus3-fill30-a3.0-13": 1.0, "pegasus3-fill30-a3.0-24": 1.0, "pegasus3-fill30-a3.0-21": 1.0}}
+{"epoch": 10, "loss": 3.0893469386630588, "trajectories": 9}
+{"epoch": 11, "loss": 3.0521444744533963, "trajectories": 9}
+{"epoch": 12, "loss": 3.0120593706766763, "trajectories": 9}
+{"epoch": 13, "loss": 2.970952696270413, "trajectories": 9}
+{"epoch": 14, "loss": 2.932768768734402, "trajectories": 9}
+{"epoch": 15, "loss": 2.8810615804460316, "trajectories": 9}
+{"epoch": 16, "loss": 2.845203399658203, "trajectories": 9}
+{"epoch": 17, "loss": 2.8035878075493708, "trajectories": 9}
+{"epoch": 18, "loss": 2.763875722885132, "trajectories": 9}
+{"epoch": 19, "loss": 2.735766649246216, "trajectories": 9}
+{"evaluation": "epoch 19", "set": "heldout", "rate": 1.0, "instances": 4, "per_instance": {"pegasus3-fill30-a3.0-15": 1.0, "pegasus3-fill30-a3.0-13": 1.0, "pegasus3-fill30-a3.0-24": 1.0, "pegasus3-fill30-a3.0-21": 1.0}}
+{"epoch": 20, "loss": 2.7028235594431558, "trajectories": 9}
+{"epoch": 21, "loss": 2.678634458118015, "trajectories": 9}
+{"epoch": 22, "loss": 2.658755991193983, "trajectories": 9}
+{"epoch": 23, "loss": 2.639835304684109, "trajectories": 9}
+{"epoch": 24, "loss": 2.6236200067732067, "trajectories": 9}
+{"epoch": 25, "loss": 2.6114019287957086, "trajectories": 9}
+{"epoch": 26, "loss": 2.5992115338643393, "trajectories": 9}
+{"epoch": 27, "loss": 2.589879459804959, "trajectories": 9}
+{"epoch": 28, "loss": 2.580742041269938, "trajectories": 9}
+{"epoch": 29, "loss": 2.5729082690344915, "trajectories": 9}
+{"evaluation": "epoch 29", "set": "heldout", "rate": 1.0, "instances": 4, "per_instance": {"pegasus3-fill30-a3.0-15": 1.0, "pegasus3-fill30-a3.0-13": 1.0, "pegasus3-fill30-a3.0-24": 1.0, "pegasus3-fill30-a3.0-21": 1.0}}
+{"epoch": 30, "loss": 2.5658070776197643, "trajectories": 9}
+{"epoch": 31, "loss": 2.5589741600884333, "trajectories": 9}
+{"epoch": 32, "loss": 2.5537522633870444, "trajectories": 9}
+{"epoch": 33, "loss": 2.5475447177886963, "trajectories": 9}
+{"epoch": 34, "loss": 2.5422120889027915, "trajectories": 9}
+{"epoch": 35, "loss": 2.5378973219129772, "trajectories": 9}
+{"epoch": 36, "loss": 2.533502552244398, "trajectories": 9}
+{"epoch": 37, "loss": 2.5292354424794516, "trajectories": 9}
+{"epoch": 38, "loss": 2.52632114622328, "trajectories": 9}
+{"epoch": 39, "loss": 2.521685971154107, "trajectories": 9}
+{"evaluation": "final", "set": "heldout", "rate": 1.0, "instances": 4, "per_instance": {"pegasus3-fill30-a3.0-15": 1.0, "pegasus3-fill30-a3.0-13": 1.0, "pegasus3-fill30-a3.0-24": 1.0, "pegasus3-fill30-a3.0-21": 1.0}}
+CLONE DONE
