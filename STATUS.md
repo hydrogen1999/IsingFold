@@ -574,7 +574,24 @@ succeed because a 20-variable frontier fits in 64. Fix on the branch (`feat/cons
 a wide construction registration (512 candidates, its own context version, every frontier
 variable with up to twelve adjacent roots) and work caps sized by the horizon, since the
 registered per-step feature charge exhausted the 200k-per-32-decision budget after a few
-hundred decisions at 400 variables. The wide unhinted replay at fill 80 and 90 is running.
+hundred decisions at 400 variables.
+
+**The wide support contains the witness's path.** The same unhinted replay under the wide
+registration (`results/diag/replay_*_wide.log`, short-chain cells, three instances each):
+
+    cell                     valid    decisions    place candidates offered a step
+    Pegasus 6, fill 80       3 / 3    509 to 523   227 to 236
+    Pegasus 6, fill 90       2 / 2    578 to 584   229 (third instance running)
+    Zephyr 4, fill 80        3 / 3    441 to 444   236 to 249
+    Zephyr 4, fill 90        3 / 3    495 to 498   228 to 245
+
+Under the 64-candidate registration the same walk blocked within 20 to 90 steps on every
+instance; under the wide one it reaches a valid COMMIT on every instance at 80 and 90
+percent fill, in 440 to 584 decisions (about 1.2 decisions a variable, inside the training
+horizon). On the fast path a wide step costs 0.19 s from empty and 0.30 s at 81 percent
+occupancy (434 to 497 candidates), so a 500-decision construction is two to three minutes.
+Bottleneck 1 is therefore a learning problem with a reachable target, which it was not
+before today; the training runs on the wide support are the first that can be read.
 
 Support diagnostic (`results/diag/support_fill80_*.log`, fill 80 Pegasus 6, two instances,
 registered 64-candidate support): the warm-started 16-channel actor puts 0.00 to 0.02 of its
