@@ -1,0 +1,75 @@
+{
+ "protocol": "constructor-quality-v2",
+ "purpose": "Empty-start RL quality attribution at the fill 0.30 rung, where the constructor already reaches 0.75 to 1.00 held-out and minorminer is valid on every instance, so a quality comparison is possible today rather than after the 0.50 rung trains",
+ "data_seed": 20260918,
+ "seeds": [
+  0,
+  1,
+  2
+ ],
+ "hosts": {
+  "pegasus3": {
+   "corpus": "runs/quality/pegasus3_f30",
+   "init": "runs/quality/r30_p3_s0.best.pt"
+  },
+  "zephyr2": {
+   "corpus": "runs/quality/zephyr2_f30",
+   "init": "runs/quality/r30_z2_s0.best.pt"
+  }
+ },
+ "features": [
+  "local",
+  "physics"
+ ],
+ "common": {
+  "cells": "fill30-a3.0",
+  "actor": "linear",
+  "baseline": "loo",
+  "train": 20,
+  "heldout": 4,
+  "instances_per_iteration": 4,
+  "episodes": 6,
+  "eval_episodes": 5,
+  "max_steps": 250,
+  "episode_seconds": 90,
+  "train_episode_seconds": 45,
+  "learning_rate": 0.003,
+  "advantage_scale": 1.0,
+  "entropy_coef": 0.0,
+  "support": "wide",
+  "stop_bias": -6.0,
+  "reward_reads": 256,
+  "selection_reads": 256,
+  "assessment_reads": 4096,
+  "select_cap": 8,
+  "deadline": 300,
+  "proposal_fraction": 0.5,
+  "comparison": "all",
+  "grow_extra": 2,
+  "baseline_tries": 20,
+  "baseline_router_seconds": 2,
+  "evaluation_objective": "quality",
+  "eval_sets": "heldout"
+ },
+ "pilot": {
+  "iterations": 20,
+  "eval_every": 10,
+  "seeds": [
+   0
+  ]
+ },
+ "replication": {
+  "iterations": 100,
+  "eval_every": 50
+ },
+ "notes": [
+  "Initial checkpoints must be local-feature feasibility checkpoints selected on validation.",
+  "Physics expansion appends zero weights: same initial distribution, same support and STOP bias.",
+  "Freeze protocol using validation before evaluating a fresh untouched final test.",
+  "Existing transfer test outcomes have already informed changes and are development evidence.",
+  "No claim of quality improvement or physical QPU performance follows from this configuration.",
+  "Support is wide, not registered. The unhinted witness replay at this cell reaches a valid COMMIT on 6 of 6 instances under the wide support and 0 of 6 under the registered one, where the generator reports states offering no legal PLACE while variables remain unplaced. A hinted replay succeeds under both and does not settle it. See results/quality/replay_p3_f50_*.log.",
+  "STOP and RESTART carry a start bias of -6, the record's fix for the exponential termination hazard; at zero bias an untrained policy ends episodes before it has placed anything.",
+  "This rung carries 28 variables on Pegasus 3 and 38 on Zephyr 2 with 70 percent of the host free, so embeddings have room to differ, and minorminer is valid on every instance using 31 and 42 qubits against the witness's 35 and 48. Both arms always valid is what makes the comparison about quality rather than feasibility."
+ ]
+}
