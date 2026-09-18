@@ -1497,3 +1497,21 @@ minorminer produced, on the modern corpora at 16 to 20 variables. It is not evid
 learned quality advantage at congestion, and an abstract or a first figure that lets the two sit
 together will be read as claiming it. The congested claim is validity where minorminer returns
 nothing, and it has no number yet.
+
+**The congested cell does not need the wide registration.** The 512-candidate support was adopted
+because the registered 64-candidate support could not carry the witness at 488 variables: its
+PLACE shortlist offered eight of a forty-six-variable frontier and the walk blocked within 20 to
+90 steps. At 93 to 116 variables it carries the witness without trouble, and far more cheaply:
+
+| cell | support | valid replays | decisions | seconds |
+|---|---|---|---|---|
+| Pegasus 3, fill 0.90 | registered 64 | 4 of 4 | 107 | **13.3** |
+| Pegasus 3, fill 0.90 | wide 512 | 3 of 3 | 106 | 55.8 |
+| Zephyr 2, fill 0.90 | registered 64 | 4 of 4 | 134 | 31.6 |
+
+PLACE offers 27 to 30 candidates a step at the registered support here against 149 to 174 at the
+wide one. So the congested training runs inside the contract version the paper already
+registered, with no `-wide512` suffix to explain, and each step costs a quarter as much. The six
+runs were restarted on it (`runs/congested/n{3,2}_f9*_s*.log`); the wide-support attempts are
+kept under `runs/congested/wide_support/` and produced no post-init evaluation in seven hours.
+`results/control/replay_*_narrow.log`.

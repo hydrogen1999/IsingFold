@@ -1,0 +1,10 @@
+{"corpus": "/home/nguyencongt/prj_IsingFold/runs/small/zephyr2/corpus", "instances": 4, "hint": true, "quotas": null, "wide": false, "deployment": false}
+    1/4 zephyr2-fill90-a3.0-0      valid   steps   131    37.8s  placed 1.00  place offered 27.9
+    2/4 zephyr2-fill90-a3.0-1      valid   steps   135    33.3s  placed 1.00  place offered 27.0
+    3/4 zephyr2-fill90-a3.0-2      valid   steps   132    22.4s  placed 1.00  place offered 24.5
+    4/4 zephyr2-fill90-a3.0-3      valid   steps   139    32.9s  placed 1.00  place offered 29.0
+
+  cell               n  reached    steps     secs stops
+  fill90-a3.0        4     1.00      134     31.6 {}
+
+WITNESS REPLAY DONE
