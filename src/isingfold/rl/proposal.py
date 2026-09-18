@@ -16,6 +16,7 @@ import networkx as nx
 
 from isingfold.embedding import LogicalProblem
 from isingfold.rl.contracts import (
+    ChainKeyBuilder,
     ArchiveEntry,
     Candidate,
     Context,
@@ -51,12 +52,16 @@ def bound_successor_key(
     *,
     restart: bool,
     restart_cache_after_digest: str | None = None,
+    chains_key: str | None = None,
 ) -> str:
-    """Identity of transition semantics, excluding provenance and heuristic family."""
+    """Identity of transition semantics, excluding provenance and heuristic family.
+
+    ``chains_key`` is ``chain_key(chains)`` when the caller has it already, which a proposal
+    round does: the state's rows are fixed and a candidate changes a few of them."""
 
     return stable_digest(
         {
-            "chains": chain_key(chains),
+            "chains": chain_key(chains) if chains_key is None else chains_key,
             "work": work.as_dict(),
             "restart_resets_workspace_memory": restart,
             "restart_token_delta": -1 if restart else 0,
@@ -1098,8 +1103,15 @@ class ProposalGenerator:
         restart_cache_after_digest: str | None = None,
     ) -> Candidate:
         affected = tuple(sorted(new_chains, key=str))
-        successor = dict(chains)
-        successor.update(new_chains)
+        bound = {i: frozenset(c) for i, c in new_chains.items()}
+        builder = getattr(self, "_key_builder", None)
+        if builder is None or set(bound) - set(builder.index):
+            successor = dict(chains)
+            successor.update(bound)
+            chains_key = None
+        else:
+            successor = None
+            chains_key = builder.key(bound)
         work = WorkVector(
             decisions=1,
             route_expansions=0,
@@ -1114,13 +1126,14 @@ class ProposalGenerator:
             opcode=opcode,
             affected=affected,
             old_chains={i: chains.get(i, frozenset()) for i in affected},
-            new_chains={i: frozenset(c) for i, c in new_chains.items()},
+            new_chains=bound,
             work=work,
             payload_key=bound_successor_key(
-                successor,
+                successor if successor is not None else chains,
                 work,
                 restart=opcode is Opcode.RESTART,
                 restart_cache_after_digest=restart_cache_after_digest,
+                chains_key=chains_key,
             ),
             proposal_work=proposal_work,
             routes=routes,
@@ -1165,8 +1178,12 @@ class ProposalGenerator:
             self.ctx.construction_quotas if self.mode is Mode.CONSTRUCTION else self.ctx.quotas
         )
         # One state per proposal round: the preference of a (variable, qubit) pair is asked
-        # by several families and is the same for all of them.
+        # by several families and is the same for all of them. The identity builder is the
+        # same idea for the successor key: the state's rows are fixed for the round, so a
+        # candidate pays for the rows it changes instead of hashing every chain again.
         self._pref_cache = {}
+        self._key_builder = ChainKeyBuilder(chains)
+        self._key_builder_state = chains
         common_allowance = allowance or self.ctx.caps
         meter = WorkMeter(
             route_expansions=common_allowance.route_expansions,

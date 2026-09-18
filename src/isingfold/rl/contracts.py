@@ -568,6 +568,26 @@ def chain_key_reference(chains: Mapping[Node, Sequence[Qubit] | frozenset[Qubit]
     return stable_digest(payload)
 
 
+class ChainKeyBuilder:
+    """The rows of one state in their fixed node order, so a successor's identity costs the
+    rows it changes. ``key`` returns exactly ``chain_key`` of that successor."""
+
+    __slots__ = ("order", "index", "rows")
+
+    def __init__(self, chains: Mapping[Node, Sequence[Qubit] | frozenset[Qubit]]):
+        self.order = sorted(chains, key=_typed_identity)
+        self.index = {node: i for i, node in enumerate(self.order)}
+        self.rows = [_chain_row_json(node, chains[node]) for node in self.order]
+
+    def key(self, changed: Mapping[Node, Sequence[Qubit] | frozenset[Qubit]] | None = None) -> str:
+        rows = self.rows
+        if changed:
+            rows = list(rows)
+            for node, chain in changed.items():
+                rows[self.index[node]] = _chain_row_json(node, chain)
+        return hashlib.sha256(("[" + ",".join(rows) + "]").encode("utf-8")).hexdigest()
+
+
 def chain_key(chains: Mapping[Node, Sequence[Qubit] | frozenset[Qubit]]) -> str:
     """A stable, order-free identity of a complete assignment, for dedup and archives.
     Byte-identical to ``stable_digest`` of the row payload: canonical JSON of a list of

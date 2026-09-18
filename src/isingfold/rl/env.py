@@ -48,6 +48,7 @@ from isingfold.rl.proposal import (
 )
 from isingfold.rl.tensorize import Ages, build_observation
 from isingfold.rl.validate import (
+    SearchStateCache,
     ValidationReceipt,
     occupancy,
     p_embed,
@@ -270,6 +271,7 @@ class EmbeddingEnv:
         self._prepared_state_fingerprint: str | None = None
         self._prepared_support_fingerprint: str | None = None
         self._integrity_seal: str | None = None
+        self._search_cache: tuple | None = None
         # Return validation is deterministic for a fixed task and context.  Keep an
         # environment-private copy so invariant checks do not silently add unmetered
         # compiler calls at every state boundary.  Public state never aliases this cache.
@@ -498,6 +500,14 @@ class EmbeddingEnv:
         self._charge(feature_work)
 
         candidates = raw_candidates
+        # One cached search state per preparation: every candidate's dry run differs from it
+        # in the chains it touches, and SearchStateCache returns the same verdict as the
+        # direct p_search for such a successor (tests/unit/test_incremental_identity.py).
+        self._search_cache = (
+            st.chains,
+            SearchStateCache(st.chains, self.task.logical, self.task.host, self.ctx.qubit_cap,
+                             self.ctx.overlap, self.mode is Mode.CONSTRUCTION),
+        )
         mask = [
             (
                 self._is_legal(candidate)
@@ -759,17 +769,24 @@ class EmbeddingEnv:
         else:
             return False
 
-        receipt = p_search(
-            successor,
-            self.task.logical,
-            self.task.host,
-            self.ctx.qubit_cap,
-            self.ctx.overlap,
-            allow_empty=self.mode is Mode.CONSTRUCTION,
-            count_demands=False,
-        )
-        if not receipt.valid:
-            return False
+        cache = self._search_cache
+        if cache is not None and cache[0] is st.chains:
+            if not cache[1].successor_is_admissible(
+                {i: frozenset(cand.new_chains[i]) for i in affected}
+            ):
+                return False
+        else:
+            receipt = p_search(
+                successor,
+                self.task.logical,
+                self.task.host,
+                self.ctx.qubit_cap,
+                self.ctx.overlap,
+                allow_empty=self.mode is Mode.CONSTRUCTION,
+                count_demands=False,
+            )
+            if not receipt.valid:
+                return False
         return cand.work.fits_in(self._free_budget())
 
     def _is_legal_terminal(self, cand: Candidate) -> bool:

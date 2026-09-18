@@ -216,6 +216,86 @@ def p_search(
     )
 
 
+class SearchStateCache:
+    """Cached occupancy and connectivity of one search state, so the admissibility of a
+    successor that changes a few chains costs those chains rather than all of them.
+
+    ``successor_is_admissible`` returns exactly ``p_search(successor, ...).valid`` for a
+    successor that differs from the cached state only in ``new_chains`` (the node set is
+    fixed). The proof obligation is a test against the direct call on random states.
+    """
+
+    __slots__ = ("chains", "logical", "host", "qubit_cap", "overlap", "allow_empty",
+                 "_occupancy", "_unique", "_bad", "_nodes")
+
+    def __init__(self, chains, logical, host, qubit_cap, overlap, allow_empty):
+        self.chains = chains
+        self.logical = logical
+        self.host = host
+        self.qubit_cap = qubit_cap
+        self.overlap = overlap
+        self.allow_empty = allow_empty
+        self._nodes = host._adj
+        self._occupancy = occupancy(chains)
+        self._unique = len(self._occupancy)
+        self._bad = set(chains_are_connected(chains, host))
+
+    def successor_is_admissible(self, new_chains) -> bool:
+        chains, occ = self.chains, self._occupancy
+        if set(new_chains) - set(chains):
+            return False
+        # occupancy differences, only for the qubits the affected chains gain or lose
+        delta: dict = {}
+        for node, chain in new_chains.items():
+            old = chains.get(node, frozenset())
+            for q in chain - old:
+                delta[q] = delta.get(q, 0) + 1
+            for q in old - chain:
+                delta[q] = delta.get(q, 0) - 1
+        unique = self._unique
+        worst = 0
+        excess_delta = 0
+        for q, change in delta.items():
+            before = occ.get(q, 0)
+            after = before + change
+            if after < 0:
+                return False
+            unique += (after > 0) - (before > 0)
+            excess_delta += max(0, after - 1) - max(0, before - 1)
+            worst = max(worst, after)
+        if worst > self.overlap.max_occupancy:
+            return False
+        # the unchanged qubits keep their occupancy, so the maximum over them is the state's
+        unchanged_worst = 0
+        for q, value in occ.items():
+            if q not in delta and value > unchanged_worst:
+                unchanged_worst = value
+        if max(worst, unchanged_worst) > self.overlap.max_occupancy:
+            return False
+        excess = sum(value - 1 for value in occ.values() if value > 1) + excess_delta
+        if excess > self.overlap.excess_cap(self.qubit_cap):
+            return False
+        if unique > self.qubit_cap:
+            return False
+        if not self.allow_empty:
+            for node, chain in new_chains.items():
+                if not chain:
+                    return False
+            if any(not c for node, c in chains.items() if node not in new_chains):
+                return False
+        bad = self._bad - set(new_chains)
+        if bad:
+            return False
+        for node, chain in new_chains.items():
+            if not chain:
+                continue
+            if any(q not in self._nodes for q in chain):
+                return False
+            if len(chain) > 1 and not chain_is_connected(chain, self.host):
+                return False
+        return True
+
+
 def p_embed(
     chains: Mapping[Node, frozenset[Qubit]],
     logical: nx.Graph,
