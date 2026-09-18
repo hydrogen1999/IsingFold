@@ -1408,12 +1408,21 @@ strength and 0.04319 against 0.04343 at each embedding's own best.
 At the registered strength, which is the only column comparable between embeddings, depth
 changes nothing:
 
-| cell and depth | residual, witness minus grown | solve probability |
-|---|---|---|
-| Pegasus 3, registered 200 sweeps | **+0.0042 [+0.0008, +0.0076]** | -0.0008 [-0.0043, +0.0028] |
-| Pegasus 3, 20000 sweeps | **+0.0047 [+0.0011, +0.0084]** | +0.0002 [-0.0047, +0.0052] |
-| Zephyr 2, 20000 sweeps, 9 instances | +0.0019 [-0.0064, +0.0101] | -0.0047 [-0.0114, +0.0021] |
-| depth interaction, paired on 10 instances | -0.0005 [-0.0036, +0.0026] | not established |
+| cell and depth | residual, witness minus grown | instances favouring the witness | leave-one-out |
+|---|---|---|---|
+| Pegasus 3, registered 200 sweeps | **+0.0042 [+0.0008, +0.0076]** | 10 of 12 | lowest bound +0.0001, survives |
+| Pegasus 3, 20000 sweeps | **+0.0047 [+0.0011, +0.0084]** | 10 of 12 | lowest bound +0.0003, survives |
+| Zephyr 2, 20000 sweeps | +0.0026 [-0.0039, +0.0092] | 8 of 12 | crosses zero, **not established** |
+| depth interaction on Pegasus 3, paired on 10 | -0.0005 [-0.0036, +0.0026] | not established | |
+
+Solve probability at the registered strength on the same instances: -0.0008 [-0.0043, +0.0028]
+at 200 sweeps and +0.0002 [-0.0047, +0.0052] at 20000 on Pegasus 3, and -0.0047 [-0.0114,
++0.0021] on Zephyr 2. It crosses zero everywhere.
+
+Two honest limits on the residual result. It is established on Pegasus 3 and not on Zephyr 2,
+where twelve instances still leave the interval across zero. And on Pegasus 3 it survives the
+removal of any single instance only barely, at a lowest bound of +0.0001 and +0.0003. More
+instances are needed before this carries a headline.
 
 What survives, and it is the part that matters: at a cell where minorminer is valid on 0 of 12,
 residual separates the witness from a degraded embedding at both depths, and solve probability
