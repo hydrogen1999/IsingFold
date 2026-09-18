@@ -1549,11 +1549,15 @@ evaluation, minorminer forbidden after generation. Five episodes an instance:
 |---|---|---|
 | Pegasus 16, warm start from the fragment checkpoint | 0.10, 0.25, 0.85, 0.90, **1.00** | `results/inkdrop/ink24_pegasus16_prefixinit_s0.log` |
 | Zephyr 15, warm start | 0.35, 0.60, 0.90, 0.90, **0.95** | `results/inkdrop/ink24_zephyr15_prefixinit_s0.log` |
-| Pegasus 16, no warm start | 0.00 at init and never evaluated again | `results/inkdrop/ink24_pegasus16_prefix_s0.log` |
-| Zephyr 15, no warm start | 0.00 | `results/inkdrop/ink24_zephyr15_prefix_s0.log` |
+| Pegasus 16, no warm start | **no result**: two init evaluations, 0.01 on train and 0.00 held-out, and not one training iteration | `results/inkdrop/ink24_pegasus16_prefix_s0.log` |
+| Zephyr 15, no warm start | **no result**: 0.05 and 0.00 at init, no training iteration | `results/inkdrop/ink24_zephyr15_prefix_s0.log` |
 
-The cold pair is the curriculum ablation: without the rung below, the same actor and the same
-budget produce nothing. These are validation-list numbers; the locked test list is being
+**Retracted: the cold pair is not a curriculum ablation.** This record called it one. Those two
+logs contain only the two initial evaluations, on the train set and the held-out set, and no
+iteration record at all although 100 were configured. A rate of 0.00 before any update is what an
+untrained linear actor does by construction; it is not evidence that training without the rung
+below fails. A curriculum ablation needs a cold run carried to the same number of updates, and
+that run has not been done. These are validation-list numbers; the locked test list is being
 evaluated now (goose 3339) together with the cross-topology transfer.
 
 **The thesis, restated on one scale.** "Qubit count is not a quality signal" is too strong, and a
@@ -1585,7 +1589,12 @@ because the registered 64-candidate support could not carry the witness at 488 v
 PLACE shortlist offered eight of a forty-six-variable frontier and the walk blocked within 20 to
 90 steps. At 93 to 116 variables it carries the witness without trouble, and far more cheaply:
 
-| cell | support | valid replays | decisions | seconds |
+All three rows are hinted replays, `hint: true` and `deployment: false`, so they establish that
+the witness's own moves are inside the offered candidate set, not that an unhinted empty start
+reaches a COMMIT. The Pegasus 6 comparison that motivated the wide support used the same hinted
+protocol, so the comparison between supports is like for like.
+
+| cell | support | valid hinted replays | decisions | seconds |
 |---|---|---|---|---|
 | Pegasus 3, fill 0.90 | registered 64 | 4 of 4 | 107 | **13.3** |
 | Pegasus 3, fill 0.90 | wide 512 | 3 of 3 | 106 | 55.8 |
@@ -1608,18 +1617,18 @@ The probe prints that warning whenever the starting points in a rung differ by m
 
 | rung | observation | seeds | final held-out |
 |---|---|---|---|
-| G, 24 vars | 20 channels, 16 plus local capacity | 2 | **0.96 [0.931, 0.986]** |
-| G, 24 vars | 230 channels | 1 | 0.94 |
-| G, 24 vars | 16 channels, contextual actor at lr 3e-3 | 1 | 0.93 |
-| G, 24 vars | 16 channels | 1 | 0.88 |
-| F, 20 vars | 20 channels | 2 | 0.83 [0.833, 0.833] |
-| F, 20 vars | 230 channels | 1 | 0.83 |
-| F, 20 vars | 16 channels, contextual at lr 3e-3 | 1 | 0.83 |
-| F, 20 vars | 16 channels | 1 | 0.80 |
-| Pegasus 16 full | 230 channels | 1 | 0.96 |
-| Pegasus 16 full | 16 channels | 3 | 0.73 |
-| Zephyr 15 full | 230 channels | 1 | 0.96 |
-| Zephyr 15 full | 16 channels | 3 | 0.83 |
+| Zephyr 2 fragments, 64 to 128 | 20 channels, 16 plus local capacity | 2 | **0.96 [0.931, 0.986]** |
+| Zephyr 2 fragments, 64 to 128 | 230 channels | 1 | 0.94 |
+| Zephyr 2 fragments, 64 to 128 | 16 channels, contextual at lr 3e-3 | 1 | 0.93 |
+| Zephyr 2 fragments, 64 to 128 | 16 channels | 1 | 0.88 |
+| Pegasus 3 fragments, 64 to 128 | 20 channels | 2 | 0.83 [0.833, 0.833] |
+| Pegasus 3 fragments, 64 to 128 | 230 channels | 1 | 0.83 |
+| Pegasus 3 fragments, 64 to 128 | 16 channels, contextual at lr 3e-3 | 1 | 0.83 |
+| Pegasus 3 fragments, 64 to 128 | 16 channels | 1 | 0.80 |
+| Pegasus 3 fragments, 32 to 64 qubits | 230 channels | 1 | 0.96 |
+| Pegasus 3 fragments, 32 to 64 qubits | 16 channels | 3 | 0.73 |
+| Zephyr 2 fragments, 32 to 64 qubits | 230 channels | 1 | 0.96 |
+| Zephyr 2 fragments, 32 to 64 qubits | 16 channels | 3 | 0.83 |
 
 At rung b, where three seeds exist for every arm and all of them start at 0.13, the gain is
 comparable: 230 channels +0.760 [+0.696, +0.823], 16 channels +0.607 [+0.566, +0.648], the
@@ -1633,3 +1642,10 @@ where both were run, and the 230-channel actor costs 0.74 s a step on a full hos
 for the 16-channel one. The headline hardware-scale runs used 16 channels, which the table says
 is the weakest of the three. Ten runs are filling the one-seed cells so this can be stated with
 three seeds everywhere.
+
+**A labelling error in the first version of the ablation table, corrected.** It called stages P
+and Z the full Pegasus 16 and Zephyr 15. `constructor_curriculum.HARDWARE` maps every uppercase
+stage to a fragment of a small host: P and Z are 32 to 64 qubit fragments of Pegasus 3 and Zephyr
+2, F and G are 64 to 128 qubit fragments of the same two. The only full-host results in this
+record come from the ink-drop corpora. Nothing in the ladder is a full-host result and the table
+now says so.

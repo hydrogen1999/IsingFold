@@ -10,9 +10,15 @@ a single seed is not a comparison and should not be printed as if it were one.
 """
 import argparse, json, math, pathlib, re, statistics
 
-RUNG = {"a": "a, 2 to 4 vars", "b": "b, 4 to 8 vars", "p": "Pegasus 2 fragments",
-        "z": "Zephyr 1 fragments", "P": "Pegasus 16 full", "Z": "Zephyr 15 full",
-        "F": "F, 20 vars", "G": "G, 24 vars", "corpus": "corpus"}
+# Read from constructor_curriculum.HARDWARE, which maps every uppercase stage to a FRAGMENT of
+# a small host, not to a full one. An earlier version of this table called P and Z the full
+# Pegasus 16 and Zephyr 15 and that was wrong: they are 32 to 64 qubit fragments of Pegasus 3 and
+# Zephyr 2. The only full-host results in the record come from the ink-drop corpora.
+RUNG = {"a": "a, 2 to 4 vars", "b": "b, 4 to 8 vars",
+        "p": "Pegasus 2 fragments, 12 to 24 qubits", "z": "Zephyr 1 fragments, 12 to 24",
+        "P": "Pegasus 3 fragments, 32 to 64", "Z": "Zephyr 2 fragments, 32 to 64",
+        "F": "Pegasus 3 fragments, 64 to 128", "G": "Zephyr 2 fragments, 64 to 128",
+        "corpus": "corpus"}
 
 
 def arm(name):
