@@ -1,0 +1,10 @@
+{"corpus": "runs/quality/pegasus3_f50", "instances": 4, "hint": false, "quotas": null, "wide": false, "deployment": false}
+    1/4 pegasus3-fill50-a3.0-0     stuck   steps    35     2.1s  placed 0.59  place offered 32.9  stuck: 32 PLACE for 8 vars, frontier 8
+    2/4 pegasus3-fill50-a3.0-1     stuck   steps   149     7.3s  placed 0.28  place offered 28.4  stuck: 0 PLACE for 0 vars, frontier 7
+    3/4 pegasus3-fill50-a3.0-2     stuck   steps    23     1.1s  placed 0.39  place offered 30.2  stuck: 24 PLACE for 6 vars, frontier 6
+    4/4 pegasus3-fill50-a3.0-3     stuck   steps     6     0.3s  placed 0.09  place offered 34.7  stuck: 36 PLACE for 10 vars, frontier 15
+
+  cell               n  reached    steps     secs stops
+  fill50-a3.0        4     0.00       53      2.7 {'stuck': 4}
+
+WITNESS REPLAY DONE

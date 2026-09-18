@@ -1,0 +1,10 @@
+{"corpus": "/home/nguyencongt/prj_IsingFold/runs/small/pegasus3/corpus", "instances": 4, "hint": false, "quotas": null, "wide": false, "deployment": false}
+    1/4 pegasus3-fill90-a3.0-0     stuck   steps   334    33.3s  placed 0.02  place offered 32.9  stuck: 0 PLACE for 0 vars, frontier 16
+    2/4 pegasus3-fill90-a3.0-1     stuck   steps   329    33.0s  placed 0.01  place offered 33.9  stuck: 0 PLACE for 0 vars, frontier 15
+    3/4 pegasus3-fill90-a3.0-2     stuck   steps    18     1.8s  placed 0.18  place offered 34.1  stuck: 36 PLACE for 10 vars, frontier 20
+    4/4 pegasus3-fill90-a3.0-3     valid   steps   110    14.4s  placed 1.00  place offered 29.7
+
+  cell               n  reached    steps     secs stops
+  fill90-a3.0        4     0.25      198     20.6 {'stuck': 3}
+
+WITNESS REPLAY DONE

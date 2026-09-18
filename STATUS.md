@@ -1728,3 +1728,30 @@ at `--max-steps 400 --episode-seconds 300`, so it is a claim about construction 
 budget, not about construction in general. The test-list evaluation has been rerun at exactly the
 training budget (goose 3344) and only that version can be reported.
 `results/transfer/t3_*.log`.
+
+## Retracted: the congested cell does not run inside the registered support
+
+That claim was made here today from hinted replays, and the fifth review said in as many words
+that a hinted replay shows only that the witness's own moves sit inside the offered set. The
+unhinted replay, which is the order a policy actually meets, was run on both cells:
+
+| cell | support | hint | valid | decisions | seconds | what the failures say |
+|---|---|---|---|---|---|---|
+| Pegasus 3, fill 0.50 | registered 64 | yes | 4 of 4 | 58 | 4.0 | |
+| Pegasus 3, fill 0.50 | registered 64 | **no** | **0 of 6** | 0 to 152 | 2.9 | stuck with 0 to 68 percent placed; one state offers no legal PLACE at all with 6 variables left |
+| Pegasus 3, fill 0.50 | wide 512 | **no** | **6 of 6** | 58 | 13.9 | offers 79 to 149 PLACE a step against 25 to 33 |
+| Pegasus 3, fill 0.90 | registered 64 | **no** | **1 of 4** | 18 to 334 | 20.6 | two stuck with 1 to 2 percent placed and no legal PLACE, frontier 15 and 16 |
+| Pegasus 3, fill 0.90 | wide 512 | **no** | **4 of 4** | 107 | 80.7 | offers 156 to 172 PLACE a step |
+
+So the wide registration is required at both cells and the earlier entry, which said the
+congested experiments could stay inside the registered contract version, is withdrawn. The paper
+has to declare and defend the wide support rather than avoid it.
+
+Two consequences for the runs. The quality pilot's low held-out rates, 0.0 to 0.11 on Pegasus and
+0.05 to 0.33 on Zephyr over six iterations, are explained: on the registered support construction
+from empty is close to impossible at this cell, so the policy was being asked to learn its way
+around dead ends the generator walks into. It has been relaunched on the wide support
+(`runs/quality/qw_*.log`). And the congested runs had a 90 second training deadline against an
+80.7 second witness trajectory, which is 1.1 times, the same ratio that made the 488-variable job
+impossible; they have been relaunched at 300 seconds (goose 3345).
+`results/quality/replay_*.log`, `results/control/replay_p3_f90_*.log`.

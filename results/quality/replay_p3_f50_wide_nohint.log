@@ -1,0 +1,12 @@
+{"corpus": "runs/quality/pegasus3_f50", "instances": 6, "hint": false, "quotas": null, "wide": true, "deployment": false}
+    1/6 pegasus3-fill50-a3.0-0     valid   steps    57    13.9s  placed 1.00  place offered 87.7
+    2/6 pegasus3-fill50-a3.0-1     valid   steps    58    11.7s  placed 1.00  place offered 101.8
+    3/6 pegasus3-fill50-a3.0-2     valid   steps    58    15.0s  placed 1.00  place offered 149.4
+    4/6 pegasus3-fill50-a3.0-3     valid   steps    60    19.6s  placed 1.00  place offered 104.2
+    5/6 pegasus3-fill50-a3.0-4     valid   steps    62    13.6s  placed 1.00  place offered 79.3
+    6/6 pegasus3-fill50-a3.0-5     valid   steps    54     9.7s  placed 1.00  place offered 122.2
+
+  cell               n  reached    steps     secs stops
+  fill50-a3.0        6     1.00       58     13.9 {}
+
+WITNESS REPLAY DONE
