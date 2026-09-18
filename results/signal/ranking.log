@@ -1,0 +1,14 @@
+  host         signal                     n  mean rho    95 percent interval    spread
+  pegasus6     fewest qubits             27     0.265        [+0.141, +0.390]      2.83
+{"host": "pegasus6", "signal": "fewest qubits", "instances": 27, "mean_rho": 0.2653744918279215, "ci": [0.1406013902080432, 0.3901475934477998], "mean_spread": 2.8333333333333335, "instances_with_variation": 27, "instances_total": 30}
+  pegasus6     shortest chain            12     0.312        [+0.128, +0.496]      0.40
+{"host": "pegasus6", "signal": "shortest chain", "instances": 12, "mean_rho": 0.3122074127209133, "ci": [0.1281030548633628, 0.49631177057846376], "mean_spread": 0.4, "instances_with_variation": 12, "instances_total": 30}
+  pegasus6     256-read measurement      30     0.814        [+0.723, +0.906]      0.32
+{"host": "pegasus6", "signal": "256-read measurement", "instances": 30, "mean_rho": 0.8143388239474987, "ci": [0.7230028334341516, 0.9056748144608457], "mean_spread": 0.3248697916666667, "instances_with_variation": 30, "instances_total": 30}
+  zephyr4      fewest qubits             28     0.213        [+0.063, +0.364]      1.87
+{"host": "zephyr4", "signal": "fewest qubits", "instances": 28, "mean_rho": 0.2132382395837149, "ci": [0.06253654386789143, 0.3639399352995384], "mean_spread": 1.8666666666666667, "instances_with_variation": 28, "instances_total": 30}
+  zephyr4      shortest chain             2     0.395        [-0.541, +1.331]      0.07
+{"host": "zephyr4", "signal": "shortest chain", "instances": 2, "mean_rho": 0.39519647552986864, "ci": [-0.5410466918817689, 1.3314396429415063], "mean_spread": 0.06666666666666667, "instances_with_variation": 2, "instances_total": 30}
+  zephyr4      256-read measurement      30     0.872        [+0.804, +0.940]      0.37
+{"host": "zephyr4", "signal": "256-read measurement", "instances": 30, "mean_rho": 0.8720762361808633, "ci": [0.8037683473673841, 0.9403841249943424], "mean_spread": 0.3723958333333333, "instances_with_variation": 30, "instances_total": 30}
+SIGNAL RANKING DONE

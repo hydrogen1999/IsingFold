@@ -1440,3 +1440,38 @@ different strength policies and not a like-for-like comparison.
 | congested training, large cell | the same at 488 variables, feasibility only | goose Slurm 3338, `runs/curriculum/sfill*_s*.log` | **do not trust without checking terminations**: no training iteration in the first hour and the deadline does not fit the trajectory. Measured at the small cell, the witness takes 106 decisions and 55.8 s under wide support at 115 qubits, so a step costs 0.53 s. At 680 qubits the witness takes 500 to 589 decisions, which is 320 to 377 s against the job's 400 s training deadline: 1.1x headroom for a perfect policy and less for a real one. The small cell has 3.5x. Feasibility training at 488 variables is not affordable at this step cost |
 | behaviour cloning at fill 80 | whether a teacher trajectory exists to imitate on the large hosts | apollo `runs/clone/fill80_*_clone_s0.log` | **done, negative**: teacher records end in `stuck` or at the 6000-step horizon with validity false on almost every instance, so there is no successful trajectory to clone at that cell |
 | local-feature ladder | whether the 4 local-capacity channels earn their place | apollo `runs/curriculum/{b,F,G}_local_s*.log` | stage b **done, positive**: +0.146 [+0.054, +0.263] and +0.238 [+0.150, +0.325] over two seeds, both intervals above zero. F and G still at their initial evaluations |
+
+## Hardware scale and the signal comparison, 2026-09-18
+
+**The constructor reaches held-out 1.00 on the full Pegasus 16.** Twenty-four-variable ink-drop
+instances on 5,640 and 7,440 qubits, locked splits, evaluation from empty, no witness prefix at
+evaluation, minorminer forbidden after generation. Five episodes an instance:
+
+| run | held-out trajectory | log |
+|---|---|---|
+| Pegasus 16, warm start from the fragment checkpoint | 0.10, 0.25, 0.85, 0.90, **1.00** | `results/inkdrop/ink24_pegasus16_prefixinit_s0.log` |
+| Zephyr 15, warm start | 0.35, 0.60, 0.90, 0.90, **0.95** | `results/inkdrop/ink24_zephyr15_prefixinit_s0.log` |
+| Pegasus 16, no warm start | 0.00 at init and never evaluated again | `results/inkdrop/ink24_pegasus16_prefix_s0.log` |
+| Zephyr 15, no warm start | 0.00 | `results/inkdrop/ink24_zephyr15_prefix_s0.log` |
+
+The cold pair is the curriculum ablation: without the rung below, the same actor and the same
+budget produce nothing. These are validation-list numbers; the locked test list is being
+evaluated now (goose 3339) together with the cross-topology transfer.
+
+**The thesis, restated on one scale.** "Qubit count is not a quality signal" is too strong, and a
+reviewer who computes the correlation will find it is wrong. What the record supports is a
+comparison of strengths. Within-instance Spearman of each candidate signal against a disjoint
+512-read assessment, over the 8 draws a deployed router produces, 30 instances a host
+(`probes/signal_ranking.py`, `results/signal/ranking.log`):
+
+| signal | Pegasus 6 | Zephyr 4 | instances with any variation |
+|---|---|---|---|
+| fewest qubits | 0.265 [+0.141, +0.390] | 0.213 [+0.063, +0.364] | 27 and 28 of 30 |
+| shortest chain | 0.312 [+0.128, +0.496] | 0.395 [-0.541, +1.331] | 12 and 2 of 30 |
+| 256-read measurement | **0.814 [+0.723, +0.906]** | **0.872 [+0.804, +0.940]** | 30 and 30 |
+
+Qubit count ranks candidates above chance, and both intervals sit above zero, so the paper must
+say so. It ranks them at about a quarter the strength of a short measurement, which is the same
+ratio the selection-rule table shows in utility terms: fewest qubits +0.042, measurement +0.147.
+Chain length has almost no variation to exploit, so its correlation is estimated on 12 and 2
+instances and carries no weight.
