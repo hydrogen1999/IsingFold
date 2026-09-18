@@ -1397,6 +1397,64 @@ instance:
 minorminer is valid on 0 of the 12. Witness solve probability averages 0.0147 there, so the
 0.05 absolute gate was never reachable: the whole quantity is three times smaller than the gate.
 
+**Retracted twice, 2026-09-18.** Two claims were made here today about this gate and neither
+survived. They are kept in full because the pattern matters more than either claim.
+
+*First retraction: "annealing deeper erases the discrimination".* The table it rested on compared
+`residual_best`, which picks a different chain strength for each embedding using the same block
+it is then scored on. That is a same-block maximum, the exact failure the third review flagged.
+GPT-6 astra found it with a counterexample: at 20000 sweeps one instance reads 0.07213 against
+0.08678 at the registered strength and 0.04319 against 0.04343 at each embedding's own best. At
+the registered strength the depth interaction, paired over ten instances, is -0.0005 [-0.0036,
++0.0026], not established.
+
+*Second retraction: "residual separates embeddings at the congested cell".* That was recorded on
+twelve instances at +0.0042 [+0.0008, +0.0076]. A fresh twenty-four instances on the same cell,
+same protocol, fresh seed, give +0.0004 [-0.0031, +0.0038]. Pooled over all thirty-six the
+estimate is +0.0017 [-0.0010, +0.0043], which crosses zero, and no single instance removal
+rescues it. Zephyr 2 over twenty-four gives -0.0008 [-0.0067, +0.0050]. The first sample was
+lucky and should not have been reported as established at n = 12.
+
+| Pegasus 3, named fill 0.90, registered strength and depth | n | residual, witness minus grown | favour witness |
+|---|---|---|---|
+| first twelve | 12 | +0.0042 [+0.0008, +0.0076] | 10 of 12 |
+| fresh twenty-four | 24 | +0.0004 [-0.0031, +0.0038] | 15 of 24 |
+| **pooled** | **36** | **+0.0017 [-0.0010, +0.0043]** | 25 of 36 |
+| Zephyr 2, fresh twenty-four | 24 | -0.0008 [-0.0067, +0.0050] | 16 of 24 |
+
+**What stands, and what it means for the benchmark.** minorminer is valid on 0 of 36 on Pegasus 3
+and 0 of 24 on Zephyr 2 at 200 tries, so the congestion claim is intact and is now on a much
+larger sample. What does not stand is any quality claim at that cell. The reason is measurable
+rather than mysterious: at named fill 0.90 only about a tenth of the host is free, so the largest
+degradation available is thirteen absorbed qubits, which moves the mean chain from about 1.22 to
+1.36. At fill 0.50, where sixty-four qubits can be absorbed and the mean chain reaches 2.46, the
+channels did move; that experiment rested on four to six instances a dose and is being replicated
+at eighteen before anything rests on it (`runs/frontier/mech2_*.log`).
+
+The honest two-regime statement is therefore about what each regime can measure at all. At high
+congestion the binding constraint is feasibility, because the host leaves embeddings almost no
+room to differ; quality comparisons belong at fills where they do differ. Solve probability
+separates nothing at the congested cell at either depth, -0.0008 [-0.0043, +0.0028] and +0.0002
+[-0.0047, +0.0052]. `results/frontier/gate_*.log`, `results/frontier/gate2_*.log`.
+
+**The cell the benchmark should sit on.** Pegasus 3 at named fill 0.90 is the only place where
+minorminer fails outright and solve probability still moves: 93 variables, pruned fill 0.86,
+minorminer 0 of 12 at 200 tries, p_solve 0.018 at 200 sweeps, 0.027 at 2000 and 0.084 at 20000.
+Zephyr 2 at named fill 0.90 is its companion at 116 variables. Below this the congestion claim
+fails, because minorminer solves 0.17 to 0.58 of the smaller instances; above it solve
+probability does. It is not earned for solve probability, and the gate says so. Twelve paired instances,
+registered 200-sweep schedule, 8192 reads, witness against a 24-qubit growth on the same
+instance:
+
+| channel | witness minus grown | discriminates |
+|---|---|---|
+| solve probability | +0.0026 [-0.0009, +0.0062] | no, the interval crosses zero |
+| residual, sign flipped so positive is better | +0.0044 [+0.0024, +0.0064] | yes |
+| broken fraction, flipped | -0.0011 [-0.0020, -0.0002] | yes, and against the witness |
+
+minorminer is valid on 0 of the 12. Witness solve probability averages 0.0147 there, so the
+0.05 absolute gate was never reachable: the whole quantity is three times smaller than the gate.
+
 **Retracted, 2026-09-18: "annealing deeper erases the discrimination".** That claim was made
 here a few hours earlier and its own data refutes it. The table it rested on compared
 `residual_best`, which picks a different chain strength for each embedding using the same block
@@ -1460,7 +1518,7 @@ different strength policies and not a like-for-like comparison.
 |---|---|---|---|
 | solvability frontier | whether solve probability can be restored on the congestion axis | apollo `runs/frontier/*_f90.log`, `*_field.log`, `*_deep.log` -> `results/frontier/` | **done**: no. Exponential decay in variables at 0.038 to 0.050 per variable, invariant to depth; fields dead from 195 variables; depth saturates at 94 variables between 20000 and 200000 sweeps |
 | witness pruning audit | whether named fill is the certified congestion | apollo `runs/frontier/prune_*.log` -> `results/frontier/` | **done**: it is not. Named fill overstates the certificate by 5 to 7 points on every host and fill measured; minorminer, where it succeeds, uses as many qubits as the pruned witness |
-| discrimination gate | whether the restored solve probability separates embeddings at the chosen cell | apollo `runs/frontier/gate_pegasus3_f90_registered.log` -> `results/frontier/` | **done at the registered depth, and it fails**: 12 paired instances, solve probability +0.0026 [-0.0009, +0.0062], residual +0.0044 [+0.0024, +0.0064], minorminer 0 of 12. Solve probability cannot separate embeddings where congestion is real. At the registered strength, which is the only comparable column, residual separates at both depths (+0.0042 [+0.0008, +0.0076] at 200 sweeps, +0.0047 [+0.0011, +0.0084] at 20000) and the depth interaction is -0.0005 [-0.0036, +0.0026], not established. The earlier claim that depth erases the signal was an artefact of a same-block strength maximum and is retracted |
+| discrimination gate | whether the restored solve probability separates embeddings at the chosen cell | apollo `runs/frontier/gate_pegasus3_f90_registered.log` -> `results/frontier/` | **done at the registered depth, and it fails**: 12 paired instances, solve probability +0.0026 [-0.0009, +0.0062], residual +0.0044 [+0.0024, +0.0064], minorminer 0 of 12. Solve probability cannot separate embeddings where congestion is real. **Fails on replication.** The twelve-instance result (+0.0042 [+0.0008, +0.0076]) did not hold: a fresh twenty-four give +0.0004 [-0.0031, +0.0038] and the pooled thirty-six give +0.0017 [-0.0010, +0.0043]. Zephyr 2 over twenty-four gives -0.0008 [-0.0067, +0.0050]. minorminer is 0 of 36 and 0 of 24, so congestion stands and quality at that cell does not. The separate claim that depth erases the signal was an artefact of a same-block strength maximum and is also retracted |
 | congested training, measurable cell | held-out validity where minorminer is 0 and solve probability is readable | apollo `runs/congested/c3_f{90,95}_s*.log`, `z2_f{90,95}_s0.log` | running: Pegasus 3 and Zephyr 2 fill 90 and 95, 93 to 120 variables, wide support, warm start from the F and G checkpoints, held-out evaluation every 5 iterations. Cadence measured: the witness needs 106 decisions and 55.8 s, the training deadline is 200 s, and 24 episodes an iteration puts an iteration near 80 minutes, so the first held-out number lands about seven hours in |
 | congested training, large cell | the same at 488 variables, feasibility only | goose Slurm 3338, `runs/curriculum/sfill*_s*.log` | **do not trust without checking terminations**: no training iteration in the first hour and the deadline does not fit the trajectory. Measured at the small cell, the witness takes 106 decisions and 55.8 s under wide support at 115 qubits, so a step costs 0.53 s. At 680 qubits the witness takes 500 to 589 decisions, which is 320 to 377 s against the job's 400 s training deadline: 1.1x headroom for a perfect policy and less for a real one. The small cell has 3.5x. Feasibility training at 488 variables is not affordable at this step cost |
 | behaviour cloning at fill 80 | whether a teacher trajectory exists to imitate on the large hosts | apollo `runs/clone/fill80_*_clone_s0.log` | **done, negative**: teacher records end in `stuck` or at the 6000-step horizon with validity false on almost every instance, so there is no successful trajectory to clone at that cell |
