@@ -353,17 +353,24 @@ class ProposalGenerator:
             per_variable = max(1, budget // 8)
         attached = [(v, roots[:per_variable]) for v, roots in attached[: max(1, budget // per_variable)]]
         if not attached:
-            # Nothing placed yet: a spread of free roots for the highest-degree empty
-            # variable, every k-th free qubit, so the first placement is not confined to one
-            # corner. A teacher that needs a specific first root starts the environment from
-            # a one-variable partial embedding instead.
-            first = sorted(empty, key=lambda v: (-self.logical.degree(v), str(v)))[0]
+            # Nothing placed yet, so there is no frontier to bind to: offer a spread of free
+            # roots, every k-th free qubit, for the highest-degree empty variables. Under a
+            # wide budget the spread covers the host densely and several variables get one,
+            # so a teacher's first root is reachable without seeding a chain; the registered
+            # budget still gives one variable a coarse spread.
+            order = sorted(empty, key=lambda v: (-self.logical.degree(v), str(v)))
             free = [q for q in sorted(self.host.nodes(), key=str) if occupied.get(q, 0) == 0]
-            stride = max(1, len(free) // max(1, budget))
-            spread = free[::stride]
-            if self.prefer is not None:
-                spread = sorted(free, key=lambda q: (-self._pref(first, q), str(q)))[: len(spread)]
-            attached = [(first, spread)]
+            heads = order[: max(1, min(len(order), budget // 32))] if budget > 64 else order[:1]
+            per_head = max(1, budget // max(1, len(heads)))
+            stride = max(1, len(free) // max(1, per_head))
+            attached = []
+            for index, head in enumerate(heads):
+                # a different offset per head, so the union of the offers covers the free
+                # host rather than repeating one spread for every variable
+                spread = free[index % stride::stride][:per_head]
+                if self.prefer is not None:
+                    spread = sorted(free, key=lambda q: (-self._pref(head, q), str(q)))[: per_head]
+                attached.append((head, spread))
 
         # Round-robin across the attached variables so no single variable eats the quota.
         cursors = [0] * len(attached)

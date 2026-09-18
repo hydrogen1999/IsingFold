@@ -110,3 +110,28 @@ def test_the_wide_registration_keeps_every_recovery_family():
     assert isinstance(dec, DecisionState)
     opcodes = {c.opcode for c in dec.candidates}
     assert Opcode.PLACE in opcodes and Opcode.STOP in opcodes
+
+
+def test_the_first_placement_offers_a_dense_spread_under_the_wide_budget():
+    """From empty there is no frontier; the wide budget must still reach most of the host."""
+    import networkx as nx
+    from isingfold.rl.contracts import Opcode
+    host = nx.convert_node_labels_to_integers(nx.grid_2d_graph(12, 12))
+    logical = nx.cycle_graph(10)
+    task = cc.Task("empty-start", logical, host, "toy")
+    rows = {}
+    for wide in (False, True):
+        ctx = construction_context(len(task.host), task.logical.number_of_nodes(),
+                                   task.logical.number_of_edges(), wide=wide)
+        ctx = scale_caps_for_steps(ctx, task.logical.number_of_nodes(), 32)
+        env = EmbeddingEnv(task, ctx, mode=Mode.CONSTRUCTION, initializer=None,
+                           selector=fixed_strength_selector(), reward_reads=8, build_observation=False)
+        dec = env.reset(0)
+        places = [c for c in dec.candidates if c.opcode is Opcode.PLACE]
+        roots = {next(iter(next(iter(c.new_chains.values())))) for c in places}
+        variables = {next(iter(c.new_chains)) for c in places}
+        rows[wide] = (len(roots), len(variables))
+    narrow_roots, narrow_vars = rows[False]
+    wide_roots, wide_vars = rows[True]
+    assert wide_roots > narrow_roots and wide_roots >= 0.5 * len(host)
+    assert wide_vars >= narrow_vars
