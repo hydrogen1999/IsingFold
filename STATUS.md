@@ -1317,8 +1317,10 @@ is a sparser embedding problem and the congestion claim moves with it.
 | anneal depth, 200 to 20000 sweeps | the instance entirely | buys about 15 variables per decade of sweeps, no change in decay rate | `results/frontier/*_f90.log` |
 | host size at fixed fill | one ratio, not the graph | restores p_solve, but builds a different instance and does not preserve congestion | `results/frontier/*_f90.log` |
 
-**The law.** Decoded solve probability decays exponentially in the variable count at fixed
-congestion, and the decay rate is invariant to anneal depth over two decades:
+**The trend, on this ensemble.** Over the planted frustrated-loop instances tested here,
+decoded solve probability falls off close to exponentially in the variable count at fixed
+congestion, at a rate that did not move across the three anneal depths tried. This is a
+description of the tested ensemble, not a law and not a universal solvability boundary:
 
 | sweeps | slope of log p_solve per variable | variables at p_solve 0.05 |
 |---|---|---|
@@ -1326,8 +1328,10 @@ congestion, and the decay rate is invariant to anneal depth over two decades:
 | 2000 | -0.0383 | 83 |
 | 20000 | -0.0457 | 80 |
 
-Fitted on cells with a resolvable rate, so the zeros are censored and the true slope is at
-least this steep. A hundredfold increase in sweeps moves the intercept, not the slope.
+Fitted only on cells with a resolvable rate, so the unresolved cells are excluded rather than
+modelled. That censoring means the fit cannot be read as a bound on the true slope; it is a fit
+to the cells that produced a number. Across the three depths the fitted slope did not move,
+while the intercept did.
 
 Depth then stops buying anything at all. At Pegasus 3, 94 variables, named fill 0.90: 20000
 sweeps gives 0.084 and 200000 sweeps gives 0.082. Another decade of annealing returns nothing,
@@ -1335,11 +1339,13 @@ so the barrier is not a compute budget that a longer run crosses. That is the qu
 answer to "anneal longer", and it replaces the earlier hand-wave.
 `results/frontier/pegasus3_deep.log`.
 
-**The named fill overstates the congestion.** The witness certifies a sufficient occupancy,
-not a necessary one. Greedy pruning, keeping every chain connected and every logical contact
+**The named fill overstates the occupancy an embedding needs.** The witness is one embedding
+at the named fill; greedy pruning yields a smaller embedding that still works. Both are
+sufficient occupancies and neither is a minimum, so nothing here is certified and the word
+should not appear. Greedy pruning, keeping every chain connected and every logical contact
 realised:
 
-| host, named fill | variables | certified fill | lower bound | minorminer valid at 200 tries |
+| host, named fill | variables | pruned fill | lower bound | minorminer valid at 200 tries |
 |---|---|---|---|---|
 | Pegasus 2, 0.80 | 27 | 0.74 | 0.67 | 0.92 |
 | Pegasus 2, 0.90 | 30 | 0.84 | 0.75 | 0.58 |
@@ -1355,11 +1361,11 @@ realised:
 | **Zephyr 2, 0.90** | **116** | **0.87** | **0.72** | **0.00** |
 | **Zephyr 2, 0.95** | **120** | **0.91** | **0.75** | **0.00** |
 
-Twelve instances a row except where noted. Named fill runs 5 to 7 points above what is
-certified. Where minorminer succeeds it uses about
-as many qubits as the pruned witness (33.6 against 33.5, 42.3 against 41.2), so its failures
-are failures to find anything, not failures to pack tightly. Corpus cells should be reported by
-pruned fill from here. `results/frontier/prune_*.log`.
+Twelve instances a row except where noted. Named fill runs 5 to 7 points above the pruned
+sufficient occupancy. On average, where minorminer succeeds it uses about as many qubits as the
+pruned witness (33.6 against 33.5, 42.3 against 41.2), but the average hides instances that do
+not: one logged Pegasus instance uses 110 against a 92-qubit pruned witness, so this is a
+tendency and not a rule. Corpus cells should be reported by pruned fill from here. `results/frontier/prune_*.log`.
 
 **All three channels discriminate, given a large enough dose.** Same instance, same host,
 chains lengthened by absorbing free qubits, Pegasus 3 at fill 0.50, 2000 sweeps:
@@ -1485,3 +1491,9 @@ say so. It ranks them at about a quarter the strength of a short measurement, wh
 ratio the selection-rule table shows in utility terms: fewest qubits +0.042, measurement +0.147.
 Chain length has almost no variation to exploit, so its correlation is estimated on 12 and 2
 instances and carries no weight.
+
+**What the selection result does not say.** The measured-selection gain chooses among draws that
+minorminer produced, on the modern corpora at 16 to 20 variables. It is not evidence of a
+learned quality advantage at congestion, and an abstract or a first figure that lets the two sit
+together will be read as claiming it. The congested claim is validity where minorminer returns
+nothing, and it has no number yet.
