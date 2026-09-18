@@ -102,6 +102,9 @@ def main(argv=None):
     ap.add_argument("--episode-seconds", type=float, default=600.)
     ap.add_argument("--support", choices=("registered", "wide"), default="wide")
     ap.add_argument("--stop-bias", type=float, default=0.0)
+    ap.add_argument("--keep-incomplete", action="store_true",
+                    help="teach stalled teacher walks too; off, because a walk that does "
+                         "not finish teaches the prefix of a construction that fails")
     ap.add_argument("--out", default="")
     a = ap.parse_args(argv)
     if min(a.train, a.heldout, a.epochs, a.eval_episodes, a.eval_every, a.max_steps) < 1:
@@ -158,10 +161,17 @@ def main(argv=None):
                 t, witness, features[t.name], a.max_steps, a.teacher_seconds, wide)
             print(json.dumps({"teacher": t.name, "steps": len(steps), "reason": reason,
                               "valid": valid, "progress": progress, "seconds": secs}), flush=True)
-            if steps:
+            # Only trajectories that reached a valid COMMIT are taught. A walk that stalls
+            # part way is still a sequence of legal actions, and keeping it teaches the actor to
+            # reproduce the prefix of a construction that does not finish, which is the habit the
+            # policy already has. Requiring validity here costs teacher coverage and is worth it.
+            if steps and (valid or a.keep_incomplete):
                 trajectories.append(steps)
+            elif steps:
+                print(json.dumps({"dropped": t.name, "why": "teacher did not reach a valid COMMIT",
+                                  "reason": reason, "progress": progress}), flush=True)
         if not trajectories:
-            raise SystemExit("no teacher trajectory was produced")
+            raise SystemExit("no teacher trajectory reached a valid COMMIT")
         evaluate("init")
         order = np.random.default_rng(a.seed + 1)
         for epoch in range(a.epochs):
