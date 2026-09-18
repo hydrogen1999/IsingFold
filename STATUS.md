@@ -1967,3 +1967,38 @@ arithmetic shows the rewrites are growths, but nothing measured yet says whether
 compensates for bad placement or is unnecessary in itself, nor that chain breaks are what costs
 the energy. Three diagnostics separate those and none has been run.
 `docs/review/2026-09-18-codex-gpt6-astra-review-six-closing-the-quality-gap.md`.
+
+## The excess is real, removable, and not the cause
+
+The obvious reading of the quality gap was that the constructor grows chains it does not need and
+long chains break. `probes/policy_excess.py` tests it directly: run the policy, prune each
+committed embedding greedily while every chain stays connected and every logical edge keeps a
+realised contact, and measure both versions on independent 4096-read blocks. Eight instances,
+Pegasus 3 at fill 0.30:
+
+| | mean |
+|---|---|
+| qubits the policy commits | 72.5 |
+| qubits after pruning, every contact preserved | 47.3 |
+| **removable fraction** | **0.34** |
+| qubits minorminer commits | 29.4 |
+| residual, policy | 0.1335 |
+| residual, pruned | 0.1314 |
+| residual, minorminer | 0.0535 |
+| **quality recovered by pruning** | **+0.0022** |
+
+A third of the constructor's qubits are genuinely redundant and deleting them recovers 0.0022 of
+a 0.080 gap, which is under three percent of it. Pruned, it still spends 1.6 times minorminer's
+qubits and still samples two and a half times worse.
+
+**So the growth is not what costs the quality.** The loss is in where the chains are, not how
+large they are, and the paper's method problem is placement rather than restraint. That is the
+harder problem: a placement error has to be avoided sixty decisions before the reward arrives,
+and the leave-one-out advantage gives every decision in the episode the same credit.
+
+Two entries above are corrected by this. The frozen-arm section attributed the loss to growth
+"until everything connects"; the growth is real and measured but it is not the cause. And the
+plan of expecting a quality reward to teach restraint is not the fix, because restraint is worth
+0.0022 here.
+
+`results/quality/excess_p3_f30.log`.
