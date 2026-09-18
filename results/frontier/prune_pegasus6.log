@@ -1,2 +1,8 @@
 {"probe": "witness_prune", "host": "pegasus", "sizes": [6], "fills": [0.9], "instances": 4, "mm_tries": 50}
   host       vars  named  witness   pruned prunedfl lowbound mmqubits   mm_ok   mmfill
+{"host": "pegasus6", "named_fill": 0.9, "qubits": 680, "vars": 494, "witness": 612, "pruned": 591, "mm": null, "pruned_fill": 0.8691176470588236, "lower_bound_fill": 0.7264705882352941, "instance": 1}
+{"host": "pegasus6", "named_fill": 0.9, "qubits": 680, "vars": 493, "witness": 612, "pruned": 591, "mm": null, "pruned_fill": 0.8691176470588236, "lower_bound_fill": 0.725, "instance": 2}
+{"host": "pegasus6", "named_fill": 0.9, "qubits": 680, "vars": 473, "witness": 612, "pruned": 591, "mm": null, "pruned_fill": 0.8691176470588236, "lower_bound_fill": 0.6955882352941176, "instance": 3}
+{"host": "pegasus6", "named_fill": 0.9, "qubits": 680, "vars": 490, "witness": 612, "pruned": 591, "mm": null, "pruned_fill": 0.8691176470588236, "lower_bound_fill": 0.7205882352941176, "instance": 4}
+  pegasus6    488   0.90    612.0    591.0     0.87     0.72        -    0.00        -
+WITNESS PRUNE DONE

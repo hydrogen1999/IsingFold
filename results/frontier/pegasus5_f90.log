@@ -10,3 +10,6 @@
   pegasus5    317    403   0.90    1.27   0.00      200    0.000    0.000        -
 {"host": "pegasus5", "qubits": 448, "vars": 317, "witness_qubits": 403, "realised_fill": 0.8995535714285714, "mean_chain": 1.2712933753943219, "field_rate": 0.0, "sweeps": 2000, "reads": 512, "p_registered": 0.0, "p_by_strength": [0.0, 0.0, 0.0, 0.0], "p_best": 0.0, "mm_valid": false, "mm_qubits": null, "mm_secs": 27.980940103530884, "p_minorminer": null, "instance": 2}
   pegasus5    317    403   0.90    1.27   0.00     2000    0.000    0.000        -
+{"host": "pegasus5", "qubits": 448, "vars": 317, "witness_qubits": 403, "realised_fill": 0.8995535714285714, "mean_chain": 1.2712933753943219, "field_rate": 0.0, "sweeps": 20000, "reads": 512, "p_registered": 0.0, "p_by_strength": [0.0, 0.0, 0.0, 0.0], "p_best": 0.0, "mm_valid": false, "mm_qubits": null, "mm_secs": 27.980940103530884, "p_minorminer": null, "instance": 2}
+  pegasus5    317    403   0.90    1.27   0.00    20000    0.000    0.000        -
+SOLVABILITY FRONTIER DONE

@@ -16,3 +16,12 @@
   pegasus6    497    612   0.90    1.23   0.10      200    0.000    0.000        -
 {"host": "pegasus6", "qubits": 680, "vars": 497, "witness_qubits": 612, "realised_fill": 0.9, "mean_chain": 1.2313883299798793, "field_rate": 0.1, "sweeps": 2000, "reads": 512, "p_registered": 0.0, "p_by_strength": [0.0, 0.0, 0.0, 0.0], "p_best": 0.0, "mm_valid": false, "mm_qubits": null, "mm_secs": 93.39041447639465, "p_minorminer": null, "instance": 2}
   pegasus6    497    612   0.90    1.23   0.10     2000    0.000    0.000        -
+{"host": "pegasus6", "qubits": 680, "vars": 497, "witness_qubits": 612, "realised_fill": 0.9, "mean_chain": 1.2313883299798793, "field_rate": 0.25, "sweeps": 200, "reads": 512, "p_registered": 0.0, "p_by_strength": [0.0, 0.0, 0.0, 0.0], "p_best": 0.0, "mm_valid": false, "mm_qubits": null, "mm_secs": 88.65576577186584, "p_minorminer": null, "instance": 2}
+  pegasus6    497    612   0.90    1.23   0.25      200    0.000    0.000        -
+{"host": "pegasus6", "qubits": 680, "vars": 497, "witness_qubits": 612, "realised_fill": 0.9, "mean_chain": 1.2313883299798793, "field_rate": 0.25, "sweeps": 2000, "reads": 512, "p_registered": 0.0, "p_by_strength": [0.0, 0.0, 0.0, 0.0], "p_best": 0.0, "mm_valid": false, "mm_qubits": null, "mm_secs": 88.65576577186584, "p_minorminer": null, "instance": 2}
+  pegasus6    497    612   0.90    1.23   0.25     2000    0.000    0.000        -
+{"host": "pegasus6", "qubits": 680, "vars": 497, "witness_qubits": 612, "realised_fill": 0.9, "mean_chain": 1.2313883299798793, "field_rate": 0.5, "sweeps": 200, "reads": 512, "p_registered": 0.0, "p_by_strength": [0.0, 0.0, 0.0, 0.0], "p_best": 0.0, "mm_valid": false, "mm_qubits": null, "mm_secs": 97.80353498458862, "p_minorminer": null, "instance": 2}
+  pegasus6    497    612   0.90    1.23   0.50      200    0.000    0.000        -
+{"host": "pegasus6", "qubits": 680, "vars": 497, "witness_qubits": 612, "realised_fill": 0.9, "mean_chain": 1.2313883299798793, "field_rate": 0.5, "sweeps": 2000, "reads": 512, "p_registered": 0.0, "p_by_strength": [0.0, 0.0, 0.0, 0.0], "p_best": 0.0, "mm_valid": false, "mm_qubits": null, "mm_secs": 97.80353498458862, "p_minorminer": null, "instance": 2}
+  pegasus6    497    612   0.90    1.23   0.50     2000    0.000    0.000        -
+SOLVABILITY FRONTIER DONE

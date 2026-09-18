@@ -22,3 +22,6 @@
   zephyr4     404    518   0.90    1.28   0.25     2000    0.000    0.000        -
 {"host": "zephyr4", "qubits": 576, "vars": 404, "witness_qubits": 518, "realised_fill": 0.8993055555555556, "mean_chain": 1.2821782178217822, "field_rate": 0.5, "sweeps": 200, "reads": 512, "p_registered": 0.0, "p_by_strength": [0.0, 0.0, 0.0, 0.0], "p_best": 0.0, "mm_valid": false, "mm_qubits": null, "mm_secs": 56.924598932266235, "p_minorminer": null, "instance": 2}
   zephyr4     404    518   0.90    1.28   0.50      200    0.000    0.000        -
+{"host": "zephyr4", "qubits": 576, "vars": 404, "witness_qubits": 518, "realised_fill": 0.8993055555555556, "mean_chain": 1.2821782178217822, "field_rate": 0.5, "sweeps": 2000, "reads": 512, "p_registered": 0.0, "p_by_strength": [0.0, 0.0, 0.0, 0.0], "p_best": 0.0, "mm_valid": false, "mm_qubits": null, "mm_secs": 56.924598932266235, "p_minorminer": null, "instance": 2}
+  zephyr4     404    518   0.90    1.28   0.50     2000    0.000    0.000        -
+SOLVABILITY FRONTIER DONE
