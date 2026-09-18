@@ -26,6 +26,18 @@ Correct any of these by editing this file; the plan follows it.
 
 ## Objective
 
+### Layout-v4 implementation assumptions (cf31efc audit)
+
+The opt-in v4 work targets the existing empty-start hybrid root-policy probe, not the
+entire relaxed-overlap PPO system. The objective, registered annealing schedule, decoder,
+strength ratios and resource-as-budget contract stay fixed. Support, representation,
+contextual scoring, baseline and teacher are separate ablations. Training witnesses are
+allowed only after the lineage split and never in inference. Toy unit learning is a
+correctness check; large numerical experiments remain on the experiment hosts. Full
+design, limitations and executable recipes: `docs/review/2026-09-16-layout-v4.md`.
+
+### Relaunch objective
+
 Find and fix what makes a correct objective look unlearnable, then either restore transfer of
 the quality surrogate or move the learned part to construction, where the standard tool fails
 with a witness in hand. Success is a number that survives an independent assessment block, a

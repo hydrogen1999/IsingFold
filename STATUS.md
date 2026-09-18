@@ -1,5 +1,40 @@
 # Status
 
+## Quality-first implementation review, 2026-09-18 (v2)
+
+This section supersedes conflicting interpretations in the historical record below.
+The objective remains an RL policy constructing complete embeddings from empty to improve
+solution quality. Resource count is a constraint, not a reward penalty.
+
+- **Positive but preliminary:** Zephyr size-rung quality training has final conditional residual
+  -0.008324 relative to the grown baseline, interval [-0.014587,-0.002695], on 12 validation
+  instances and one seed. Final-minus-initial residual is -0.004671. The matched continued-
+  feasibility control is needed to isolate the benefit of the quality reward. Equal mean
+  qubits (13.6/13.6) is not per-instance matched resource use.
+- **Feature superiority remains unestablished:** F/G local20 runs also changed support to wide,
+  STOP bias to -6, and evaluation episode count. Their init is null, not a transferred
+  checkpoint. The historical +0.146/+0.238 are within-run gains, not paired feature effects.
+  The ablation reporter now separates controls and suppresses unsupported seed intervals.
+- **Full-host validity is small-sample evidence:** 1.00/0.95 concerns four validation instances
+  of 24 logical variables per host, five episodes each. The test opened with larger budgets
+  and rerun after inspecting its outcomes is development evidence; reserve fresh lineages
+  for confirmatory testing.
+- **New implementation, not a new performance claim:** physics32 observations preserve the
+  local20 prefix and append outcome-blind coefficient/contact/chain proxies; zero-padding
+  supports identical initial policies. RL logs distinguish validity and quality credit.
+  Selection uses public decoded energy; assessment reports residual and solve probability
+  from the same independent block. Fast baselines can spend their proposal-time allocation
+  on a bounded structural shortlist. Failures and every budget are reported.
+- **Attribution tools:** matched quality/continued-feasibility/frozen controls, validation-only
+  best checkpoints, dataset and checkpoint hashes, lineage-split validation, and paired
+  reports are implemented. Missing quality labels now fail explicitly. Evaluation-only
+  runs do not repeat the same test as init and final.
+
+Implementation, equations, commands and empirical gates:
+[`docs/plans/2026-09-18-quality-first-implementation.md`](docs/plans/2026-09-18-quality-first-implementation.md).
+No large quality run or unseen-test superiority is asserted by this update.
+
+
 A running record of what has been done, what each result is worth, and what is still open. Kept
 because this project has withdrawn eleven published numbers, and a list of what currently
 stands is the only way to tell a finding from a leftover. Every number cites its log under
@@ -7,6 +42,33 @@ stands is the only way to tell a finding from a leftover. Every number cites its
 never depends on memory.
 
 ## Board, 2026-09-15
+
+**Small-instance learnability gate, 2026-09-17.** A 16-parameter linear constructor with
+REINFORCE/LOO learns K3-on-C5 from empty: 31/100 valid COMMITs before training,
+93/100, 92/100 and 93/100 after 40 updates over seeds 0, 1 and 2. This is deliberate
+same-instance feasibility overfitting, not held-out hardware or quality evidence.
+Script: `probes/constructor_tiny_gate.py`; raw logs: `results/audit/constructor_tiny_seed*.log`.
+The bounded support/throughput audit and next isolated gates are documented in
+`docs/review/2026-09-17-constructor-learnability.md`. The remote constructor runs below
+remain zero-valid according to the latest board; this small gate does not replace them.
+
+**Author correction: independent construction is the primary method.**
+`probes/train_constructor_rl.py` now targets actor-selected construction and refinement
+from empty, with no witness budget, qubit penalty or minorminer completion. See
+`docs/decisions/ADR-005-independent-constructor.md` and
+`results/audit/independent_constructor_unit.log` for the contract and verification.
+Hybrid/layout-v4 runs below remain comparison diagnostics; they do not count as results
+for this independent constructor. The focused regression gate passes 167 tests; full
+unit-suite collection is blocked by missing `lac_minorminer._core`. No new downstream-quality
+gain is claimed here.
+
+Update from the `cf31efc` source audit: the contact restart numbers below are **initial,
+pre-training evaluations**. They withdraw the weak single-start comparison; they do not
+establish the outcome of converged training. The opt-in layout-v4 implementation removes
+demonstrated support/feature barriers and adds isolated ablations, a value baseline and a
+training-only feasible-root-set teacher. Verification is in
+`results/audit/layout_v4_unit.log`; design and commands are in
+`docs/review/2026-09-16-layout-v4.md`. No new downstream benchmark gain is claimed.
 
 | task | what it decides | host, log | state |
 |---|---|---|---|
@@ -980,16 +1042,18 @@ High fill, from the planted witness at 96 percent occupancy, energy residual (si
 higher is better), 16 instances: policy minus start +0.0057 [+0.0034, +0.0078] and random
 minus start +0.0061 on Pegasus 6; +0.0077 and +0.0066 on Zephyr 4.
 
-The control decides it (`results/contact/pegasus6_control.log`, Pegasus 6, same protocol):
+The initial control (`results/contact/pegasus6_control.log`, Pegasus 6, same protocol):
 four fresh router draws selected by measurement beat the single start by +0.141 [+0.068,
 +0.213]; random contact growth is -0.075 [-0.139, -0.009] below that control and the policy
 -0.104 [-0.181, -0.026] below it. Zephyr 4 (`results/contact/zephyr4_control.log`) says the
 same: restart minus start +0.139 [+0.084, +0.192], random -0.060 [-0.102, -0.019] and policy
--0.063 [-0.111, -0.016] below the restart control. The apparent gain of contact growth was the measured
-selection over four candidates, and growing one draw is worth less than drawing again,
-which the pool-ceiling result had already said. This is the twelfth withdrawn number, caught
-by the control before it was reported as a claim. The learned policy adds nothing over
-random proposals and both are below the router with restarts.
+-0.063 [-0.111, -0.016] below the restart control. At this initial checkpoint, growth of
+one supplied draw loses to fresh draws plus selection. This withdraws the interpretation
+of growth-versus-start as learned superiority. The control files then record only 3 and
+12 training iterations, with no later validation: converged-policy performance remains
+open. The restart implementation also substituted the supplied start on router failure;
+layout-v4 removes that fallback and records coverage. These historical logs are unchanged
+and require a rerun before serving as evidence for the corrected control.
 
 ## The objective is quality; validity is the gate
 

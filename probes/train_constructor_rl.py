@@ -1,20 +1,16 @@
-"""Reinforcement learning on the constructive embedder, from the prioritiser up.
+"""Train an independent constructive RL embedder, always from empty chains.
 
-The policy is the prioritiser: one network scores every candidate the generator offers from
-local features, serves as the generator's preference before the shortlist is cut, and gives
-the action distribution, a softmax over the legal candidates of the decision. Episodes run
-the construction environment on a fill-planted instance from an empty embedding, with no
-witness anywhere in the loop; the witness is only used, optionally, to initialise the
-network from imitation. The reward is terminal: 1 for a valid COMMIT, plus the fraction of
-logical demands realised at the end so that early policies get a gradient at all.
-
-Learning is REINFORCE with a self-competition baseline: K episodes per instance, each
-episode's advantage is its return minus the mean of the K, which is the best-of-K spirit
-the project has measured to matter. Wall time per episode is recorded, because the number
-that goes on the board is validity at a deadline against the anytime baseline.
+The policy chooses placement, route/rewrite, restart and COMMIT macro-actions.
+No completion solver, supplied embedding, witness budget or per-qubit penalty is
+used in learned episodes. Minorminer is an optional, isolated comparison arm.
+Quality is the default objective; feasibility is an explicitly separate curriculum.
 """
-import argparse, json, os, pickle, sys, time
-from collections import defaultdict
+# Runtime source pinning intentionally precedes imports from the checked-out tree.
+# ruff: noqa: E402
+import argparse
+import json
+import os
+import sys
 from pathlib import Path
 
 sys.path.insert(0, os.environ["ISINGFOLD_SRC"])
@@ -24,212 +20,235 @@ sys.meta_path[:] = [f for f in sys.meta_path
                             and "isingfold" in (getattr(type(f), "__module__", "") or "").lower())]
 import numpy as np
 import torch
-from isingfold.rl.contracts import DecisionState, Opcode
 from isingfold.rl.data.generate import load_instances
-from isingfold.rl.env import EmbeddingEnv, Mode, fixed_strength_selector
 
-from _context import construction_context, qubit_budget
-from candidate_features import FeatureContext
+from candidate_features import FeatureContext, WIDTH as LEGACY_WIDTH
+from constructor_features import ConstructorFeatureContext, WIDTH, FEATURE_VERSION
+from constructor_learning import constructor_loss
+from constructor_protocol import checkpoint_key, evaluate_search, experiment_seed, split_by_lineage
+# These helpers remain importable for existing probes. The hybrid is not imported here.
+from constructor_rollout import candidate_tuple as candidate_tuple
+from constructor_rollout import demands_realised as demands_realised
+from constructor_rollout import episode
+from layout_policy import LayoutActorCritic
 from train_prioritiser import Prioritiser
 
 
-def candidate_tuple(c):
-    return (c.opcode.value, tuple(c.affected),
-            tuple(sorted({q for v, ch in c.new_chains.items()
-                          for q in ch - c.old_chains.get(v, frozenset())}, key=str)))
-
-
-def demands_realised(task, chains):
-    edges = list(task.logical.edges())
-    if not edges:
-        return 1.0
-    met = 0
-    for u, v in edges:
-        cu, cv = chains.get(u), chains.get(v)
-        if cu and cv and any(task.host.has_edge(a, b) for a in cu for b in cv):
-            met += 1
-    return met / len(edges)
-
-
-def episode(task, model, fc, temperature, max_steps, rng, deadline, train=True,
-            qubit_cost=0.25):
-    """One construction episode with the policy as preference and as actor.
-
-    The qubit cap is the instance's budget (witness qubits with a margin), so the environment
-    refuses waste; and each sampled step pays ``qubit_cost`` per variable's share of the
-    qubits it spends, so frugality has a gradient too."""
-    witness = {v: frozenset(c) for v, c in task.witness.items()}
-    ctx = construction_context(qubit_budget(witness), task.logical.number_of_nodes(),
-                               task.logical.number_of_edges())
-    env = EmbeddingEnv(task, ctx, mode=Mode.CONSTRUCTION, initializer=None,
-                       selector=fixed_strength_selector(), reward_reads=8)
-
-    def prefer(v, q):
-        with torch.no_grad():
-            return float(model(torch.as_tensor(fc.pair(v, [q], env.state.chains, "PLACE"))))
-
-    env.generator.prefer = prefer
-    dec = env.reset(int(rng.integers(0, 2 ** 31)))
-    logps, rewards, steps, t0 = [], [], 0, time.time()
-    n_vars = max(1, task.logical.number_of_nodes())
-    placed_before = sum(1 for c in env.state.chains.values() if c)
-    met_before = demands_realised(task, env.state.chains)
-    used_before = sum(len(c) for c in env.state.chains.values())
-    while isinstance(dec, DecisionState) and steps < max_steps and time.time() - t0 < deadline:
-        chains = env.state.chains
-        legal = np.asarray(dec.legal_mask, dtype=bool)
-        # An embedder that gives up or throws its work away has nothing to offer, so STOP
-        # and RESTART are masked from the actor while any other action is legal. With
-        # sixty-four candidates a step, an unmasked policy samples STOP within about
-        # sixty-four steps and never reaches a valid COMMIT, which is what the first
-        # imitation-initialised evaluation showed: demands 0.70, validity zero.
-        keep = np.array([c.opcode not in (Opcode.STOP, Opcode.RESTART) for c in dec.candidates])
-        if (legal & keep).any():
-            legal = legal & keep
-        if not legal.any():
-            break
-        feats = np.stack([fc.candidate(candidate_tuple(c), chains) for c in dec.candidates])
-        scores = model(torch.as_tensor(feats)) / temperature
-        scores = scores.masked_fill(~torch.as_tensor(legal), -1e9)
-        # Once everything is placed and every demand is met, commit; otherwise sample.
-        commit = [i for i, c in enumerate(dec.candidates) if c.opcode is Opcode.COMMIT and legal[i]]
-        if commit and demands_realised(task, chains) >= 1.0:
-            pick = commit[0]
-            sampled = False
-        else:
-            dist = torch.distributions.Categorical(logits=scores)
-            pick = int(dist.sample()) if train else int(torch.argmax(scores))
-            logps.append(dist.log_prob(torch.tensor(pick)))
-            sampled = True
-        dec = env.step(dec, pick, evaluate_training_reward=False).next_decision_or_terminal
-        steps += 1
-        # Dense progress reward: a newly placed variable and a newly met demand each pay
-        # their share, so a long episode carries a gradient at every step and not only at
-        # the end. The terminal reward for a valid COMMIT is added on top.
-        placed_now = sum(1 for c in env.state.chains.values() if c)
-        met_now = demands_realised(task, env.state.chains)
-        used_now = sum(len(c) for c in env.state.chains.values())
-        if sampled:
-            rewards.append((placed_now - placed_before) / n_vars + (met_now - met_before)
-                           - qubit_cost * (used_now - used_before) / n_vars)
-        placed_before, met_before, used_before = placed_now, met_now, used_now
-    valid = bool(getattr(dec, "returned_valid", False)) and not isinstance(dec, DecisionState)
-    if rewards:
-        rewards[-1] += 1.0 if valid else 0.0
-    frac = demands_realised(task, env.state.chains)
-    # returns to go, one per sampled step
-    togo, acc = [], 0.0
-    for r in reversed(rewards):
-        acc += r
-        togo.append(acc)
-    togo.reverse()
-    return {"valid": valid, "frac": frac, "steps": steps, "secs": time.time() - t0,
-            "logps": logps, "togo": togo, "return": (1.0 if valid else 0.0) + frac}
-
-
-def main() -> int:
-    ap = argparse.ArgumentParser()
+def main():
+    ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--corpus", required=True)
-    ap.add_argument("--init", default="", help="a trained prioritiser to start from")
     ap.add_argument("--out", required=True)
+    ap.add_argument("--init", default="")
+    ap.add_argument("--allow-unverified-init", action="store_true",
+                    help="explicit legacy import; marks cumulative training provenance unverified")
+    ap.add_argument("--objective", choices=("quality", "feasibility"), default="quality")
+    ap.add_argument("--actor", choices=("contextual", "local"), default="contextual")
+    ap.add_argument("--features", choices=("construction", "legacy"), default="construction")
+    ap.add_argument("--value-baseline", choices=("value", "loo"), default="value")
     ap.add_argument("--iterations", type=int, default=200)
     ap.add_argument("--instances-per-iteration", type=int, default=4)
     ap.add_argument("--episodes-per-instance", type=int, default=4)
     ap.add_argument("--temperature", type=float, default=1.0)
     ap.add_argument("--learning-rate", type=float, default=3e-4)
+    ap.add_argument("--entropy-coef", type=float, default=0.01)
+    ap.add_argument("--value-coef", type=float, default=0.5)
+    ap.add_argument("--shaping-coef", type=float, default=0.0,
+                    help="gamma=1 potential shaping with terminal potential zero")
     ap.add_argument("--max-steps", type=int, default=3000)
-    ap.add_argument("--deadline", type=float, default=300.0)
+    ap.add_argument("--deadline", type=float, default=300.0,
+                    help="validation deployment deadline including proposals and selection")
+    ap.add_argument("--episode-seconds", type=float, default=30.0)
+    ap.add_argument("--qubit-cap", type=int, default=0, help="0 means full active host; never from witness")
     ap.add_argument("--holdout-fraction", type=float, default=0.25)
     ap.add_argument("--eval-every", type=int, default=10)
     ap.add_argument("--width", type=int, default=64)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--reward-reads", type=int, default=256)
+    ap.add_argument("--selection-reads", type=int, default=256)
+    ap.add_argument("--assessment-reads", type=int, default=256)
+    ap.add_argument("--select-cap", type=int, default=6)
+    ap.add_argument("--comparison", choices=("minorminer", "none"), default="minorminer")
+    ap.add_argument("--baseline-router-seconds", type=float, default=2.0)
+    ap.add_argument("--baseline-tries", type=int, default=2)
     a = ap.parse_args()
+    positive = (a.instances_per_iteration, a.episodes_per_instance, a.temperature,
+                a.learning_rate, a.max_steps, a.deadline, a.episode_seconds, a.eval_every,
+                a.width, a.reward_reads, a.selection_reads, a.assessment_reads, a.select_cap,
+                a.baseline_router_seconds, a.baseline_tries)
+    nonnegative = (a.iterations, a.qubit_cap, a.entropy_coef, a.value_coef, a.shaping_coef)
+    if not all(np.isfinite(x) and x > 0 for x in positive):
+        ap.error("sizes, temperatures, learning rate, deadlines and read caps must be positive and finite")
+    if not all(np.isfinite(x) and x >= 0 for x in nonnegative):
+        ap.error("iterations, budgets and loss coefficients must be finite and nonnegative")
+    if a.value_baseline == "value" and a.actor != "contextual":
+        ap.error("a value baseline requires the contextual actor")
+    if a.value_baseline == "loo" and a.episodes_per_instance < 2:
+        ap.error("leave-one-out requires at least two episodes per instance")
     tasks = load_instances(a.corpus)
+    try:
+        train_tasks, eval_tasks = split_by_lineage(tasks, a.holdout_fraction, a.seed)
+    except ValueError as exc:
+        ap.error(str(exc))
     rng = np.random.default_rng(a.seed)
     torch.manual_seed(a.seed)
-    names = sorted(t.name for t in tasks)
-    held = set(rng.choice(names, size=max(1, int(len(names) * a.holdout_fraction)), replace=False))
-    train_tasks = [t for t in tasks if t.name not in held]
-    eval_tasks = [t for t in tasks if t.name in held]
-    model = Prioritiser(a.width)
+    in_dim = WIDTH if a.features == "construction" else LEGACY_WIDTH
+    spec = {"actor": a.actor, "feature_version": FEATURE_VERSION if a.features == "construction"
+            else "candidate-v1", "width": a.width, "in_dim": in_dim}
+    model = (LayoutActorCritic(a.width, in_dim=in_dim) if a.actor == "contextual"
+             else Prioritiser(a.width, in_dim=in_dim))
+    current_train_lineages = {t.lineage or t.name for t in train_tasks}
+    validation_lineages = {t.lineage or t.name for t in eval_tasks}
+    prior_train_lineages = set()
+    init_provenance_verified = True
     if a.init:
-        blob = torch.load(a.init, map_location="cpu")
+        blob = torch.load(a.init, map_location="cpu", weights_only=True)
+        old_spec = blob.get("model_spec", {"actor": "local", "feature_version": "candidate-v1",
+                                          "width": blob["width"], "in_dim": LEGACY_WIDTH})
+        if old_spec != spec:
+            ap.error("checkpoint model/feature schema differs; match actor, features and width")
+        # An initialization can already have trained on this run's held-out tasks.
+        # Retain all known ancestors' training lineages, not just the latest stage.
+        known_lineages = blob.get("training_lineages", blob.get("train_lineages"))
+        if known_lineages is not None:
+            if (not isinstance(known_lineages, (list, tuple))
+                    or any(not isinstance(x, str) or not x for x in known_lineages)):
+                ap.error("checkpoint training lineage provenance is malformed")
+            prior_train_lineages = set(known_lineages)
+        init_provenance_verified = (known_lineages is not None
+                                    and blob.get("lineage_provenance_verified") is True)
+        overlap = prior_train_lineages & validation_lineages
+        if overlap:
+            ap.error("initial checkpoint trained on current validation lineages: "
+                     + ", ".join(sorted(overlap)))
+        if not init_provenance_verified and not a.allow_unverified_init:
+            ap.error("initial checkpoint has unverified training lineage provenance; "
+                     "use --allow-unverified-init only for a declared legacy import")
         model.load_state_dict(blob["state"])
+    lineage_metadata = {
+        "train_lineages": sorted(current_train_lineages),
+        "training_lineages": sorted(current_train_lineages | prior_train_lineages),
+        "validation_lineages": sorted(validation_lineages),
+        "current_split_verified": True,
+        "init_lineage_provenance_verified": init_provenance_verified,
+        "lineage_provenance_verified": init_provenance_verified,
+    }
     opt = torch.optim.Adam(model.parameters(), lr=a.learning_rate)
-    fcs = {}
-    print(json.dumps({"corpus": a.corpus, "train": len(train_tasks), "held_out": len(eval_tasks),
-                      "init": a.init or None, "episodes_per_instance": a.episodes_per_instance,
-                      "deadline": a.deadline}), flush=True)
+    contexts = {}
+
+    def budget(task):
+        cap = task.host.number_of_nodes()
+        return min(cap, a.qubit_cap) if a.qubit_cap else cap
+
+    if any(budget(t) < t.logical.number_of_nodes() for t in tasks):
+        ap.error("declared budget cannot place even one qubit per logical variable")
 
     def fc_for(task):
-        if task.name not in fcs:
-            fcs[task.name] = FeatureContext(
-                task, qubit_budget({v: frozenset(c) for v, c in task.witness.items()}))
-        return fcs[task.name]
+        if task.name not in contexts:
+            cls = ConstructorFeatureContext if a.features == "construction" else FeatureContext
+            contexts[task.name] = cls(task, budget(task))
+        return contexts[task.name]
+
+    def rollout(task, seed, seconds, evaluate_reward):
+        # Every call creates a fresh construction environment. No witness or initializer.
+        return episode(task, model, fc_for(task), a.temperature, a.max_steps,
+                       np.random.default_rng(seed), seconds, train=True,
+                       qubit_cap=budget(task), objective=a.objective,
+                       reward_reads=a.reward_reads, shaping_coef=a.shaping_coef,
+                       evaluate_reward=evaluate_reward)
+
+    print(json.dumps({"protocol": "independent-constructor-v1", "config": vars(a),
+                      "model_spec": spec, "train": len(train_tasks), "validation": len(eval_tasks),
+                      **lineage_metadata,
+                      "inference_initial_state": "empty", "completion_solver": None,
+                      "allow_satisfied_growth": True,
+                      "context_version_suffix": "-independent-constructor-v1",
+                      "qubit_objective_penalty": 0, "split_unit": "lineage",
+                      "comparison_only_solver": a.comparison,
+                      "learning_algorithm": "single-update-Monte-Carlo-actor-critic-gamma1"}), flush=True)
 
     def evaluate(tag):
-        """Deployment protocol: sample episodes until the deadline, return on the first
-        valid one, as the anytime baseline restarts minorminer until its deadline. Validity
-        is checkable for free, so this is the fair use of a stochastic policy."""
         model.eval()
-        rows = []
-        for t in eval_tasks:
-            t0, best, tries = time.time(), None, 0
-            while time.time() - t0 < a.deadline:
-                left = a.deadline - (time.time() - t0)
-                r = episode(t, model, fc_for(t), a.temperature, a.max_steps, rng, left, train=True)
-                tries += 1
-                if best is None or (r["valid"], r["frac"]) > (best["valid"], best["frac"]):
-                    best = r
-                if r["valid"]:
-                    break
-            best["tries"] = tries; best["wall"] = time.time() - t0
-            rows.append(best)
-        model.train()
-        v = np.mean([r["valid"] for r in rows]); f = np.mean([r["frac"] for r in rows])
-        print("  %s held-out within %.0fs: valid %.2f  demands %.3f  episodes tried %.1f  over %d instances"
-              % (tag, a.deadline, v, f, np.mean([r["tries"] for r in rows]), len(rows)), flush=True)
-        # Per cell, so the number lines up with the anytime baseline's table on this corpus.
-        cells = defaultdict(list)
-        for t, r in zip(eval_tasks, rows):
-            cells[t.lineage.rsplit("-", 1)[0].split("-", 1)[1].rsplit("-", 1)[0]].append(r)
-        print("    " + "  ".join("%s %.2f/%d" % (c, np.mean([r["valid"] for r in rs]), len(rs))
-                                 for c, rs in sorted(cells.items())), flush=True)
-        return v, f
+        records = []
+        for task in eval_tasks:
+            def learned(seed, seconds_left):
+                with torch.no_grad(), torch.random.fork_rng(devices=[]):
+                    torch.manual_seed(seed)
+                    result = rollout(task, seed, min(seconds_left, a.episode_seconds), False)
+                return result["terminal"] if result["valid"] else None
 
-    best = -1.0
-    evaluate("init")
-    for it in range(a.iterations):
-        batch = rng.choice(len(train_tasks), size=min(a.instances_per_iteration, len(train_tasks)),
-                           replace=False)
-        loss, n, stats = 0.0, 0, defaultdict(list)
-        for idx in batch:
-            t = train_tasks[idx]
-            eps = [episode(t, model, fc_for(t), a.temperature, a.max_steps, rng, a.deadline)
-                   for _ in range(a.episodes_per_instance)]
-            # Baseline per instance: the mean total return of its K episodes, subtracted
-            # from every step's return to go (self-competition, as in best-of-K).
-            base = np.mean([e["togo"][0] if e["togo"] else 0.0 for e in eps])
-            for e in eps:
-                if e["logps"]:
-                    adv = torch.as_tensor(e["togo"], dtype=torch.float32) - base
-                    loss = loss - (adv * torch.stack(e["logps"])).sum() / len(e["logps"])
-                    n += 1
-                stats["valid"].append(e["valid"]); stats["frac"].append(e["frac"])
-                stats["secs"].append(e["secs"])
-        if n:
-            opt.zero_grad(); (loss / n).backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0); opt.step()
-        print("  iter %4d  train valid %.2f  demands %.3f  secs/episode %.1f"
-              % (it, np.mean(stats["valid"]), np.mean(stats["frac"]), np.mean(stats["secs"])),
-              flush=True)
-        if (it + 1) % a.eval_every == 0:
-            v, f = evaluate("iter %d" % it)
-            if v + f > best:
-                best = v + f
-                torch.save({"state": model.state_dict(), "width": a.width}, a.out)
-    torch.save({"state": model.state_dict(), "width": a.width}, a.out + ".last")
-    print("\nCONSTRUCTOR RL DONE", flush=True)
+            def baseline(seed, seconds_left):
+                from constructor_baseline import baseline_proposal
+                return baseline_proposal(task, budget(task), seed, seconds_left,
+                                         a.baseline_tries, a.baseline_router_seconds)
+
+            # Alternate arm order to reduce systematic first/second timing effects.
+            arms = [("policy", learned)]
+            if a.comparison == "minorminer":
+                arms.append(("minorminer", baseline))
+            if experiment_seed(a.seed, "arm-order", task.name) % 2:
+                arms.reverse()
+            for name, proposer in arms:
+                r = evaluate_search(task, proposer, deadline=a.deadline, select_cap=a.select_cap,
+                                    selection_reads=a.selection_reads, assessment_reads=a.assessment_reads,
+                                    objective=a.objective,
+                                    seed=experiment_seed(a.seed, "validation", task.name))
+                records.append({"instance": task.name, "lineage": task.lineage or task.name,
+                                "arm": name, **r})
+        model.train()
+        score = checkpoint_key([r for r in records if r["arm"] == "policy"], a.objective)
+        print(json.dumps({"evaluation": tag, "role": "validation", "arms": records,
+                          "checkpoint_key": score}), flush=True)
+        return score
+
+    Path(a.out).parent.mkdir(parents=True, exist_ok=True)
+
+    def save(path, score=None):
+        torch.save({"state": model.state_dict(), "model_spec": spec, "width": a.width,
+                    "config": vars(a), "validation_score": score,
+                    **lineage_metadata,
+                    "allow_satisfied_growth": True,
+                    "context_version_suffix": "-independent-constructor-v1",
+                    "protocol": "independent-constructor-v1"}, path)
+
+    best = evaluate("init")
+    save(a.out, best)
+    for iteration in range(a.iterations):
+        indices = rng.choice(len(train_tasks), min(a.instances_per_iteration, len(train_tasks)), replace=False)
+        opt.zero_grad()
+        metrics, episodes_all, updates = [], [], 0
+        for index in indices:
+            task = train_tasks[int(index)]
+            episodes = [rollout(task, experiment_seed(a.seed, "train", task.name, iteration, e),
+                                a.episode_seconds, True) for e in range(a.episodes_per_instance)]
+            loss, metric = constructor_loss(episodes, baseline=a.value_baseline,
+                                            entropy_coef=a.entropy_coef, value_coef=a.value_coef)
+            if loss is not None:
+                if not torch.isfinite(loss):
+                    raise FloatingPointError("nonfinite constructor loss")
+                (loss / len(indices)).backward()
+                updates += 1
+            metrics.append(metric)
+            episodes_all.extend(episodes)
+        norm = 0.0
+        if updates:
+            norm = float(torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0, error_if_nonfinite=True))
+            opt.step()
+        merged = {k: float(np.mean([m[k] for m in metrics if m[k] is not None]))
+                  if any(m[k] is not None for m in metrics) else None for k in metrics[0]}
+        print(json.dumps({"training_iteration": iteration, "objective": a.objective,
+                          "has_measured_quality_signal": any(e.get("residual") is not None for e in episodes_all),
+                          "validity": float(np.mean([e["valid"] for e in episodes_all])),
+                          "measurement_coverage": float(np.mean([e.get("residual") is not None for e in episodes_all])),
+                          "mean_demands": float(np.mean([e["frac"] for e in episodes_all])),
+                          "mean_steps": float(np.mean([e["steps"] for e in episodes_all])),
+                          "gradient_norm_before_clip": norm, **merged}), flush=True)
+        if (iteration + 1) % a.eval_every == 0:
+            score = evaluate(f"iter {iteration}")
+            if score > best:
+                best = score
+                save(a.out, best)
+    save(a.out + ".last")
+    print("CONSTRUCTOR RL DONE", flush=True)
     return 0
 
 

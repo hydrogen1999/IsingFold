@@ -1,0 +1,7 @@
+{"evaluation": "init", "seed": 1, "valid": 31, "episodes": 100, "rate": 0.31, "steps": 5.57, "seconds": 4.025096239999812, "ops": {"PLACE": 238, "STOP": 69, "REWRITE_ONE": 133, "RESTART": 43, "REPAIR_GROUP": 10, "COMMIT": 31, "ROUTE": 20, "REWRITE_GROUP": 13}, "reasons": {"STOP_NO_VALID": 69, "COMMIT": 31}}
+{"iteration": 9, "seed": 1, "valid": 13, "reward": 0.8359375, "entropy": 0.9571031928062439, "grad_norm": 0.227827787399292}
+{"iteration": 19, "seed": 1, "valid": 10, "reward": 0.65625, "entropy": 0.8843504786491394, "grad_norm": 0.4582362473011017}
+{"iteration": 29, "seed": 1, "valid": 15, "reward": 0.9401041666666667, "entropy": 0.7812143564224243, "grad_norm": 0.10659760981798172}
+{"iteration": 39, "seed": 1, "valid": 13, "reward": 0.828125, "entropy": 0.7595599293708801, "grad_norm": 0.21295563876628876}
+{"evaluation": "final", "seed": 1, "valid": 92, "episodes": 100, "rate": 0.92, "steps": 5.51, "seconds": 4.557447369000101, "ops": {"PLACE": 302, "STOP": 8, "ROUTE": 65, "COMMIT": 92, "REWRITE_ONE": 46, "REPAIR_GROUP": 25, "RESTART": 9, "REWRITE_GROUP": 4}, "reasons": {"STOP_NO_VALID": 8, "COMMIT": 92}}
+{"total_seconds": 39.81186983099997}

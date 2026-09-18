@@ -31,6 +31,7 @@ def test_one_policy_episode_runs_and_reports():
     assert 0.0 <= r["frac"] <= 1.0
     assert r["steps"] >= 1
     assert len(r["logps"]) >= 1
-    assert r["return"] == (1.0 if r["valid"] else 0.0) + r["frac"]
+    assert r["return"] == pytest.approx(r["base_return"])
+    assert r["qubit_cap"] == task.host.number_of_nodes()
     assert len(r["togo"]) == len(r["logps"])
     assert all(np.isfinite(r["togo"]))

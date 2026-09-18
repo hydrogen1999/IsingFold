@@ -1,5 +1,14 @@
 # Results
 
+## Constructor learning gate (same-instance diagnostic)
+
+`audit/constructor_tiny_summary.json` and the three `constructor_tiny_seed*.log` files
+record K3-on-C5 feasibility learning by a 16-parameter linear policy: 31/100 valid
+outputs initially and 93/100, 92/100, 93/100 after 40 REINFORCE updates. This is a
+same-task overfit gate, not a downstream-quality or held-out benchmark result.
+See `probes/constructor_tiny_gate.py` and
+`docs/review/2026-09-17-constructor-learnability.md` for reproduction and limits.
+
 ## Index
 
 One line per directory. The section below each name, where it exists, says how the number was
@@ -15,7 +24,7 @@ else is described by its log's own header line.
 | `hard/`, `hard_abl/` | the clique-16 hard corpus and its four-arm representation ablation | history; within seed noise |
 | `diverse/`, `diverse_abl/` | seven-family corpus labels and the family-held-out five-arm ablation | history; within 0.02 of each other |
 | `curve/` | learning curve 25/50/100/200 lineages, two seeds | history; flat, lexicographic subsets |
-| `audit/` | sampler scale controls, auto vs registered schedule | the basis of ADR-002 |
+| `audit/` | sampler scale controls, registered schedule, and implementation regression gates | ADR-002 controls; `independent_constructor_unit.log` verifies ADR-005 contracts only, not training performance |
 | `modern/` | Pegasus 6 and Zephyr 4 corpora, the power-law budget sweeps, three pool-ceiling versions | current hardware; auto schedule |
 | `feasibility/` | minorminer validity by size and family, budget check, deterministic clique embedder | current |
 | `fill/` | fill-planted corpora, minorminer at ten and fifty tries, constructor floor, witness quality, exact and long-chain sweeps, anytime baseline | current; `*_witness_registered.log` is Task 9 |

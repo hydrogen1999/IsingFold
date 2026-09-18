@@ -1,0 +1,21 @@
+Base: cf31efccc088de36e409bd3bd3dba02dffe8b49e
+Scope: unit/integration and synthetic toy learning only; no downstream benchmark.
+
+Command: python -m pytest -q tests/unit/test_layout_policy.py tests/unit/test_layout_features.py tests/unit/test_layout_learning.py tests/unit/test_hybrid_layout_integration.py tests/unit/test_hybrid_rl.py tests/unit/test_contact_policy.py tests/unit/test_contact_policy_contracts.py
+........................................................................ [ 64%]
+........................................                                 [100%]
+=============================== warnings summary ===============================
+tests/unit/test_contact_policy.py::test_contact_episode_adds_touching_qubits_only
+  /workspace/scratch/667fc8e0bab0/IsingFold_fix_cf31efc/src/isingfold/rl/data/generate.py:33: DeprecationWarning: dwave-networkx is deprecated and will be replaced by dwave-graphs in Ocean 10. Most functionality previously provided by dwave-networkx is now available as part of dwave-graphs under the 'dwave.graphs' namespace.
+    import dwave_networkx as dnx
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+112 passed, 1 warning in 7.06s
+
+Command: python -m pytest -q -s tests/unit/test_layout_learning.py::test_tiny_overfit_learns_distinction_unobservable_in_legacy_features
+toy representation gate: initial=0.499765, final=1.000000, legacy ceiling=0.5
+.
+1 passed in 5.09s
+
+Full-suite attempt: python -m pytest tests/unit -q --maxfail=1
+Collection stopped: tests/unit/test_anytime_search.py imports absent lac_minorminer._core. Full suite did not pass.

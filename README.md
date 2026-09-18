@@ -7,6 +7,14 @@ included.
 
 ## What the problem is
 
+The primary learned method is the **independent constructor** in
+`probes/train_constructor_rl.py`: every episode starts empty and the policy chooses the
+placement, route/rewrite, refinement and COMMIT actions. Minorminer is an optional separate
+baseline, never a completion fallback. Public qubit budgets constrain the search; the
+quality reward has no per-qubit penalty. Architecture, loss, limits and commands are in
+[ADR-005](docs/decisions/ADR-005-independent-constructor.md). Historical hybrid probes learn
+root layouts for a router and must be reported separately.
+
 A logical Ising problem has to be mapped onto a fixed hardware graph, Chimera or Pegasus, by
 giving every logical variable a connected chain of qubits so that adjacent variables' chains
 touch. The usual objective is to use few qubits and short chains. This project measures a

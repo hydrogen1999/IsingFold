@@ -16,6 +16,7 @@ import networkx as nx
 
 from isingfold.embedding import LogicalProblem
 from isingfold.rl.contracts import (
+    ChainKeyBuilder,
     ArchiveEntry,
     Candidate,
     Context,
@@ -51,12 +52,16 @@ def bound_successor_key(
     *,
     restart: bool,
     restart_cache_after_digest: str | None = None,
+    chains_key: str | None = None,
 ) -> str:
-    """Identity of transition semantics, excluding provenance and heuristic family."""
+    """Identity of transition semantics, excluding provenance and heuristic family.
+
+    ``chains_key`` is ``chain_key(chains)`` when the caller has it already, which a proposal
+    round does: the state's rows are fixed and a candidate changes a few of them."""
 
     return stable_digest(
         {
-            "chains": chain_key(chains),
+            "chains": chain_key(chains) if chains_key is None else chains_key,
             "work": work.as_dict(),
             "restart_resets_workspace_memory": restart,
             "restart_token_delta": -1 if restart else 0,
@@ -252,9 +257,12 @@ class ProposalGenerator:
         improvement_restart_protocol: str = AUTHENTICATED_RESTART_CACHE_V1,
         overfill: float = 4.0,
         jitter_scale: float = 0.15,
+        allow_satisfied_growth: bool = False,
     ) -> None:
         if improvement_restart_protocol not in _IMPROVEMENT_RESTART_PROTOCOLS:
             raise ValueError("unknown improvement restart protocol")
+        if type(allow_satisfied_growth) is not bool:
+            raise ValueError("allow_satisfied_growth must be Boolean")
         self.ctx = ctx
         self.logical = logical
         self.host = host
@@ -264,6 +272,9 @@ class ProposalGenerator:
         self.improvement_restart_protocol = improvement_restart_protocol
         self.overfill = overfill
         self.jitter_scale = jitter_scale
+        # The independent constructor can spend spare capacity to improve a valid
+        # embedding's physical program. Older proposal registries retain their support.
+        self.allow_satisfied_growth = allow_satisfied_growth
         # An optional prioritiser over (variable, qubit) pairs, higher first, consulted by
         # the construction families before their budget truncates the offer. The registered
         # cap of 64 state-changing candidates applies to what a decision sees, not to how
@@ -335,20 +346,36 @@ class ProposalGenerator:
         # options; on a host of degree fifteen a single root per variable does not.
         attached.sort(key=lambda vr: (-best_pref(vr), -placed_neighbours(vr[0]),
                                       -self.logical.degree(vr[0]), str(vr[0])))
-        per_variable = max(1, budget // 8)
+        if budget > 64:
+            # Wide support: every frontier variable is offered, with as many of its adjacent
+            # roots as the budget allows (at most twelve each), instead of eight variables
+            # with a shortlist. On a planted instance the witness root of every frontier
+            # variable is adjacent to a placed neighbour, so it is in this offer whenever
+            # its variable is; the registered 64-candidate shortlist covered eight variables
+            # of a frontier of fifty and blocked the witness walk within twenty steps.
+            per_variable = max(1, min(12, budget // max(1, len(attached))))
+        else:
+            per_variable = max(1, budget // 8)
         attached = [(v, roots[:per_variable]) for v, roots in attached[: max(1, budget // per_variable)]]
         if not attached:
-            # Nothing placed yet: a spread of free roots for the highest-degree empty
-            # variable, every k-th free qubit, so the first placement is not confined to one
-            # corner. A teacher that needs a specific first root starts the environment from
-            # a one-variable partial embedding instead.
-            first = sorted(empty, key=lambda v: (-self.logical.degree(v), str(v)))[0]
+            # Nothing placed yet, so there is no frontier to bind to: offer a spread of free
+            # roots, every k-th free qubit, for the highest-degree empty variables. Under a
+            # wide budget the spread covers the host densely and several variables get one,
+            # so a teacher's first root is reachable without seeding a chain; the registered
+            # budget still gives one variable a coarse spread.
+            order = sorted(empty, key=lambda v: (-self.logical.degree(v), str(v)))
             free = [q for q in sorted(self.host.nodes(), key=str) if occupied.get(q, 0) == 0]
-            stride = max(1, len(free) // max(1, budget))
-            spread = free[::stride]
-            if self.prefer is not None:
-                spread = sorted(free, key=lambda q: (-self._pref(first, q), str(q)))[: len(spread)]
-            attached = [(first, spread)]
+            heads = order[: max(1, min(len(order), budget // 32))] if budget > 64 else order[:1]
+            per_head = max(1, budget // max(1, len(heads)))
+            stride = max(1, len(free) // max(1, per_head))
+            attached = []
+            for index, head in enumerate(heads):
+                # a different offset per head, so the union of the offers covers the free
+                # host rather than repeating one spread for every variable
+                spread = free[index % stride::stride][:per_head]
+                if self.prefer is not None:
+                    spread = sorted(free, key=lambda q: (-self._pref(head, q), str(q)))[: per_head]
+                attached.append((head, spread))
 
         # Round-robin across the attached variables so no single variable eats the quota.
         cursors = [0] * len(attached)
@@ -392,6 +419,8 @@ class ProposalGenerator:
         touch, could otherwise never appear before those neighbours are placed, and they
         cannot be placed before the qubits exist. Chains with the most unplaced logical
         neighbours come first, rotated with the state so no chain holds the budget.
+        With ``allow_satisfied_growth``, already satisfied chains remain eligible:
+        allocating another adjacent free qubit is a policy-controlled quality refinement.
         """
         out: list[tuple[Candidate, int]] = []
         occupied = _occupancy_excluding(chains, set())
@@ -415,7 +444,8 @@ class ProposalGenerator:
                     n += 1
             return n
 
-        placed = [v for v in placed if need(v) > 0]
+        if not self.allow_satisfied_growth:
+            placed = [v for v in placed if need(v) > 0]
         if not placed:
             return out
         placed.sort(key=lambda v: (-need(v), str(v)))
@@ -1073,8 +1103,15 @@ class ProposalGenerator:
         restart_cache_after_digest: str | None = None,
     ) -> Candidate:
         affected = tuple(sorted(new_chains, key=str))
-        successor = dict(chains)
-        successor.update(new_chains)
+        bound = {i: frozenset(c) for i, c in new_chains.items()}
+        builder = getattr(self, "_key_builder", None)
+        if builder is None or set(bound) - set(builder.index):
+            successor = dict(chains)
+            successor.update(bound)
+            chains_key = None
+        else:
+            successor = None
+            chains_key = builder.key(bound)
         work = WorkVector(
             decisions=1,
             route_expansions=0,
@@ -1089,13 +1126,14 @@ class ProposalGenerator:
             opcode=opcode,
             affected=affected,
             old_chains={i: chains.get(i, frozenset()) for i in affected},
-            new_chains={i: frozenset(c) for i, c in new_chains.items()},
+            new_chains=bound,
             work=work,
             payload_key=bound_successor_key(
-                successor,
+                successor if successor is not None else chains,
                 work,
                 restart=opcode is Opcode.RESTART,
                 restart_cache_after_digest=restart_cache_after_digest,
+                chains_key=chains_key,
             ),
             proposal_work=proposal_work,
             routes=routes,
@@ -1140,8 +1178,12 @@ class ProposalGenerator:
             self.ctx.construction_quotas if self.mode is Mode.CONSTRUCTION else self.ctx.quotas
         )
         # One state per proposal round: the preference of a (variable, qubit) pair is asked
-        # by several families and is the same for all of them.
+        # by several families and is the same for all of them. The identity builder is the
+        # same idea for the successor key: the state's rows are fixed for the round, so a
+        # candidate pays for the rows it changes instead of hashing every chain again.
         self._pref_cache = {}
+        self._key_builder = ChainKeyBuilder(chains)
+        self._key_builder_state = chains
         common_allowance = allowance or self.ctx.caps
         meter = WorkMeter(
             route_expansions=common_allowance.route_expansions,

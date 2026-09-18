@@ -2,7 +2,8 @@
 
 Validity training uses a completion reward and a bounded partial-overlap shaping signal.
 Quality training uses bounded residual improvement over a training-only measured witness
-reference. REINFORCE uses summed trajectory log probabilities and a leave-one-out baseline.
+reference. REINFORCE uses summed trajectory log probabilities and a leave-one-out baseline;
+the opt-in contextual actor also supports a learned, detached state-value baseline.
 Validation holds out whole lineages. Both learned and unhinted arms restart, measure and
 select under one deployment deadline; fresh assessment reads are reporting-only. A witness
 fill is a corpus property, not occupancy of these root-construction episodes.
@@ -23,9 +24,11 @@ from isingfold.rl.data.generate import load_instances
 from isingfold.rl.env import EmbeddingEnv, Mode, fixed_strength_selector
 
 from _context import construction_context, host_context, qubit_budget
-from candidate_features import FeatureContext
+from candidate_features import FeatureContext, WIDTH as LEGACY_WIDTH
+from layout_features import LayoutFeatureContext, WIDTH as LAYOUT_WIDTH, FEATURE_VERSION
+from layout_policy import LayoutActorCritic, sample_layout_v2
+from layout_learning import trajectory_loss, witness_prefix_loss
 from seeded_minorminer import attempt
-from fast_layout import sample_layout
 from train_constructor_rl import candidate_tuple
 from train_prioritiser import Prioritiser
 
@@ -242,6 +245,14 @@ def main() -> int:
     ap.add_argument("--holdout-fraction", type=float, default=0.25)
     ap.add_argument("--eval-every", type=int, default=10)
     ap.add_argument("--width", type=int, default=64)
+    ap.add_argument("--actor", choices=("local", "contextual"), default="local")
+    ap.add_argument("--features", choices=("legacy", "capacity"), default="legacy")
+    ap.add_argument("--root-support", choices=("legacy", "all_free"), default="legacy")
+    ap.add_argument("--baseline", choices=("loo", "value"), default="loo")
+    ap.add_argument("--entropy-coef", type=float, default=0.0)
+    ap.add_argument("--value-coef", type=float, default=0.5)
+    ap.add_argument("--warmstart-epochs", type=int, default=0,
+                    help="train-only witness-set placement teacher; not a quality teacher")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--hard-only", action="store_true",
                     help="train on cells where unseeded minorminer is not already at one")
@@ -264,12 +275,27 @@ def main() -> int:
                     help="legacy experiment: cap at 1.1 times witness occupancy; privileged "
                          "budget metadata, not the deployment default")
     a = ap.parse_args()
+    if not all(np.isfinite(x) for x in (a.temperature, a.quality_weight, a.train_deadline,
+                                        a.eval_deadline, a.layout_router_secs,
+                                        a.entropy_coef, a.value_coef, a.learning_rate)):
+        ap.error("training parameters must be finite")
     if (a.episodes_per_instance < 2 or a.select_cap < 1 or a.eval_every < 1
             or a.temperature <= 0 or a.quality_weight < 0 or a.qubit_cap < 0
             or min(a.train_deadline, a.eval_deadline, a.layout_router_secs) <= 0):
         ap.error("positive deadlines/temperature/caps and at least two episodes are required")
     if a.witness_budget and a.qubit_cap:
         ap.error("choose explicit --qubit-cap or legacy --witness-budget")
+    if min(a.entropy_coef, a.value_coef, a.warmstart_epochs, a.iterations) < 0:
+        ap.error("loss coefficients, epochs and iterations must be nonnegative")
+    if (a.width < 1 or a.instances_per_iteration < 1 or a.learning_rate <= 0
+            or a.tries < 1 or a.layout_tries < 1):
+        ap.error("width, batch size, learning rate and router tries must be positive")
+    if a.baseline == "value" and a.actor != "contextual":
+        ap.error("--baseline value requires --actor contextual")
+    if not a.fast and (a.actor != "local" or a.features != "legacy"
+                       or a.root_support != "legacy" or a.baseline != "loo"
+                       or a.entropy_coef or a.warmstart_epochs):
+        ap.error("versioned layout features, support and actor require --fast")
     tasks = load_instances(a.corpus)
     rng = np.random.default_rng(a.seed)
     torch.manual_seed(a.seed)
@@ -278,9 +304,18 @@ def main() -> int:
         train_tasks = [t for t in train_tasks if not t.name.split("-")[1].startswith("fill70")]
     if not train_tasks:
         ap.error("no training instances remain after filtering")
-    model = Prioritiser(a.width)
+    in_dim = LAYOUT_WIDTH if a.features == "capacity" else LEGACY_WIDTH
+    model_spec = {"actor": a.actor, "feature_version": FEATURE_VERSION if a.features == "capacity"
+                  else "candidate-v1", "in_dim": in_dim, "width": a.width}
+    model = (LayoutActorCritic(a.width, in_dim=in_dim) if a.actor == "contextual"
+             else Prioritiser(a.width, in_dim=in_dim))
     if a.init:
-        model.load_state_dict(torch.load(a.init, map_location="cpu")["state"])
+        checkpoint = torch.load(a.init, map_location="cpu", weights_only=True)
+        saved_spec = checkpoint.get("model_spec", {"actor": "local", "feature_version": "candidate-v1",
+                                                   "in_dim": LEGACY_WIDTH, "width": checkpoint["width"]})
+        if saved_spec != model_spec:
+            ap.error("checkpoint model/feature schema differs; match --actor, --features and --width")
+        model.load_state_dict(checkpoint["state"])
     opt = torch.optim.Adam(model.parameters(), lr=a.learning_rate)
     fcs = {}
 
@@ -292,7 +327,8 @@ def main() -> int:
 
     def fc_for(task):
         if task.name not in fcs:
-            fcs[task.name] = FeatureContext(task, budget_of(task))
+            cls = LayoutFeatureContext if a.features == "capacity" else FeatureContext
+            fcs[task.name] = cls(task, budget_of(task))
         return fcs[task.name]
 
     base_eval = {}
@@ -323,7 +359,12 @@ def main() -> int:
         ref = reference_residual(task, k)
         return quality_reward(res, ref, a.quality_weight)
 
-    layout = sample_layout if a.fast else place_roots
+    def layout(task, policy, fc, temperature, rng, train):
+        if a.fast:
+            return sample_layout_v2(task, policy, fc, temperature, rng, train=train,
+                                    support=a.root_support)
+        return place_roots(task, policy, fc, temperature, rng, train)
+
     print(json.dumps({"corpus": a.corpus, "train": len(train_tasks), "held_out": len(eval_tasks),
                       "init": a.init or None, "train_deadline": a.train_deadline,
                       "eval_deadline": a.eval_deadline, "fast": a.fast,
@@ -332,6 +373,12 @@ def main() -> int:
                       "train_lineages": sorted({t.lineage or t.name for t in train_tasks}),
                       "validation_lineages": sorted({t.lineage or t.name for t in eval_tasks}),
                       "qubit_cap": a.qubit_cap, "legacy_witness_budget": a.witness_budget,
+                      "model_spec": model_spec, "root_support": a.root_support,
+                      "policy_sampler": "layout-v2-numpy" if a.fast else "environment-torch",
+                      "baseline": a.baseline, "entropy_coef": a.entropy_coef,
+                      "warmstart_epochs": a.warmstart_epochs,
+                      "learning_algorithm": "terminal-MC-policy-gradient-single-update",
+                      "config": vars(a),
                       "deadline_scope": "proposal+router+selection; reporting assessment separate"}), flush=True)
 
     def evaluate(tag):
@@ -391,12 +438,36 @@ def main() -> int:
         return score
 
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
-    best = evaluate("init")
-    torch.save({"state": model.state_dict(), "width": a.width, "config": vars(a),
-                "validation_score": best}, a.out)
+
+    def save_checkpoint(path, score=None):
+        torch.save({"state": model.state_dict(), "width": a.width, "config": vars(a),
+                    "model_spec": model_spec, "validation_score": score}, path)
+
+    # Split first. Witnesses of validation tasks are never read by warm start.
+    for epoch in range(a.warmstart_epochs):
+        metrics, losses = [], []
+        for idx in rng.permutation(len(train_tasks)):
+            t = train_tasks[int(idx)]
+            loss, metric = witness_prefix_loss(t, t.witness, model, fc_for(t), rng,
+                                               support=a.root_support, temperature=a.temperature)
+            metrics.append(metric)
+            if loss is not None:
+                opt.zero_grad()
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+                opt.step()
+                losses.append(float(loss.detach()))
+        print(json.dumps({"warmstart_epoch": epoch, "role": "training",
+                          "teacher": "compatible-root-set-feasibility-only",
+                          "teacher_coverage": sum(m["teacher_covered"] for m in metrics)
+                          / max(1, sum(m["teacher_steps"] for m in metrics)),
+                          "loss": float(np.mean(losses)) if losses else None}), flush=True)
+    best = evaluate("post_warmstart" if a.warmstart_epochs else "init")
+    save_checkpoint(a.out, best)
     for it in range(a.iterations):
         batch = rng.choice(len(train_tasks), size=min(a.instances_per_iteration, len(train_tasks)), replace=False)
-        loss, n, wins, secs = 0.0, 0, [], []
+        n, wins, secs, diagnostics = 0, [], [], []
+        opt.zero_grad()
         for idx in batch:
             t = train_tasks[idx]
             eps = []
@@ -406,25 +477,42 @@ def main() -> int:
                                     experiment_seed(a.seed, "train-router", t.name, it, e), budget=budget_of(t))
                 r = reward_of(t, roots, ok, int(idx), e, it)
                 eps.append((r, logps)); wins.append(ok); secs.append(s)
-            reward_sum = sum(r for r, _ in eps)
-            for r, logps in eps:
-                # Leave-one-out is independent of this trajectory's sampled actions.
-                baseline = (reward_sum - r) / (len(eps) - 1)
-                if logps:
-                    loss = loss - (r - baseline) * torch.stack(logps).sum()
-                    n += 1
+            if a.fast:
+                loss, diag = trajectory_loss(eps, baseline=a.baseline,
+                                             entropy_coef=a.entropy_coef, value_coef=a.value_coef)
+                diagnostics.append(diag)
+                n += diag["updated_episodes"]
+            else:
+                reward_sum = sum(r for r, _ in eps)
+                terms = [-(r - (reward_sum - r) / (len(eps) - 1)) * torch.stack(logps).sum()
+                         for r, logps in eps if logps]
+                loss = torch.stack(terms).mean() if terms else None
+                n += len(terms)
+            if loss is not None:
+                if not torch.isfinite(loss):
+                    raise FloatingPointError("nonfinite policy loss")
+                # Accumulate gradients with fixed parameters, freeing each task's
+                # computation graph before the next all-free candidate rollout.
+                (loss / len(batch)).backward()
+        grad_norm = 0.0
         if n:
-            opt.zero_grad(); (loss / n).backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0); opt.step()
+            grad_norm = float(torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0,
+                                                            error_if_nonfinite=True))
+            opt.step()
+        if diagnostics:
+            summary = {key: float(np.mean([d[key] for d in diagnostics if d[key] is not None]))
+                       if any(d[key] is not None for d in diagnostics) else None
+                       for key in diagnostics[0]}
+            print(json.dumps({"training_iteration": it, "role": "training",
+                              "gradient_norm_before_clip": grad_norm, **summary}), flush=True)
         print("  iter %4d  train success %.2f  mm secs %.1f  updates %d"
               % (it, np.mean(wins), np.mean(secs), n), flush=True)
         if (it + 1) % a.eval_every == 0:
             v = evaluate("iter %d" % it)
             if v > best:
                 best = v
-                torch.save({"state": model.state_dict(), "width": a.width, "config": vars(a),
-                            "validation_score": best}, a.out)
-    torch.save({"state": model.state_dict(), "width": a.width, "config": vars(a)}, a.out + ".last")
+                save_checkpoint(a.out, best)
+    save_checkpoint(a.out + ".last")
     print("\nHYBRID RL DONE", flush=True)
     return 0
 
