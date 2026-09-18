@@ -35,6 +35,8 @@ def run_contract(args, train, heldout):
         sha, dirty = None, None
     return {"version": "constructor-quality-v2", "source_commit": sha, "source_dirty": dirty,
             "initial_checkpoint_sha256": checkpoint_hash,
+            "train_lineages": sorted({t.lineage for t in train}),
+            "heldout_lineages": sorted({t.lineage for t in heldout}),
             "options": options, "train_fingerprints": [signature(t) for t in train],
             "heldout_fingerprints": [signature(t) for t in heldout]}
 
@@ -50,10 +52,11 @@ def validation_score(evaluation, objective):
 
 
 class ValidationCheckpoint:
-    def __init__(self, path, metadata, objective, heldout_role="validation"):
+    def __init__(self, path, metadata, objective, heldout_role="validation", extra_state=None):
         self.path = Path(path) if path else None
         self.metadata = metadata
         self.objective, self.heldout_role = objective, heldout_role
+        self.extra_state = extra_state
         self.best_score = -float("inf")
         self.best_tag = None
 
@@ -72,6 +75,11 @@ class ValidationCheckpoint:
             payload = dict(self.metadata, state=actor.state_dict(),
                            selected_on="validation", selection_metric=self.objective,
                            selected_tag=tag, selected_score=score)
+            if self.extra_state is not None:
+                extra = self.extra_state()
+                if set(extra) & set(payload):
+                    raise ValueError("extra checkpoint state must not overwrite policy metadata")
+                payload.update(extra)
             # Atomic replacement, so an interrupted write cannot destroy a good checkpoint.
             temporary = target.with_suffix(target.suffix + ".tmp")
             torch.save(payload, temporary)

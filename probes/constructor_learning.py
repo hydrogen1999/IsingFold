@@ -121,12 +121,22 @@ def constructor_loss(episodes, baseline="value", entropy_coef=.01, value_coef=.5
     and value coefficients remain in their original units; holding their
     *relative* weights fixed requires scaling those coefficients as well.
     It cannot improve measurement SNR or create a missing quality signal.
+
+    ``loo_value`` uses a separate pre-action base-return critic B(s): its base
+    baseline is B(s_it) + mean_{j != i}[R_j - B(s_j0)]. The shaped baseline then
+    subtracts Phi(s_it). Critic parameters must stay fixed across collection; the
+    current episode's return never enters its own residual baseline. Independent
+    episodes therefore retain the expected raw terminal-return policy gradient.
+    The critic regresses base returns, with all failures retained. Empty episodes
+    use initial prediction zero and remain in the episode denominator. A zero
+    critic is exactly ordinary LOO, including with potential shaping. Approximate
+    state values can reduce variance, but this is not guaranteed by the loss.
     """
-    if baseline not in {"value", "loo"}:
-        raise ValueError("baseline must be 'value' or 'loo'")
+    if baseline not in {"value", "loo", "loo_value"}:
+        raise ValueError("baseline must be 'value', 'loo' or 'loo_value'")
     if not episodes:
         raise ValueError("at least one episode is required")
-    if baseline == "loo" and len(episodes) < 2:
+    if baseline in {"loo", "loo_value"} and len(episodes) < 2:
         raise ValueError("leave-one-out requires at least two episodes")
     if not all(np.isfinite(x) and x >= 0 for x in (entropy_coef, value_coef)):
         raise ValueError("loss coefficients must be finite and nonnegative")
@@ -137,11 +147,19 @@ def constructor_loss(episodes, baseline="value", entropy_coef=.01, value_coef=.5
     base_returns = np.array([e["base_return"] for e in episodes], dtype=float)
     returns = np.array([e["return"] for e in episodes], dtype=float)
     quality_metrics = _quality_diagnostics(episodes, base_returns)
+    initial_base_values = np.zeros(len(episodes), dtype=float)
+    if baseline == "loo_value":
+        for i, (decisions, _) in enumerate(data):
+            if decisions:
+                initial_base_values[i] = float(_scalar_tensor(
+                    _field(decisions[0], "base_value"), "base_value").detach())
+    residual_returns = base_returns - initial_base_values
     actor, critics, exploration = [], [], []
     advantages, supports, values, targets = [], [], [], []
     lengths = [len(d) for d, _ in data]
     for i, (decisions, arrays) in enumerate(data):
-        other_return = float(np.delete(base_returns, i).mean()) if baseline == "loo" else None
+        other_return = (float(np.delete(residual_returns, i).mean())
+                        if baseline in {"loo", "loo_value"} else None)
         for j, d in enumerate(decisions):
             logp = _scalar_tensor(_field(d, "log_prob"), "log_prob")
             entropy = _scalar_tensor(_field(d, "entropy"), "entropy")
@@ -153,6 +171,14 @@ def constructor_loss(episodes, baseline="value", entropy_coef=.01, value_coef=.5
                 value = _scalar_tensor(_field(d, "value"), "value")
                 target = value.new_tensor(float(arrays["togo"][j]))
                 advantage = (target - value).detach()
+                critics.append(F.smooth_l1_loss(value, target))
+                values.append(float(value.detach()))
+                targets.append(float(target))
+            elif baseline == "loo_value":
+                value = _scalar_tensor(_field(d, "base_value"), "base_value")
+                target = value.new_tensor(float(base_returns[i]))
+                shifted_baseline = value.detach() + other_return - float(arrays["potentials"][j])
+                advantage = (logp.new_tensor(float(arrays["togo"][j])) - shifted_baseline).detach()
                 critics.append(F.smooth_l1_loss(value, target))
                 values.append(float(value.detach()))
                 targets.append(float(target))
@@ -193,4 +219,11 @@ def constructor_loss(episodes, baseline="value", entropy_coef=.01, value_coef=.5
         if target_variance > 1e-12 else None,
     }
     metrics.update(quality_metrics)
+    if baseline == "loo_value":
+        metrics.update({
+            "initial_base_values": initial_base_values.tolist(),
+            "initial_base_value_mean": float(initial_base_values.mean()),
+            "residual_base_return_std": float(residual_returns.std()),
+            "value_target": "base_return",
+        })
     return loss, metrics

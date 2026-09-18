@@ -1,0 +1,33 @@
+{
+ "train": [
+  "pegasus2-bottleneck-11-l1809341",
+  "pegasus2-bottleneck-15-l1809465",
+  "pegasus2-bottleneck-19-l1809589",
+  "pegasus2-bottleneck-3-l1809093",
+  "pegasus2-compact-0-l1809000",
+  "pegasus2-compact-12-l1809372",
+  "pegasus2-compact-16-l1809496",
+  "pegasus2-compact-8-l1809248",
+  "pegasus2-contact_seeking-1-l1809031",
+  "pegasus2-contact_seeking-13-l1809403",
+  "pegasus2-contact_seeking-17-l1809527",
+  "pegasus2-contact_seeking-21-l1809651",
+  "pegasus2-contact_seeking-5-l1809155",
+  "pegasus2-elongated-18-l1809558",
+  "pegasus2-elongated-2-l1809062",
+  "pegasus2-elongated-22-l1809682",
+  "pegasus2-elongated-6-l1809186"
+ ],
+ "validation": [
+  "pegasus2-bottleneck-23-l1809713",
+  "pegasus2-bottleneck-7-l1809217",
+  "pegasus2-compact-4-l1809124",
+  "pegasus2-elongated-14-l1809434"
+ ],
+ "test": [
+  "pegasus2-compact-20-l1809620",
+  "pegasus2-contact_seeking-9-l1809279",
+  "pegasus2-elongated-10-l1809310"
+ ],
+ "ood": []
+}

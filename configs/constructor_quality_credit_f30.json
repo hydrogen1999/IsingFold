@@ -1,0 +1,75 @@
+{
+  "protocol": "constructor-quality-v2",
+  "purpose": "Quality attribution from one immutable split-safe cloned constructor; paired LOO versus independent state baseline, no resource penalty.",
+  "data_seed": 20260918,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "hosts": {
+    "pegasus3": {
+      "corpus": "runs/quality/pegasus3_f30",
+      "init": "runs/quality_clean/pegasus3_local_clone.pt"
+    },
+    "zephyr2": {
+      "corpus": "runs/quality/zephyr2_f30",
+      "init": "runs/quality_clean/zephyr2_local_clone.pt"
+    }
+  },
+  "features": [
+    "local"
+  ],
+  "common": {
+    "cells": "fill30-a3.0",
+    "actor": "linear",
+    "baseline": "loo_value",
+    "train": 20,
+    "heldout": 4,
+    "instances_per_iteration": 4,
+    "episodes": 6,
+    "eval_episodes": 5,
+    "max_steps": 250,
+    "episode_seconds": 90,
+    "train_episode_seconds": 45,
+    "learning_rate": 0.003,
+    "advantage_scale": 1.0,
+    "entropy_coef": 0.0,
+    "support": "wide",
+    "stop_bias": 0.0,
+    "reward_reads": 256,
+    "selection_reads": 256,
+    "assessment_reads": 4096,
+    "select_cap": 8,
+    "deadline": 300,
+    "proposal_fraction": 0.5,
+    "comparison": "all",
+    "grow_extra": 2,
+    "baseline_tries": 20,
+    "baseline_router_seconds": 2,
+    "evaluation_objective": "quality",
+    "eval_sets": "heldout",
+    "critic_width": 32,
+    "critic_learning_rate": 0.001
+  },
+  "pilot": {
+    "iterations": 20,
+    "eval_every": 10,
+    "seeds": [
+      0
+    ]
+  },
+  "replication": {
+    "iterations": 100,
+    "eval_every": 50
+  },
+  "notes": [
+    "Generate the clean initialization with constructor_clone.py using the manifest train/validation split, teacher-mode monotone and no legacy warm start with unknown lineage ancestry.",
+    "Keep the same initial policy, datasets, support, STOP bias, reward, rollout count, optimizer and evaluation budget across baseline variants.",
+    "The state critic is training-only. A zero output head begins at ordinary LOO; any gain must be measured, not assumed.",
+    "Study execution snapshots every initial checkpoint; separate --only launches reuse the same content-addressed input.",
+    "Full-host P16/Z15 and congested P6/Z4 remain the paper benchmark axes. This small cell is a mechanism/pilot gate.",
+    "These configurations and unit tests do not establish quality superiority.",
+    "The clone initialization already carries its learned STOP/RESTART logits; stop_bias=0 preserves them instead of adding the initialization bias twice."
+  ]
+}

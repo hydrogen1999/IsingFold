@@ -1,8 +1,93 @@
 # Status
 
+## Quality credit and evidence review, 2026-09-18 (v3)
+
+This section supersedes conflicting interpretations in v2 and the historical record below.
+The audit starts from main `97ebb97` and includes the later commits through `b661a6e`.
+The research objective remains an RL policy constructing the complete embedding from empty to improve sampled
+solution quality. The policy chooses every action and COMMIT; minorminer is a separate
+comparison method. Resource count is a capacity constraint, not a reward penalty.
+
+- **The completed quality baseline still loses.** The fill-30 frozen study has four validation
+  instances per host and one seed: policy/minorminer residual is 0.0877/0.0417 on Pegasus 3
+  and 0.1128/0.0590 on Zephyr 2. The committed continued-feasibility logs contain headers
+  only and completed matching quality arms are absent. A launch is not an outcome.
+- **The latest transfer tables were mislabeled.** All six `results/transfer/m_*.log` files
+  contain only an `init/train` evaluation on 16 IDs from the header's train list, with none
+  from its 15-ID held-out list. The five populated `t3_*.log` files have the same problem;
+  `t3_F_on_P.log` has no evaluation. These numbers do not establish locked-test performance,
+  an unseen transfer gain, or which checkpoint's training produced the difference.
+- **The clone comparison is exploratory and confounded.** Residual falls from 0.1335 to
+  0.0969 and mean qubits from 72.5 to 58.4 on eight diagnostic instances. The comparison
+  checkpoint is `r30_p3_s0.best.pt`, while cloning initializes from `F_local_s0.pt`. Four
+  diagnostic IDs are in the clone train list, and seven overlap the union of the two logged
+  training sets. The 46% reduction in the mean gap is descriptive arithmetic, not an isolated
+  cloning effect or held-out quality result. Its paired residual-improvement normal interval
+  is [-0.0029, +0.0761]; the small-sample Student-t interval is [-0.0110, +0.0843].
+- **The twenty-instance follow-up does not reproduce the positive quality contrast.** Its
+  mean residual improvement is -0.0200, normal interval [-0.0428, +0.0028], with 9/20
+  instances improving; the clone uses 9.3 fewer qubits on average. These are not twenty fresh
+  held-out instances: four appeared in the eight-instance diagnostic, thirteen are in the
+  clone train list, and all twenty occur in the union of the two logged training sets. The
+  same checkpoint-initialization confound remains. These observations do not rule out every
+  resource-related intervention or establish that resource use is causally irrelevant.
+- **Cloning preserved the measured Pegasus validity.** It is 12/12 over four held-out tasks
+  at initialization and at the end of 40 epochs. The Zephyr log contains teacher generation
+  only. Falling cloning loss provides no lower bound on future rollout quality. The pruning
+  diagnostic's mean recovery of 0.0022 likewise does not identify placement as the exclusive
+  cause of the quality gap.
+- **The new break-rate and longer-cloning logs narrow the next questions.** The twenty-task
+  baseline diagnostic reports broken-chain fractions 0.0734 for the policy, 0.0641 after
+  pruning and 0.0187 for minorminer. Its other outcomes exactly match `excess20_pre_p3.log`;
+  this adds a metric to the same observations. Higher break rate is an association, not an
+  identified causal mechanism or proof that length cannot matter. Both 250-epoch Pegasus
+  clone runs completed: final loss is 2.3349 on local20 and 2.1982 on physics32, with the same
+  12/12 held-out validity at initialization and final evaluation. This is better training-set
+  teacher fit for physics32. The subsequent twenty-task quality diagnostic gives residual
+  0.1017 for local20 and 0.0996 for physics32, versus minorminer's 0.0671. The local-minus-
+  physics difference is 0.00206 with Student-t interval [-0.02035, +0.02447]; it does not
+  establish physics32 quality superiority.
+- **The latest correlation is an association on twenty reused tasks.** The published mean
+  within-task correlations 0.728 for breaks/residual and 0.439 for qubits/residual count an
+  identical minorminer record three times per task. Counting it once gives 0.663 and 0.282.
+  The break association remains stronger, but the 180-row description does not represent
+  180 independent embeddings or independent read blocks. The twenty tasks remain the sampling
+  units, all overlap the compared checkpoints' combined logged training sets, and break rate
+  and residual are observed from the same block. No causal or unseen predictive claim follows.
+- **Quality gradients can exist below validity one.** Expected quality utility is
+  `p(valid) * E[quality utility | valid]`; both terms may improve before validity reaches one.
+  A reward-standard-deviation ratio is not gradient signal-to-noise and does not establish a
+  three-thousand-episode requirement or impossibility of learning quality. The new optional
+  `loo_value` baseline adds a separate training-only critic while preserving the terminal
+  objective, failure credit, actor representation and deployment behavior. An empirical
+  advantage over ordinary LOO has not been established.
+- **Protocol fixes are implementation results.** Cloning now defaults to strict monotone
+  witness-subset extensions and COMMIT-only targets when available; the old labels admitted
+  grow/shrink cycles. Manifest splits, cumulative checkpoint training provenance, immutable
+  study snapshots and failure-inclusive diagnostic denominators guard the next experiment.
+  Unknown legacy checkpoint ancestry remains diagnostic and cannot be certified retroactively.
+- **The new end-to-end pilot is a smoke test.** Twelve arm/seed runs completed on four
+  six-variable Pegasus 2 validation tasks, with three continuation seeds sharing one fixed
+  20-epoch clone initialization. All arms selected valid embeddings. Quality-LOO residual
+  means are 0.00716/0.00407/0.00651; `loo_value` gives 0.01074/0.00618/0.00651, so this pilot
+  does not favor the added critic. Frozen means are 0.03206/0.00618/0.00521 and continued-
+  feasibility means 0.03206/0.00618/0.01302. The initializer retained 8/8 teachers and already
+  had validity one before cloning. Runs record `source_dirty=true`; no minorminer superiority
+  or confirmatory result is claimed. `results/review/quality_credit_v3/summary.json`.
+
+The paper still requires both resource-abundant P16/Z15 ink-drop and congested P6/Z4
+fill-80/85/90/95 regimes. P3/Z2 fill-30 is a learning diagnostic. Completed results for the
+new controlled large runs and confirmatory evaluation of the longer clones are unavailable
+in the audited logs. No new empirical superiority, convergence, QPU gain or large-corpus outcome
+is claimed. The next step is clean lineage-disjoint initialization followed by matched frozen,
+continued-feasibility and quality controls, then seed replication and a fresh final test.
+
+Equations, evidence, implementation scope and commands:
+[`docs/plans/2026-09-18-quality-credit-and-evidence.md`](docs/plans/2026-09-18-quality-credit-and-evidence.md).
+
 ## Quality-first implementation review, 2026-09-18 (v2)
 
-This section supersedes conflicting interpretations in the historical record below.
+This earlier review is retained as history; the v3 corrections above take precedence.
 The objective remains an RL policy constructing complete embeddings from empty to improve
 solution quality. Resource count is a constraint, not a reward penalty.
 
@@ -1766,31 +1851,26 @@ cells cross zero at twelve instances and the effect sizes are all near +0.005, s
 are wide rather than contradictory; the cells that matter need more instances before anything
 rests on them. `results/frontier/qscale_*.log`.
 
-## Transfer on the locked test list, and why the first attempt measured nothing
+## Corrected: generous-budget transfer diagnostics were not locked-test evaluations
 
-The locked test lists were opened once, on frozen checkpoints, to ask two questions at once:
-does a policy trained on one topology work on the other, and does a policy trained on
-24-variable instances work on the 48- and 100-variable instances the test list also holds. The
-first attempt used `--max-steps 1500 --episode-seconds 600`, four times the decision budget and
-twice the wall clock the training runs used.
+**Withdrawn interpretation:** this table was described as opening locked test lists. The five
+populated `results/transfer/t3_*.log` files instead contain only `init/train` evaluations on
+sixteen IDs in their header's train list; none is in the fifteen-ID held-out list.
+`t3_F_on_P.log` contains no evaluation. The historical numerical table is retained below with
+its evaluation role corrected. The run used `--max-steps 1500 --episode-seconds 600`, about
+four times the decision budget and twice the wall clock of the training runs.
 
-| checkpoint, evaluated on the Zephyr 15 test list | overall | 24 vars | 48 vars | 100 vars |
+| checkpoint, Zephyr 15 target train-list diagnostic | overall | 24 vars | 48 vars | 100 vars |
 |---|---|---|---|---|
 | trained on Pegasus 16 | 0.85 | 0.96 | 1.00 | 0.60 |
 | trained on Zephyr 15 | 0.85 | 0.96 | 1.00 | 0.60 |
 | **the Zephyr 2 fragment checkpoint, never trained at scale** | **0.85** | **0.96** | **1.00** | **0.60** |
 
-**That is not a transfer result, it is a budget artefact.** The Pegasus-trained checkpoint and the
-untrained fragment checkpoint agree on all sixteen instances, and the Zephyr-trained one differs
-on two. On the Pegasus test list the two trained checkpoints both score 0.52. When the decision
-budget is four times what training used, which policy is loaded stops mattering and the instance
-decides the outcome.
-
-Two consequences, and the second is the one that matters. Nothing can be concluded about transfer
-from this table. And the hardware-scale feasibility result, held-out 1.00 and 0.95, was measured
-at `--max-steps 400 --episode-seconds 300`, so it is a claim about construction under a tight
-budget, not about construction in general. The test-list evaluation has been rerun at exactly the
-training budget (goose 3344) and only that version can be reported.
+The equal aggregate rates and the Pegasus-target rate 0.52 are descriptive observations.
+They do not establish that checkpoint choice is irrelevant or identify a budget artefact.
+The separate hardware-scale 1.00/0.95 validation result used 400 decisions and 300 seconds;
+it remains small-sample feasibility evidence. The subsequent 400-decision rerun below has the
+same train-list labeling problem and does not repair the missing locked-test evidence.
 `results/transfer/t3_*.log`.
 
 ## Retracted: the congested cell does not run inside the registered support
@@ -1834,10 +1914,10 @@ instances a host (`probes/reward_channel.py`, `results/quality/resource_rho_*.lo
 | Zephyr 2 | fewer qubits | 0.148 [-0.058, +0.354] |
 | Zephyr 2 | **one 256-read block** | **0.639 [+0.442, +0.836]** |
 
-The ratio of three to four is the same one the modern corpora gave, and on Zephyr 2 the resource
-rule's interval crosses zero, so there it orders the pool no better than chance. This is the
-claim the paper can make about resource-first embedding, and it is now measured on two corpora
-and four host-topology combinations.
+The measurement rule has the larger observed rank correlation in these pools. On Zephyr 2 the
+resource rule's interval crosses zero; this leaves its association unresolved rather than proving
+chance-level performance. These comparisons concern the sampled router pools and registered
+assessment protocol, not every resource-first embedding method.
 
 Why a weak rule still finds embeddings, which is the obvious objection: at this cell the eight
 draws differ by 1.9 to 2.8 qubits, while the perturbation experiment needed 32 to 64 absorbed
@@ -1863,37 +1943,35 @@ Those are the held-out rates of the fragment checkpoints themselves at the new r
 update, so the gap at the quality cell was the jump in size and not the policy. The cell runs
 (`runs/quality/r50_*.log`) are warm-started from this rung's validation-selected weights.
 
-## The locked test lists at the training budget
+## Corrected: transfer diagnostics at the training budget used target train lists
 
-Rerun at exactly the budget the training runs used, 400 decisions and 300 seconds, five episodes
-an instance, on frozen checkpoints. Each list holds instances at three sizes and the policies saw
-only 24-variable instances in training.
+The rerun used 400 decisions and 300 seconds, five episodes per instance, on frozen checkpoints.
+**Withdrawn interpretation:** these were labeled locked-test results. Each of the six committed
+`m_*.log` files has only a header and an `init/train` evaluation on sixteen train-list IDs,
+with zero IDs from its fifteen-ID held-out list. The historical numbers follow; they are not
+evidence of held-out generalization or completed test evaluation.
 
-| checkpoint | Pegasus 16 test list | 24 vars | 48 vars | 100 vars |
+| checkpoint | Pegasus 16 target train list | 24 vars | 48 vars | 100 vars |
 |---|---|---|---|---|
 | trained on Pegasus 16 | **0.60** | 0.90 | 0.65 | 0.43 |
 | trained on Zephyr 15, cross-topology | 0.55 | 0.90 | 0.62 | 0.33 |
 | Pegasus 3 fragment checkpoint, never trained at scale | 0.38 | 0.70 | 0.33 | 0.33 |
 
-| checkpoint | Zephyr 15 test list | 24 vars | 48 vars | 100 vars |
+| checkpoint | Zephyr 15 target train list | 24 vars | 48 vars | 100 vars |
 |---|---|---|---|---|
 | trained on Zephyr 15 | 0.81 | 0.93 | 1.00 | 0.52 |
 | trained on Pegasus 16, cross-topology | **0.84** | 0.95 | 0.93 | 0.60 |
 | Zephyr 2 fragment checkpoint, never trained at scale | 0.73 | 0.93 | 0.80 | 0.36 |
 
-Three things separate at this budget that were identical at the generous one. Training at
-hardware scale is worth +0.22 on Pegasus and +0.08 on Zephyr over the fragment checkpoint it
-started from. Cross-topology transfer costs almost nothing, -0.05 one way and +0.03 the other.
-And a policy trained only on 24-variable instances reaches 0.33 to 0.60 on the 100-variable
-instances of the same lists, against 0.33 and 0.36 for the checkpoints that were never trained at
-scale.
+The aggregate differences are approximately +0.22/+0.08 relative to the fragment checkpoints
+and -0.05/+0.03 for the cross-topology contrast. Those differences survive as arithmetic only;
+the claims that they measure an unseen training benefit or a negligible transfer cost are
+withdrawn. Calling these already-opened test lists development evidence was insufficient:
+the logged evaluation role itself is train. Future test claims must verify evaluated IDs against
+the declared held-out role and each checkpoint's full training ancestry. These endpoints concern
+feasibility, not solution quality. `results/transfer/m_*.log`.
 
-**What this is not.** These lists were already opened once, at the generous budget, before this
-rerun. They are development diagnostics now, not untouched confirmatory sets, and the paper has
-to reserve fresh lineages for the final comparison. The numbers are also feasibility, not
-quality. `results/transfer/m_*.log`.
-
-## The quality baseline: a feasibility-trained constructor loses, and why
+## The quality baseline: a feasibility-trained constructor loses; mechanism unresolved
 
 First run of the paired study, frozen arm, at the fill 0.30 rung. Four held-out instances a host,
 empty starts, a 300 second deployment deadline for every arm, selection by a public energy score
@@ -1913,257 +1991,257 @@ probability is 0.065 for the policy against 0.235 for minorminer. Every arm is v
 instance and the policy is never valid where minorminer is not, so this is a quality gap and
 nothing else.
 
-**The mechanism is measured, not assumed, and it is the reason the paper exists.** The
-action-family diagnostic on the same frozen policy at the same cell puts 0.576 of its probability
+**Withdrawn interpretation:** the accompanying opcode and resource measurements do not identify
+the mechanism of the quality loss. The action-family diagnostic on the same frozen policy at
+the same cell puts 0.576 of its probability
 mass on REWRITE, 0.329 on PLACE and 0.068 on ROUTE, over 101 decisions an episode for instances
 of 29 to 33 variables. The opcode-level grouping is coarser than it looks: `proposal.py:415`
 emits a chain grown by one adjacent free qubit as a REWRITE_ONE and `proposal.py:492` emits a
 chain with one qubit removed as the same opcode, so growth and shrinkage share the label. The
-arithmetic separates them. A mass of 0.576 over 101 decisions is about 58 REWRITE steps, and 84.8
-qubits for about 30 variables is about 55 qubits beyond one a variable. Nearly every REWRITE is a
-growth of one qubit.
+aggregate arithmetic suggests substantial growth: 0.576 times 101 is about 58, while 84.8
+qubits for about 30 variables is about 55 beyond one per variable. Probability mass times mean
+episode length is not a receipt for each action's qubit delta; routing, shrinking, restarts and
+different trajectories prevent it from proving that nearly every REWRITE is growth.
 
-So the policy was trained to be feasible, and it learned to be feasible by growing chains one
-qubit at a time until everything connects. It spends 2.7 times the qubits and builds chains 6.5
-times longer, and long chains break, so its samples are worse by a factor of two.
-`results/quality/diag_support_p3_f30.log`. A resource-first method would fix this by penalising
-qubits. The claim under test is that a quality reward fixes it instead, by making the policy
-spend qubits where they help and not everywhere, and the arms that test it are running.
+The policy spends about 2.7 times the qubits and its reported longest-chain mean is about 6.5
+times minorminer's. These measurements accompany worse residual; they do not establish that
+chain length or chain breaks caused the difference. The proposed quality-reward controls test
+whether training improves this outcome without a resource penalty.
+`results/quality/diag_support_p3_f30.log`. Completed matching quality/continued-feasibility
+outcomes are absent from the committed study logs.
 
 This is the honest before number and it is large: closing it needs about 0.15 solve probability
 on Pegasus and 0.17 on Zephyr. `results/quality_study/*_frozen_s0.log`.
 
-## Why every quality run so far has failed, and it is arithmetic
+## Corrected: utility scale is a variance concern, not an impossibility result
 
-The sixth review pointed at the utility scale and the number settles the question. The bounded
+The sixth review raised a utility-scale concern. The bounded
 per-episode utility is `U = 1 - 0.5 r / B`, so a valid episode scores between 0.5 and 1 and an
 invalid one scores 0. The Pegasus residual gap between the policy and minorminer, 0.046, is worth
-**0.0079** on that scale. An invalid episode is worth **0.99**.
+**0.0079** on that scale. The illustrative loss from a near-0.99 valid return to invalidity is
+**0.99**; the invalid episode's utility itself is zero.
 
 Training-episode validity at the rung that works is 5 of 8 to 8 of 8, so about 0.75
 (`results/quality/r30_*.log`). At that rate the standard deviation the validity coin alone puts
-into a leave-one-out advantage is 0.99 times the square root of 0.75 times 0.25, which is 0.43.
+into an idealized constant-valid-return reward is 0.99 times the square root of 0.75 times
+0.25, which is 0.43. This is a reward-scale calculation, not a measured LOO gradient variance.
 
 | source of variation in a training batch | size |
 |---|---|
-| the quality signal being learned | 0.0079 |
-| one invalid episode | 0.99 |
-| standard deviation from validity at p = 0.75 | **0.43** |
+| utility difference associated with the residual gap | 0.0079 |
+| illustrative valid-to-invalid utility drop | 0.99 |
+| idealized reward standard deviation from validity at p = 0.75 | **0.43** |
 
-The quality signal is fifty-four times smaller than the validity noise. Resolving it would need
-about three thousand episodes per comparison, against the four the leave-one-out baseline gets.
-**Quality training cannot learn quality until training-episode validity is essentially one.** At
-validity 1.00 the validity term vanishes and the only remaining noise is the 256-read measurement
-on the residual, whose signal-to-noise the calibration puts at 19 to 40.
+The ratio is about fifty-four. **Withdrawn interpretations:** squaring it does not establish a
+three-thousand-episode requirement; it is not gradient signal-to-noise and does not show that
+quality is unlearnable until validity equals one. With success probability p and valid utility q,
+`E[R] = p * E[q | valid]`; both factors can depend on policy parameters when p is below one.
+Even at validity one, stochastic construction and instance variation remain alongside sampler
+noise. The reported calibration ratios 19 to 40 describe a different measurement experiment,
+not the policy-gradient estimator.
 
-This is not a tuning observation. It explains the modern-corpus losses, the borderline
-fragment-rung gains and today's frozen-arm result with one number, and it makes the order of work
-non-negotiable: reach validity one, then train quality. It also rules out the plan of simply
-running more iterations.
-
-**Also corrected here.** The entry above said the mechanism behind the over-spend "is not
-mysterious". The review is right that this overstates it: long chains accompany the loss, and the
-arithmetic shows the rewrites are growths, but nothing measured yet says whether the growth
-compensates for bad placement or is unnecessary in itself, nor that chain breaks are what costs
-the energy. Three diagnostics separate those and none has been run.
+The new optional independent critic baseline is a targeted variance-reduction hypothesis. Exact
+two-step tests retain failures and demonstrate a quality gradient at p=0.5; they are mathematical
+contract checks, not evidence that the new baseline improves real-corpus learning. More training,
+better credit estimation and successful-teacher initialization remain empirical choices to test.
+The general claim that this arithmetic explains every previous loss is withdrawn.
 `docs/review/2026-09-18-codex-gpt6-astra-review-six-closing-the-quality-gap.md`.
 
-## The excess is real, removable, and not the cause
+## The excess is removable; its causal role remains unresolved
 
-The obvious reading of the quality gap was that the constructor grows chains it does not need and
-long chains break. `probes/policy_excess.py` tests it directly: run the policy, prune each
-committed embedding greedily while every chain stays connected and every logical edge keeps a
-realised contact, and measure both versions on independent 4096-read blocks. Eight instances,
-Pegasus 3 at fill 0.30:
+The original eight-instance Pegasus 3 fill-0.30 diagnostic greedily pruned policy embeddings
+while preserving connected chains and realized logical edges, then assessed the original and
+pruned versions with independent 4096-read blocks.
 
 | | mean |
 |---|---|
 | qubits the policy commits | 72.5 |
-| qubits after pruning, every contact preserved | 47.3 |
-| **removable fraction** | **0.34** |
+| qubits after pruning | 47.3 |
+| removable fraction | 0.34 |
 | qubits minorminer commits | 29.4 |
 | residual, policy | 0.1335 |
 | residual, pruned | 0.1314 |
 | residual, minorminer | 0.0535 |
-| **quality recovered by pruning** | **+0.0022** |
+| quality recovered by pruning | +0.0022 |
 
-A third of the constructor's qubits are genuinely redundant and deleting them recovers 0.0022 of
-a 0.080 gap, which is under three percent of it. Pruned, it still spends 1.6 times minorminer's
-qubits and still samples two and a half times worse.
-
-**So the growth is not what costs the quality.** The loss is in where the chains are, not how
-large they are, and the paper's method problem is placement rather than restraint. That is the
-harder problem: a placement error has to be avoided sixty decisions before the reward arrives,
-and the leave-one-out advantage gives every decision in the episode the same credit.
-
-Two entries above are corrected by this. The frozen-arm section attributed the loss to growth
-"until everything connects"; the growth is real and measured but it is not the cause. And the
-plan of expecting a quality reward to teach restraint is not the fix, because restraint is worth
-0.0022 here.
-
+The mean recovery is under three percent of the 0.080 gap. The pruned policy still uses about
+1.6 times minorminer's qubits and has about 2.5 times its residual. **Withdrawn interpretation:**
+these observations do not prove that growth is irrelevant or placement is the exclusive cause.
+The paired recovery is 0.002161 with a Student-t 95% interval [-0.024029, +0.028351]. Pruning
+changes chain topology, contacts and coefficient allocation as well as count; effects can cancel
+across instances. This specific intervention does not measure every possible restraint policy.
 `results/quality/excess_p3_f30.log`.
 
-## Cloning the placement, and what the teacher walk costs
+## Cloning the construction, and what the teacher walk costs
 
-The placement diagnostic makes supervision of placement the cheapest lever, so the witness's own
-construction is cloned as an initialisation. Deployment is unchanged: empty start, every action
-chosen by the policy, minorminer never called.
+Witness-construction cloning was proposed as initialization. Deployment starts empty and the
+policy chooses every action, without minorminer completion. The old implementation retained
+only successful teacher walks: 9 of 20 on Pegasus 3 and 4 of 20 on Zephyr 2. Failures stopped
+at HORIZON or became stuck. Logged progress ranged from zero to about 0.97; it combines
+construction demands and is not simply the fraction of variables placed.
 
-**Teacher coverage is the first cost and it is not small.** The clone walks the environment from
-an empty host, deployment style, and keeps only walks that reach a valid COMMIT; the previous
-behaviour kept every non-empty walk, which taught the prefix of constructions that fail. At
-Pegasus 3 fill 0.30 that keeps 9 of 20 teachers and at Zephyr 2 it keeps 4 of 20, the rest
-stopping at HORIZON or stuck with 25 to 97 percent of variables placed.
+The historical comparison raised the horizon from 250 to 900 decisions and contrasted a hinted
+replay taking **28 decisions** with an unhinted replay seeded with the first witness chain,
+taking 18 to 35 decisions and succeeding on 4 of 6. **Withdrawn interpretation:** those changed
+conditions do not isolate the empty start as the cause or rule out support/order effects.
+The old teacher labels also admitted grow/shrink cycles and refinements when COMMIT was
+available. The new monotone teacher fixes these labeling problems; its large-corpus coverage
+benefit has not yet been measured.
 
-The horizon is not the binding constraint, and finding that out corrected a wrong fix. Raising it
-from 250 to 900 decisions changed nothing, because the hinted replay of the same witnesses takes
-**28 decisions** and the unhinted replay with a seeded first chain takes 18 to 35 and succeeds on
-4 of 6. The difference is the start: `witness_replay` seeds the first chain from the witness while
-the clone starts empty as deployment does, and the empty start is where the walks die.
-
-**Cloning learns, slowly, and had not converged.** Over forty epochs on the nine Pegasus teachers
-the set-valued loss fell from 3.411 to 2.522, which is the probability mass the actor puts on the
-witness-consistent candidates rising from 3.3 to 8.0 percent against roughly a hundred offered,
-and it was still falling. Held-out validity was 1.00 at every evaluation.
-
-That last number matters more than it looks. The arithmetic above says quality training cannot
-begin until training validity is essentially one, and cloning reaches one. Whether the cloned
-policy also places better is the open question, and two 250-epoch runs are answering it together
-with the representation question: the same teachers, local 20 channels against physics 32
-channels zero-padded from the same checkpoint so the added channels start with no influence.
+Over forty epochs on nine Pegasus teachers, loss fell from 3.411 to 2.522. Exponentiating the
+negative epoch loss gives 3.3 to 8.0 percent, a geometric summary of target-set probability,
+not a rollout-quality measurement. Held-out validity was 1.00 at every evaluation, including
+initialization: 12/12 episodes on four tasks before and after cloning. The claim that cloning
+raised validity to one is withdrawn. Zephyr's committed log contains teacher generation only.
+The later 250-epoch runs completed; their teacher-fit comparison is recorded below.
 `results/quality/clone_*_f30.log`.
 
-## Cloning the placement, measured against minorminer
+## Corrected: the eight-instance clone contrast compares different training histories
 
-Forty epochs of placement supervision, then the same diagnostic on the same eight instances with
-the same episode seeds and a 4096-read assessment. Deployment is unchanged throughout: empty
-start, every action chosen by the policy, minorminer never called.
+The forty-epoch clone was assessed on the same eight task IDs as the earlier diagnostic, with
+4096 reads. The old headers omit full seed and budget arguments, so their receipts cannot
+certify complete parity. **Withdrawn interpretation:** this is not a matched before/after
+cloning experiment. The earlier checkpoint is `r30_p3_s0.best.pt`, while cloning starts from
+`F_local_s0.pt`. Four diagnostic IDs are in the clone train list (14, 18, 2, 28), with 14 and
+18 retained as successful teachers. Seven of eight overlap the union of the two logged train
+lists; only ID 4 is outside both. Inherited checkpoint training ancestry is not certified.
 
-| | before cloning | after cloning | minorminer |
+| | earlier r30 checkpoint | clone checkpoint | minorminer |
 |---|---|---|---|
-| qubits committed | 72.5 | **58.4** | 29.4 |
+| qubits committed | 72.5 | 58.4 | 29.4 |
 | removable fraction | 0.34 | 0.23 | |
-| residual | 0.1335 | **0.0969** | 0.0535 |
+| residual | 0.1335 | 0.0969 | 0.0535 |
 
 | quantity | paired over 8 instances |
 |---|---|
-| qubits cloning removes | **+14.1 [+5.6, +22.7]** |
-| residual cloning improves | +0.0366 **[-0.0029, +0.0761]** |
-| instances improved | 6 of 8 |
-| gap to minorminer before | +0.0801 [+0.0348, +0.1254] |
-| gap to minorminer after | **+0.0434 [+0.0196, +0.0673]** |
-| fraction of the gap closed | 46 percent |
+| qubit reduction between checkpoints | +14.1 [+5.6, +22.7] |
+| residual improvement between checkpoints | +0.0366 [-0.0029, +0.0761] |
+| instances with lower residual | 6 of 8 |
+| earlier checkpoint gap to minorminer | +0.0801 [+0.0348, +0.1254] |
+| clone gap to minorminer | +0.0434 [+0.0196, +0.0673] |
+| descriptive fraction of the mean gap closed | 46 percent |
 
-Three readings and the middle one is the one not to overstate. The reduction in qubits is
-established, its interval clear of zero. **The improvement in residual is not**: six of eight
-instances improve and the mean is +0.037, but at eight instances the interval crosses zero and
-this record has retracted five claims today for exactly that reason. And the policy still loses to
-minorminer, which is established, at +0.043 [+0.020, +0.067].
+The quoted intervals are mean plus/minus 1.96 sample standard errors. Student-t intervals with
+seven degrees of freedom are [3.804, 24.446] qubits and [-0.011006, +0.084271] residual
+improvement. The observed qubit contrast is clearer than the residual contrast; the clone's
+mean residual remains higher than minorminer's. Neither contrast isolates cloning or establishes
+unseen-test performance. **Withdrawn interpretation:** falling loss does not make this a lower
+bound on supervision's value. Generalization and rollout quality can worsen with further fit.
+`results/quality/excess_clone_p3.log`.
 
-What the numbers do support is the direction the placement diagnostic predicted. Supervision of
-where chains go, with no resource penalty anywhere and no change to the reward, moves both the
-spend and the quality, and it moves them together. Cloning had not converged at forty epochs, the
-loss still falling from 3.411 to 2.522, so this is a lower bound on what the supervision is
-worth. A twenty-instance replication of both checkpoints is running before the residual effect is
-called anything. `results/quality/excess_clone_p3.log`.
+## The twenty-instance follow-up reverses the mean quality contrast
 
-## The cloning result failed replication, and the two failures agree
-
-The eight-instance table above put cloning's residual improvement at +0.0366 with the interval
-crossing zero, and said it would not be called a result until replicated. Twenty fresh instances,
-paired, same protocol:
+Commit `55b7f71` adds a twenty-instance comparison of the same two checkpoints. The historical
+numbers are retained, with their interpretation corrected:
 
 | quantity | 8 instances | 20 instances |
 |---|---|---|
-| cloning improves residual | +0.0366 [-0.0029, +0.0761], 6 of 8 | **-0.0200 [-0.0428, +0.0028], 9 of 20** |
-| cloning removes qubits | +14.1 [+5.6, +22.7] | **+9.3 [+4.0, +14.6]** |
-| gap to minorminer, before | +0.0801 | +0.0343 |
-| gap to minorminer, after | +0.0434 | **+0.0543** |
+| residual improvement between checkpoints | +0.0366 [-0.0029, +0.0761], 6 of 8 | -0.0200 [-0.0428, +0.0028], 9 of 20 |
+| qubit reduction between checkpoints | +14.1 [+5.6, +22.7] | +9.3 [+4.0, +14.6] |
+| earlier checkpoint gap to minorminer | +0.0801 | +0.0343 |
+| clone gap to minorminer | +0.0434 | +0.0543 |
 
-The improvement does not replicate. The sign reverses, fewer than half the instances improve, and
-the gap to minorminer widens rather than closing. The forty-six percent was noise at n = 8. What
-does replicate is the qubit reduction, in both samples, with both intervals clear of zero.
+The positive quality contrast does not reproduce; the new mean favors the earlier checkpoint.
+The Student-t 95% interval for improvement is [-0.044301, +0.004334]. The qubit reduction
+persists, with a Student-t interval [3.667, 14.933]. The intervals do not establish a general
+quality improvement or deterioration caused by cloning.
 
-**Cloning makes the constructor's embeddings smaller without making them better**, and that is
-the second measurement to say so. Greedy pruning removes a third of the spend and recovers 0.0022
-of an 0.080 gap; cloning removes 9 to 14 qubits and recovers nothing. Two independent
-interventions on the resource axis, both effective on resources, both inert on quality.
+**Withdrawn interpretations:** these are not twenty fresh held-out instances and do not close
+an entire family of resource-related fixes. Four task IDs also occur in the earlier eight-instance
+diagnostic. Thirteen are in the clone train list, five were retained teacher demonstrations,
+fifteen are in the earlier checkpoint's train list, and all twenty occur in the union of the two
+logged train sets. The initialization confound remains. Pruning and cloning modify more than
+resource count; the results cannot prove that spending less can never improve quality or that
+all resource and quality effects are independent. They show that these particular diagnostic
+contrasts do not supply evidence of the proposed quality gain.
+`results/quality/excess20_*_p3.log`.
 
-So for this constructor resource spend and solution quality are decoupled, which is the paper's
-own thesis turned on the paper's own method. It also closes off the whole family of fixes aimed
-at frugality: the method does not lose because it spends, and it will not win by spending less.
-What separates a good embedding from a bad one here is not in any count of qubits, and the method
-question is what it is in. `results/quality/excess20_*_p3.log`.
+## Chain-break association and longer-cloning teacher fit
 
-## What the quality loss is actually made of
-
-Qubit count and chain length are both ruled out by two interventions each. The channel left
-standing is whether the chains hold, and the evaluator reports it. Twenty instances, Pegasus 3 at
-fill 0.30, 4096-read assessment:
+Commit `0c85160` adds broken-chain fractions to the twenty-instance baseline diagnostic:
 
 | | policy | policy pruned | minorminer |
 |---|---|---|---|
 | qubits | 76.4 | 45.8 | 31.7 |
 | residual | 0.1015 | 0.1048 | 0.0671 |
-| **broken-chain fraction** | **0.0734** | 0.0641 | **0.0187** |
+| broken-chain fraction | 0.0734 | 0.0641 | 0.0187 |
 
-The constructor's chains break **3.9 times as often** as minorminer's, and that is the mechanism
-of the quality loss. But it is not a length effect: pruning removes forty percent of the qubits
-and the broken fraction falls by twelve percent, with residual unchanged. The chains are not too
-long, they are shaped badly, and what makes a chain hold at a fixed strength is how the logical
-coupling mass distributes over its realised contacts and where its internal links sit.
+The ratio of policy to minorminer mean broken-chain fraction is about 3.9. All qubit, residual
+and solve-probability rows exactly match `excess20_pre_p3.log`: this adds a metric to the same
+observations. **Withdrawn interpretations:** neither that ratio nor pruning's approximately
+40% qubit reduction and 12% break-fraction reduction identifies the mechanism of residual loss,
+rules out length effects, or proves that chain shape is the cause. Break rate, length, topology,
+coefficient allocation and decoder outcomes can interact. A controlled intervention is required
+to isolate a mechanism.
 
-That is a precise target and it is exactly what the physics observation was built to describe:
-coefficient-weighted contact coverage and redundancy, load concentration, a bridge-load
-bottleneck proxy, cycle redundancy and signed realised coupling. The representation comparison on
-the cloning loss, same teachers, the 32-channel schema zero-padded from the same 20-channel
-checkpoint so its new channels start with no influence:
+The two 250-epoch runs use the same nine teacher walks and initialize local20 and physics32
+from the same checkpoint, with new physics weights zero-padded. Historical loss checkpoints:
 
 | epoch | 1 | 60 | 120 | 180 | 240 |
 |---|---|---|---|---|---|
 | 20 channels, local | 3.411 | 2.476 | 2.418 | 2.379 | 2.342 |
-| **32 channels, physics** | 3.410 | **2.380** | **2.295** | **2.243** | **2.204** |
+| 32 channels, physics | 3.410 | 2.380 | 2.295 | 2.243 | 2.204 |
 
-The physics schema fits the teacher better from early on and holds the lead, putting 11.0 percent
-of its mass on the witness-consistent candidates against 9.6, which is fifteen percent more in
-relative terms. Both hold held-out validity 1.00 at every evaluation. Whether the better fit
-becomes better samples is being measured now on the same twenty instances.
+Both runs completed epoch 250: final losses are 2.334928 and 2.198172. At epoch 240,
+exponentiated negative loss is about 9.6% versus 11.0%, approximately 15% higher for physics32;
+this is a geometric training-fit summary, not a rollout probability or quality endpoint.
+Both have held-out validity 1.00 on the same four tasks at initialization and every later
+evaluation. Better teacher fit motivates a feature ablation; it does not establish downstream
+quality superiority. At `0c85160` downstream-quality results for these longer clones were absent;
+the subsequent diagnostic at `b661a6e` is recorded below. There is still no completed new
+large-corpus controlled comparison or QPU measurement in these logs.
 `results/quality/broken_pre_p3.log`, `results/quality/clone_long_*_p3.log`.
 
-## What predicts embedding quality, measured on 180 embeddings
+## Corrected: break-rate correlations and the longer-clone quality diagnostic
 
-Nine embeddings of each of twenty instances at Pegasus 3 fill 0.30: three checkpoints, each one's
-greedily pruned version, and minorminer, every one assessed on its own 4096-read block. Within an
-instance, so instance difficulty cannot drive it:
+Commit `b661a6e` adds `broken_clone_local.log` and `broken_clone_physics.log` on the same
+twenty Pegasus 3 fill-0.30 tasks. These use the completed 250-epoch clones:
 
-| correlation with residual, within instance | r |
-|---|---|
-| **broken-chain fraction** | **+0.728 [+0.568, +0.888]** |
-| qubit count | +0.439 [+0.303, +0.576] |
-| qubit count with broken-chain fraction | +0.686 [+0.602, +0.769] |
-
-Chain breaking predicts solution quality far better than resource count does, and both intervals
-clear zero over twenty instances. This is the paper's thesis stated mechanically rather than
-through selection rules: the quantity that separates a good embedding from a bad one is whether
-its chains hold, and counting qubits sees that only at second hand, through a correlation of 0.69
-between the two.
-
-**And a puzzle that has to be reported with it.** Two interventions reduce breaking without
-reducing residual. Greedy pruning cuts qubits by forty percent, breaking by twelve, and residual
-by nothing. Cloning cuts qubits by forty-two percent, breaking by eighteen, and residual by two.
-At a within-instance slope of about 1.17, an 0.013 reduction in breaking should be worth 0.015 of
-residual; the observed change is 0.002, seven times smaller.
-
-So breaking is the strongest correlate of quality yet measured here and it is not, by itself, the
-lever. The embeddings that break less within an instance are better for reasons the two
-interventions do not reach. Naming those reasons is the method question, and the physics
-observation is the current hypothesis about where they live.
-
-| checkpoint, 20 instances | qubits | residual | broken |
+| checkpoint or comparison arm | mean qubits | mean residual | mean broken-chain fraction |
 |---|---|---|---|
-| before cloning | 76.3 | 0.1015 | 0.0734 |
-| cloned, 20 channels, 250 epochs | 53.5 | 0.1017 | 0.0620 |
-| cloned, 32 physics channels, 250 epochs | **44.6** | **0.0996** | **0.0605** |
-| minorminer | 31.7 | **0.0671** | **0.0187** |
+| earlier r30 checkpoint | 76.35 | 0.101461 | 0.073382 |
+| local20 clone, 250 epochs | 53.45 | 0.101670 | 0.062007 |
+| physics32 clone, 250 epochs | 44.65 | 0.099607 | 0.060475 |
+| minorminer | 31.65 | 0.067145 | 0.018715 |
 
-`results/quality/broken_*.log`.
+The local-minus-physics paired residual difference is 0.002062, Student-t 95% interval
+[-0.020348, +0.024472]. Both clones still have larger mean residual than minorminer: local
++0.034525 [0.011057, 0.057993] and physics +0.032463 [0.009049, 0.055876], using twenty-task
+paired Student-t intervals. Relative to the earlier r30 checkpoint, residual improvement is
+-0.000209 [-0.015967, +0.015550] for local and +0.001853 [-0.015239, +0.018945] for physics.
+The same training-history confound and twenty-task overlap described above remain; these are
+neither clean before/after cloning estimates nor confirmatory feature comparisons.
+
+**Corrected denominator:** the three logs contain 180 nominal arm rows, but the minorminer
+record is identical in all three logs for every task, including residual, solve probability,
+qubits and broken fraction. The deterministic baseline/assessment schedule repeats that draw.
+It is not three independent embeddings or fresh assessment blocks. Counting minorminer once
+leaves seven arm records per task (140 nominal records), with only twenty task-level sampling
+units. Embedding payloads are not logged, so even 140 distinct embeddings cannot be certified.
+
+The historical correlation numbers reproduce as the mean of twenty within-task Pearson
+correlations using nine rows per task. Repeating minorminer gives its result triple weight.
+Counting it once changes the descriptive result as follows; intervals use mean plus/minus
+1.96 standard errors over the twenty task-level correlations, matching the historical method.
+
+| within-task correlation | original nine-row calculation | minorminer counted once |
+|---|---|---|
+| broken fraction with residual | +0.728 [+0.568, +0.888] | +0.663 [+0.515, +0.812] |
+| qubit count with residual | +0.439 [+0.303, +0.576] | +0.282 [+0.146, +0.417] |
+| qubit count with broken fraction | +0.686 [+0.602, +0.769] | +0.568 [+0.464, +0.673] |
+
+Break rate remains more strongly associated with residual in this selected collection. This
+supports further investigation, not an identified causal mechanism or out-of-sample predictor:
+break rate and residual are measured from the same read block, the arms differ in several
+properties, and these are reused development tasks. Within-task comparison removes variation
+between task means; it does not remove all confounding between candidate properties.
+
+**Withdrawn interpretation:** the observed regression slope of about 1.17 cannot predict the
+causal residual change from an intervention that reduces breaks by 0.013. Multiplying them to
+expect 0.015 residual improvement, then contrasting that with the observed approximately 0.002,
+is not a causal test. The approximately 40% pruning reduction and 42% physics-clone reduction
+in qubits, alongside smaller changes in breaks and residual, describe these interventions only.
+The claim that breaks are the single mechanism, and the claim that all frugality interventions
+are ruled out, remain withdrawn. No new empirical quality superiority is established.
+`results/quality/broken_pre_p3.log`, `results/quality/broken_clone_local.log`,
+`results/quality/broken_clone_physics.log`.
