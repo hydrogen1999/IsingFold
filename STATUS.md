@@ -2226,3 +2226,22 @@ project calls congested is a short-chain cell, which is why the earlier numbers 
 pure fill effect.
 
 `results/control/anytime_*_300.log`.
+
+## The congested feasibility runs are a negative, and the cause is the ladder
+
+Six hours on goose, wide support, a 300-second training deadline that fits the 80.7-second
+witness trajectory, seven held-out evaluations a run at Pegasus 3 and Zephyr 2 fill 0.90 and 0.95.
+Every evaluation is **0.00**.
+
+The cause is the one already diagnosed today and not a new mystery. These runs warm-start from
+the 12-to-20 variable fragment checkpoints and land on 93 to 116 variables, the same jump that
+gave 0.00 at the 50-variable quality cell and that a 28-variable rung fixed there. The ladder for
+the congestion axis has not been built, and the rung that exists for the quality axis stops at 39
+variables with held-out 0.27 and climbing.
+
+So the congestion axis currently has a clean benchmark result and no method result. minorminer is
+valid on 0 of 12 at every short-chain cell from fill 0.85 up under a 300-second wall clock, and
+the constructor is also at 0.00 there. A benchmark nobody can solve is a benchmark, not a
+capability, and the paper cannot claim the cell until the ladder reaches it.
+
+`results/curriculum/w[23]_f9*.log`.
