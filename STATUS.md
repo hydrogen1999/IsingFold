@@ -1390,9 +1390,26 @@ instance:
 
 minorminer is valid on 0 of the 12. Witness solve probability averages 0.0147 there, so the
 0.05 absolute gate was never reachable: the whole quantity is three times smaller than the gate.
+
+**Annealing deeper erases the discrimination rather than rescuing it.** The same cell, the same
+paired design, at 20000 sweeps:
+
+| cell and depth | solve probability | residual |
+|---|---|---|
+| Pegasus 3, registered 200 sweeps | +0.0026 [-0.0009, +0.0062] | **+0.0044 [+0.0024, +0.0064]** |
+| Pegasus 3, 20000 sweeps | +0.0023 [-0.0024, +0.0070] | +0.0002 [-0.0015, +0.0018] |
+| Zephyr 2, 20000 sweeps (9 instances) | -0.0008 [-0.0045, +0.0028] | +0.0013 [-0.0006, +0.0031] |
+
+A longer anneal finds better solutions whatever the embedding, so it compensates for a bad one
+and the embedding's contribution disappears. Witness solve probability rises from 0.0147 to
+0.0356 while the gap to the degraded embedding stays flat. The registered 200-sweep schedule is
+therefore not a legacy constraint to be worked around: it is the operating point where
+embedding quality is visible at all, and the second declared depth the review suggested would
+have measured less, not more. `results/frontier/gate_*.log`.
+
 This is the measurement that forces two regimes. Where congestion is real, solve probability
-exists but is too small to separate embeddings; residual separates them at the same cell with
-the same effect size the record already reports at fill 80. `results/frontier/gate_*.log`.
+exists but is too small to separate embeddings; residual separates them at the registered depth
+with the same effect size the record already reports at fill 80.
 
 **A smaller congested cell, for reference.** Zephyr 1 at named fill 0.95, 38
 variables, 12 instances, 200-try minorminer: p_solve 0.225 at the registered strength and 0.368
@@ -1418,7 +1435,7 @@ different strength policies and not a like-for-like comparison.
 |---|---|---|---|
 | solvability frontier | whether solve probability can be restored on the congestion axis | apollo `runs/frontier/*_f90.log`, `*_field.log`, `*_deep.log` -> `results/frontier/` | **done**: no. Exponential decay in variables at 0.038 to 0.050 per variable, invariant to depth; fields dead from 195 variables; depth saturates at 94 variables between 20000 and 200000 sweeps |
 | witness pruning audit | whether named fill is the certified congestion | apollo `runs/frontier/prune_*.log` -> `results/frontier/` | **done**: it is not. Named fill overstates the certificate by 5 to 7 points on every host and fill measured; minorminer, where it succeeds, uses as many qubits as the pruned witness |
-| discrimination gate | whether the restored solve probability separates embeddings at the chosen cell | apollo `runs/frontier/gate_pegasus3_f90_registered.log` -> `results/frontier/` | **done at the registered depth, and it fails**: 12 paired instances, solve probability +0.0026 [-0.0009, +0.0062], residual +0.0044 [+0.0024, +0.0064], minorminer 0 of 12. Solve probability cannot separate embeddings where congestion is real. The 20000-sweep arms are still running and cannot change the sign |
+| discrimination gate | whether the restored solve probability separates embeddings at the chosen cell | apollo `runs/frontier/gate_pegasus3_f90_registered.log` -> `results/frontier/` | **done at the registered depth, and it fails**: 12 paired instances, solve probability +0.0026 [-0.0009, +0.0062], residual +0.0044 [+0.0024, +0.0064], minorminer 0 of 12. Solve probability cannot separate embeddings where congestion is real. The 20000-sweep arms are done and erase both signals: residual falls to +0.0002 [-0.0015, +0.0018] on Pegasus 3 and +0.0013 [-0.0006, +0.0031] on Zephyr 2, so a deeper anneal compensates for a bad embedding and hides what the benchmark measures |
 | congested training, measurable cell | held-out validity where minorminer is 0 and solve probability is readable | apollo `runs/congested/c3_f{90,95}_s*.log`, `z2_f{90,95}_s0.log` | running: Pegasus 3 and Zephyr 2 fill 90 and 95, 93 to 120 variables, wide support, warm start from the F and G checkpoints, held-out evaluation every 5 iterations. Cadence measured: the witness needs 106 decisions and 55.8 s, the training deadline is 200 s, and 24 episodes an iteration puts an iteration near 80 minutes, so the first held-out number lands about seven hours in |
 | congested training, large cell | the same at 488 variables, feasibility only | goose Slurm 3338, `runs/curriculum/sfill*_s*.log` | **do not trust without checking terminations**: no training iteration in the first hour and the deadline does not fit the trajectory. Measured at the small cell, the witness takes 106 decisions and 55.8 s under wide support at 115 qubits, so a step costs 0.53 s. At 680 qubits the witness takes 500 to 589 decisions, which is 320 to 377 s against the job's 400 s training deadline: 1.1x headroom for a perfect policy and less for a real one. The small cell has 3.5x. Feasibility training at 488 variables is not affordable at this step cost |
 | behaviour cloning at fill 80 | whether a teacher trajectory exists to imitate on the large hosts | apollo `runs/clone/fill80_*_clone_s0.log` | **done, negative**: teacher records end in `stuck` or at the 6000-step horizon with validity false on almost every instance, so there is no successful trajectory to clone at that cell |
