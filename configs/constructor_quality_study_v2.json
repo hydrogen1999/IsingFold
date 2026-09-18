@@ -1,33 +1,75 @@
 {
-  "protocol": "constructor-quality-v2",
-  "purpose": "Empty-start RL quality attribution; all arms share public resource and measurement caps",
-  "data_seed": 20260918,
-  "seeds": [0, 1, 2],
-  "hosts": {
-    "pegasus3": {"corpus": "runs/quality/pegasus3_f50", "init": "runs/quality/qf_p3_s0.pt"},
-    "zephyr2": {"corpus": "runs/quality/zephyr2_f50", "init": "runs/quality/qf_z2_s0.pt"}
+ "protocol": "constructor-quality-v2",
+ "purpose": "Empty-start RL quality attribution; all arms share public resource and measurement caps",
+ "data_seed": 20260918,
+ "seeds": [
+  0,
+  1,
+  2
+ ],
+ "hosts": {
+  "pegasus3": {
+   "corpus": "runs/quality/pegasus3_f50",
+   "init": "runs/quality/qw_p3_s0.best.pt"
   },
-  "features": ["local", "physics"],
-  "common": {
-    "cells": "fill50-a3.0", "actor": "linear", "baseline": "loo",
-    "train": 56, "heldout": 12, "instances_per_iteration": 4,
-    "episodes": 6, "eval_episodes": 5, "max_steps": 300,
-    "episode_seconds": 60, "train_episode_seconds": 60,
-    "learning_rate": 0.003, "advantage_scale": 1.0, "entropy_coef": 0.0,
-    "support": "registered", "stop_bias": 0.0,
-    "reward_reads": 256, "selection_reads": 256, "assessment_reads": 4096,
-    "select_cap": 8, "deadline": 300, "proposal_fraction": 0.5,
-    "comparison": "all", "grow_extra": 2,
-    "baseline_tries": 20, "baseline_router_seconds": 2,
-    "evaluation_objective": "quality", "eval_sets": "heldout"
-  },
-  "pilot": {"iterations": 20, "eval_every": 10, "seeds": [0]},
-  "replication": {"iterations": 100, "eval_every": 50},
-  "notes": [
-    "Initial checkpoints must be local-feature feasibility checkpoints selected on validation.",
-    "Physics expansion appends zero weights: same initial distribution, same support and STOP bias.",
-    "Freeze protocol using validation before evaluating a fresh untouched final test.",
-    "Existing transfer test outcomes have already informed changes and are development evidence.",
-    "No claim of quality improvement or physical QPU performance follows from this configuration."
+  "zephyr2": {
+   "corpus": "runs/quality/zephyr2_f50",
+   "init": "runs/quality/qw_z2_s0.best.pt"
+  }
+ },
+ "features": [
+  "local",
+  "physics"
+ ],
+ "common": {
+  "cells": "fill50-a3.0",
+  "actor": "linear",
+  "baseline": "loo",
+  "train": 56,
+  "heldout": 12,
+  "instances_per_iteration": 4,
+  "episodes": 6,
+  "eval_episodes": 5,
+  "max_steps": 300,
+  "episode_seconds": 60,
+  "train_episode_seconds": 60,
+  "learning_rate": 0.003,
+  "advantage_scale": 1.0,
+  "entropy_coef": 0.0,
+  "support": "wide",
+  "stop_bias": -6.0,
+  "reward_reads": 256,
+  "selection_reads": 256,
+  "assessment_reads": 4096,
+  "select_cap": 8,
+  "deadline": 300,
+  "proposal_fraction": 0.5,
+  "comparison": "all",
+  "grow_extra": 2,
+  "baseline_tries": 20,
+  "baseline_router_seconds": 2,
+  "evaluation_objective": "quality",
+  "eval_sets": "heldout"
+ },
+ "pilot": {
+  "iterations": 20,
+  "eval_every": 10,
+  "seeds": [
+   0
   ]
+ },
+ "replication": {
+  "iterations": 100,
+  "eval_every": 50
+ },
+ "notes": [
+  "Initial checkpoints must be local-feature feasibility checkpoints selected on validation.",
+  "Physics expansion appends zero weights: same initial distribution, same support and STOP bias.",
+  "Freeze protocol using validation before evaluating a fresh untouched final test.",
+  "Existing transfer test outcomes have already informed changes and are development evidence.",
+  "No claim of quality improvement or physical QPU performance follows from this configuration.",
+  "Support is wide, not registered. The unhinted witness replay at this cell reaches a valid COMMIT on 6 of 6 instances under the wide support and 0 of 6 under the registered one, where the generator reports states offering no legal PLACE while variables remain unplaced. A hinted replay succeeds under both and does not settle it. See results/quality/replay_p3_f50_*.log.",
+  "STOP and RESTART carry a start bias of -6, the record's fix for the exponential termination hazard; at zero bias an untrained policy ends episodes before it has placed anything.",
+  "The initial checkpoints are the wide-support feasibility pilot's validation-selected weights. The narrow-support pilot they previously named reached held-out 0.0 to 0.33 because the generator, not the policy, could not finish a construction."
+ ]
 }
