@@ -52,8 +52,18 @@ def test_feature_expansion_preserves_loaded_linear_policy(tmp_path):
     with pytest.raises(ValueError):
         cc.load_init(path, new, "linear", "physics")
     cc.load_init(path, new, "linear", "physics", expand=True)
+
+    # The contract is the weights, and it holds exactly: the loaded twenty are unchanged and the
+    # twelve new channels start at zero, so the added features cannot move an action logit until
+    # they are trained. The logits themselves agree only to float32 rounding, because a dot
+    # product of length 32 does not accumulate in the same order as one of length 20 and the two
+    # differ by one unit in the last place. Asserting bit equality there asserts a property of
+    # the BLAS backend rather than of this code.
+    loaded = next(new.parameters())[0]
+    assert torch.equal(loaded[:20], next(old.parameters())[0])
+    assert torch.equal(loaded[20:], torch.zeros(12))
     rows = torch.randn(5, 32)
-    assert torch.equal(old(rows[:, :20]), new(rows))
+    assert torch.allclose(old(rows[:, :20]), new(rows), rtol=0, atol=1e-6)
 
 
 def test_best_checkpoint_retains_precollapse_policy_and_never_uses_test(tmp_path):
