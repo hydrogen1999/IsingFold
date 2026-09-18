@@ -2032,3 +2032,37 @@ policy also places better is the open question, and two 250-epoch runs are answe
 with the representation question: the same teachers, local 20 channels against physics 32
 channels zero-padded from the same checkpoint so the added channels start with no influence.
 `results/quality/clone_*_f30.log`.
+
+## Cloning the placement, measured against minorminer
+
+Forty epochs of placement supervision, then the same diagnostic on the same eight instances with
+the same episode seeds and a 4096-read assessment. Deployment is unchanged throughout: empty
+start, every action chosen by the policy, minorminer never called.
+
+| | before cloning | after cloning | minorminer |
+|---|---|---|---|
+| qubits committed | 72.5 | **58.4** | 29.4 |
+| removable fraction | 0.34 | 0.23 | |
+| residual | 0.1335 | **0.0969** | 0.0535 |
+
+| quantity | paired over 8 instances |
+|---|---|
+| qubits cloning removes | **+14.1 [+5.6, +22.7]** |
+| residual cloning improves | +0.0366 **[-0.0029, +0.0761]** |
+| instances improved | 6 of 8 |
+| gap to minorminer before | +0.0801 [+0.0348, +0.1254] |
+| gap to minorminer after | **+0.0434 [+0.0196, +0.0673]** |
+| fraction of the gap closed | 46 percent |
+
+Three readings and the middle one is the one not to overstate. The reduction in qubits is
+established, its interval clear of zero. **The improvement in residual is not**: six of eight
+instances improve and the mean is +0.037, but at eight instances the interval crosses zero and
+this record has retracted five claims today for exactly that reason. And the policy still loses to
+minorminer, which is established, at +0.043 [+0.020, +0.067].
+
+What the numbers do support is the direction the placement diagnostic predicted. Supervision of
+where chains go, with no resource penalty anywhere and no change to the reward, moves both the
+spend and the quality, and it moves them together. Cloning had not converged at forty epochs, the
+loss still falling from 3.411 to 2.522, so this is a lower bound on what the supervision is
+worth. A twenty-instance replication of both checkpoints is running before the residual effect is
+called anything. `results/quality/excess_clone_p3.log`.
