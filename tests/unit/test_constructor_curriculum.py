@@ -421,3 +421,28 @@ def test_deployment_evaluation_reports_coverage_and_time_to_first_valid():
     assert row["policy_only"] >= 0 and row["minorminer_only"] >= 0
     with pytest.raises(SystemExit):
         cc.parse(["--objective", "deployment", "--iterations", "5"])
+
+
+def test_training_temperature_is_tunable_and_evaluation_is_not():
+    """The flag must reach the training rollout and never the deployment evaluation.
+
+    An invalid construction scores zero where a valid one scores 0.5 to 1, so exploration that
+    produces invalid episodes costs more than the entire quality range and drowns the quality
+    term in the leave-one-out advantage. Lowering the sampling temperature is the lever for that,
+    and it must not touch evaluation: a held-out rate measured at a different temperature is not
+    comparable with any number already on the record.
+    """
+    import inspect
+    import constructor_curriculum as cc
+
+    parser = cc.build_parser() if hasattr(cc, "build_parser") else None
+    source = inspect.getsource(cc)
+    assert '"--temperature"' in source, "the training temperature is not exposed"
+
+    # Exactly one episode call carries the flag, and it is the training rollout.
+    training_calls = source.count("args.temperature, args.max_steps")
+    assert training_calls == 1, f"expected one tunable call site, found {training_calls}"
+
+    # Both deployment-evaluation call sites stay at a literal temperature of one.
+    evaluation_calls = source.count("features[t.name], 1., args.max_steps")
+    assert evaluation_calls == 2, f"expected two fixed evaluation call sites, found {evaluation_calls}"

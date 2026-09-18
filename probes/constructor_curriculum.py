@@ -519,7 +519,7 @@ def run(args, train, heldout):
     def draw(task, seed, grad, reward=None, initializer=None):
         seconds = args.train_episode_seconds if grad and args.train_episode_seconds else args.episode_seconds
         with torch.set_grad_enabled(grad):
-            return episode(task, actor, features[task.name], 1., args.max_steps,
+            return episode(task, actor, features[task.name], args.temperature, args.max_steps,
                            np.random.default_rng(seed), seconds,
                            train=True, objective=args.objective, reward_reads=args.reward_reads,
                            evaluate_reward=(args.objective == "quality") if reward is None else reward,
@@ -537,6 +537,8 @@ def run(args, train, heldout):
             for k, t in enumerate(tasks):
                 def learned(seed, seconds_left, t=t):
                     with torch.no_grad():
+                        # Evaluation always samples at temperature one, so a number here is
+                        # comparable with every number this record already holds.
                         result = episode(t, actor, features[t.name], 1., args.max_steps,
                                          np.random.default_rng(seed), min(seconds_left, args.episode_seconds),
                                          train=True, objective="quality", evaluate_reward=False, wide=wide)
@@ -638,6 +640,7 @@ def run(args, train, heldout):
         for k, t in enumerate(heldout):
             def learned(seed, seconds_left, t=t):
                 with torch.no_grad():
+                    # Evaluation always samples at temperature one.
                     result = episode(t, actor, features[t.name], 1., args.max_steps,
                                      np.random.default_rng(seed), min(seconds_left, args.episode_seconds),
                                      train=True, objective="feasibility", evaluate_reward=False, wide=wide)
@@ -908,6 +911,13 @@ def parse(argv=None):
     parser.add_argument("--learning-rate", type=float, default=.03)
     parser.add_argument("--advantage-scale", type=float, default=1.,
                         help="fixed positive multiplier of the whole policy advantage; no per-batch normalization")
+    parser.add_argument("--temperature", type=float, default=1.0,
+                        help="sampling temperature for training episodes. The utility "
+                             "gives an invalid episode 0 and a valid one 0.5 to 1, so an "
+                             "invalid construction costs more than the entire quality "
+                             "range; exploration that produces them drowns the quality "
+                             "signal in the leave-one-out advantage. Evaluation is "
+                             "unaffected and stays at 1.0.")
     parser.add_argument("--entropy-coef", type=float, default=0.)
     parser.add_argument("--max-steps", type=int, default=64)
     parser.add_argument("--episode-seconds", type=float, default=30.)
