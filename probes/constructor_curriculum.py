@@ -53,7 +53,9 @@ HARDWARE = {"p": ("pegasus", 2, (12, 24)), "z": ("zephyr", 1, (12, 24)),
             "P": ("pegasus", 3, (32, 64)), "Z": ("zephyr", 2, (32, 64)),
             "F": ("pegasus", 3, (64, 128)), "G": ("zephyr", 2, (64, 128))}
 FEATURE_WIDTH = len(OPCODES) + 8
-FEATURE_WIDTHS = {"tiny": FEATURE_WIDTH, "construction": CONSTRUCTION_WIDTH}
+LOCAL_CHANNELS = 4
+FEATURE_WIDTHS = {"tiny": FEATURE_WIDTH, "local": FEATURE_WIDTH + LOCAL_CHANNELS,
+                  "construction": CONSTRUCTION_WIDTH}
 
 
 class Task:
@@ -394,7 +396,7 @@ def opcode_channel(features, name):
     names = [getattr(item, "value", item) for item in OPCODES]
     if name not in names:
         raise ValueError("unknown opcode %s" % name)
-    if features == "tiny":
+    if features in ("tiny", "local"):
         return names.index(name)
     if features == "construction":
         from constructor_features import FEATURE_SLICES
@@ -438,9 +440,11 @@ def make_actor(kind, width, in_dim=FEATURE_WIDTH):
 def make_features(kind, task):
     if kind == "tiny":
         return Features(task)
+    if kind == "local":
+        return Features(task, local_channels=True)
     if kind == "construction":
         return ConstructorFeatureContext(task, len(task.host))
-    raise ValueError("features must be tiny or construction")
+    raise ValueError("features must be tiny, local or construction")
 
 
 def paired_boot(values, seed=0, draws=2000):
@@ -805,7 +809,7 @@ def parse(argv=None):
     parser.add_argument("--train", type=int, default=12)
     parser.add_argument("--heldout", type=int, default=12)
     parser.add_argument("--actor", choices=("linear", "mlp", "contextual"), default="linear")
-    parser.add_argument("--features", choices=("tiny", "construction"), default="tiny")
+    parser.add_argument("--features", choices=("tiny", "local", "construction"), default="tiny")
     parser.add_argument("--baseline", choices=("loo", "value"), default="loo")
     parser.add_argument("--width", type=int, default=32)
     parser.add_argument("--iterations", type=int, default=200)

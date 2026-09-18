@@ -186,7 +186,7 @@ def main(argv=None):
     ap.add_argument("--n-tasks", type=int, default=3)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--actor", choices=("linear", "mlp", "contextual"), default="linear")
-    ap.add_argument("--features", choices=("tiny", "construction"), default="tiny")
+    ap.add_argument("--features", choices=("tiny", "local", "construction"), default="tiny")
     ap.add_argument("--width", type=int, default=32)
     ap.add_argument("--init", default="")
     ap.add_argument("--episodes", type=int, default=2)

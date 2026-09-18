@@ -64,9 +64,10 @@ class Features:
     was two seconds a step). ``summary_reference`` is the direct computation, kept for the
     equality test."""
 
-    def __init__(self, task):
+    def __init__(self, task, local_channels=False):
         self.task = task
         self.budget = len(task.host)
+        self.local_channels = bool(local_channels)
         self._neighbours = {q: tuple(task.host[q]) for q in task.host}
         self._logical_neighbours = {v: tuple(task.logical[v]) for v in task.logical}
         self._n = len(task.logical)
@@ -152,11 +153,56 @@ class Features:
             used = len(others | new_q)
         return self._to_row((placed, realized, used, memberships, disconnected))
 
+    def local(self, chains, after, affected):
+        """Four channels about the room an action leaves, all local to the affected chains
+        and independent of the host's size: free host neighbours of the affected chains
+        before and after, unplaced logical neighbours of the affected variables, and the
+        free neighbours those unplaced neighbours can still reach from this chain. Two
+        placements that realise the same edge differ here when one paints a corner."""
+        if not affected:
+            return np.zeros(4, dtype=np.float32)
+        occupied_before = set().union(*chains.values()) if chains else set()
+        occupied_after = set().union(*after.values()) if after else set()
+
+        def room(state, occupied, radius=2, cap=64):
+            """Free qubits within ``radius`` hops of the affected chains, so a dead end and
+            an opening are different even when both offer one free neighbour. Bounded by
+            ``cap`` so the cost is local, not host-sized."""
+            total = 0
+            for v in affected:
+                chain = state.get(v, frozenset())
+                seen, frontier = set(), list(chain)
+                for _ in range(radius):
+                    nxt = []
+                    for q in frontier:
+                        for r in self._neighbours.get(q, ()):
+                            if r not in occupied and r not in seen:
+                                seen.add(r); nxt.append(r)
+                                if len(seen) >= cap:
+                                    break
+                        if len(seen) >= cap:
+                            break
+                    frontier = nxt
+                    if not frontier or len(seen) >= cap:
+                        break
+                total += len(seen)
+            return total
+
+        before_room, after_room = room(chains, occupied_before), room(after, occupied_after)
+        unplaced = 0
+        for v in affected:
+            unplaced += sum(1 for u in self._logical_neighbours.get(v, ()) if not after.get(u))
+        scale = 64.0   # the reach cap, so every channel lies in [0, 1] whatever the host
+        return np.array([min(1.0, before_room / scale), min(1.0, after_room / scale),
+                         max(-1.0, min(1.0, (after_room - before_room) / scale)),
+                         min(1.0, after_room / max(1, unplaced) / scale)], dtype=np.float32)
+
     def observe(self, candidate, chains, *, state, ctx, steps_left, max_steps):
         opcode = candidate.opcode.value
         if opcode == "COMMIT":
             after = dict(state.archive[candidate.archive_ref].chains)
             before, new = self.summary(chains), self.summary_reference(after)
+            affected = []
         else:
             after = dict(chains)
             after.update(candidate.new_chains)
@@ -164,10 +210,13 @@ class Features:
             before = self.summary(chains)
             new = self.successor_summary(chains, after, affected) if affected else before
         onehot = [float(opcode == getattr(item, "value", item)) for item in OPCODES]
-        return np.asarray(onehot + list(new - before)
-                          + [float(opcode == "COMMIT") * new[0],
-                             float(opcode == "STOP") * new[1],
-                             float(opcode == "RESTART") * before[1]], dtype=np.float32)
+        row = np.asarray(onehot + list(new - before)
+                         + [float(opcode == "COMMIT") * new[0],
+                            float(opcode == "STOP") * new[1],
+                            float(opcode == "RESTART") * before[1]], dtype=np.float32)
+        if not self.local_channels:
+            return row
+        return np.concatenate([row, self.local(chains, after, affected)])
 
 
 class Actor(torch.nn.Module):
