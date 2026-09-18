@@ -1701,3 +1701,30 @@ the quality claim is not capped at the fifty variables solve probability allows.
 cells cross zero at twelve instances and the effect sizes are all near +0.005, so these intervals
 are wide rather than contradictory; the cells that matter need more instances before anything
 rests on them. `results/frontier/qscale_*.log`.
+
+## Transfer on the locked test list, and why the first attempt measured nothing
+
+The locked test lists were opened once, on frozen checkpoints, to ask two questions at once:
+does a policy trained on one topology work on the other, and does a policy trained on
+24-variable instances work on the 48- and 100-variable instances the test list also holds. The
+first attempt used `--max-steps 1500 --episode-seconds 600`, four times the decision budget and
+twice the wall clock the training runs used.
+
+| checkpoint, evaluated on the Zephyr 15 test list | overall | 24 vars | 48 vars | 100 vars |
+|---|---|---|---|---|
+| trained on Pegasus 16 | 0.85 | 0.96 | 1.00 | 0.60 |
+| trained on Zephyr 15 | 0.85 | 0.96 | 1.00 | 0.60 |
+| **the Zephyr 2 fragment checkpoint, never trained at scale** | **0.85** | **0.96** | **1.00** | **0.60** |
+
+**That is not a transfer result, it is a budget artefact.** The Pegasus-trained checkpoint and the
+untrained fragment checkpoint agree on all sixteen instances, and the Zephyr-trained one differs
+on two. On the Pegasus test list the two trained checkpoints both score 0.52. When the decision
+budget is four times what training used, which policy is loaded stops mattering and the instance
+decides the outcome.
+
+Two consequences, and the second is the one that matters. Nothing can be concluded about transfer
+from this table. And the hardware-scale feasibility result, held-out 1.00 and 0.95, was measured
+at `--max-steps 400 --episode-seconds 300`, so it is a claim about construction under a tight
+budget, not about construction in general. The test-list evaluation has been rerun at exactly the
+training budget (goose 3344) and only that version can be reported.
+`results/transfer/t3_*.log`.
