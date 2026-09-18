@@ -33,11 +33,17 @@ from witness_prune import prune
 
 
 def measure(task, chains, ctx, index, reads, seed):
+    """Residual, solve rate and broken-chain fraction from one block.
+
+    The broken fraction is the channel that would say whether the constructor's disadvantage is
+    its chains failing to hold, which is the explanation left standing after qubit count and
+    chain length were both ruled out.
+    """
     strengths = strength_registry(task.problem, ctx.strength_ratios, ctx.epsilon_strength)
     program = compile_program(chains, task.host, task.problem, strengths[index], index)
     block = sample_program(program, chains, task.problem, task.ground_energy, num_reads=reads,
                            seed=int(seed), num_sweeps=200, beta_range=REGISTERED_BETA_RANGE)
-    return block.mean_residual, block.rate
+    return block.mean_residual, block.rate, block.broken_fraction
 
 
 def shape(chains):
@@ -101,18 +107,21 @@ def main() -> int:
         mm_chains = {v: frozenset(draw[v]) for v in t.logical.nodes()} if draw else None
 
         seed = a.seed + 10000 * k
-        rp, pp = measure(t, chains, ctx, a.strength_index, a.reads, seed)
-        rt, pt = measure(t, tight, ctx, a.strength_index, a.reads, seed + 1)
-        rm, pm = (measure(t, mm_chains, ctx, a.strength_index, a.reads, seed + 2)
-                  if mm_chains else (None, None))
+        rp, pp, bp = measure(t, chains, ctx, a.strength_index, a.reads, seed)
+        rt, pt, bt = measure(t, tight, ctx, a.strength_index, a.reads, seed + 1)
+        rm, pm, bm = (measure(t, mm_chains, ctx, a.strength_index, a.reads, seed + 2)
+                      if mm_chains else (None, None, None))
         qp, lp, _ = shape(chains)
         qt, lt, _ = shape(tight)
         qm = sum(len(c) for c in mm_chains.values()) if mm_chains else None
 
         row = {"task": t.name, "variables": t.logical.number_of_nodes(),
-               "policy": {"qubits": qp, "longest": lp, "residual": rp, "p_solve": pp},
-               "pruned": {"qubits": qt, "longest": lt, "residual": rt, "p_solve": pt},
-               "minorminer": ({"qubits": qm, "residual": rm, "p_solve": pm} if mm_chains else None),
+               "policy": {"qubits": qp, "longest": lp, "residual": rp, "p_solve": pp,
+                          "broken": bp},
+               "pruned": {"qubits": qt, "longest": lt, "residual": rt, "p_solve": pt,
+                          "broken": bt},
+               "minorminer": ({"qubits": qm, "residual": rm, "p_solve": pm, "broken": bm}
+                              if mm_chains else None),
                "removable_qubits": qp - qt,
                "removable_fraction": (qp - qt) / qp if qp else 0.0}
         rows.append(row)
@@ -136,6 +145,10 @@ def main() -> int:
             "mean_residual_minorminer": (sum(r["minorminer"]["residual"] for r in with_mm) / len(with_mm)
                                          if with_mm else None),
             "recovered_by_pruning": m(lambda r: r["policy"]["residual"] - r["pruned"]["residual"]),
+            "mean_broken_policy": m(lambda r: r["policy"]["broken"]),
+            "mean_broken_pruned": m(lambda r: r["pruned"]["broken"]),
+            "mean_broken_minorminer": (sum(r["minorminer"]["broken"] for r in with_mm) / len(with_mm)
+                                       if with_mm else None),
             "reading": ("a large removable fraction with a positive recovery implicates redundant "
                         "growth; little removable, or removal that does not recover, implicates "
                         "the placement that the growth was compensating for")}

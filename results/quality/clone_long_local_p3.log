@@ -1,0 +1,288 @@
+{"protocol": "constructor-behaviour-cloning-v1", "corpus": "runs/quality/pegasus3_f30", "cells": ["fill30-a3.0"], "train": ["pegasus3-fill30-a3.0-10", "pegasus3-fill30-a3.0-19", "pegasus3-fill30-a3.0-6", "pegasus3-fill30-a3.0-28", "pegasus3-fill30-a3.0-18", "pegasus3-fill30-a3.0-12", "pegasus3-fill30-a3.0-8", "pegasus3-fill30-a3.0-23", "pegasus3-fill30-a3.0-3", "pegasus3-fill30-a3.0-14", "pegasus3-fill30-a3.0-25", "pegasus3-fill30-a3.0-5", "pegasus3-fill30-a3.0-11", "pegasus3-fill30-a3.0-9", "pegasus3-fill30-a3.0-16", "pegasus3-fill30-a3.0-0", "pegasus3-fill30-a3.0-26", "pegasus3-fill30-a3.0-2", "pegasus3-fill30-a3.0-27", "pegasus3-fill30-a3.0-20"], "heldout": ["pegasus3-fill30-a3.0-15", "pegasus3-fill30-a3.0-13", "pegasus3-fill30-a3.0-24", "pegasus3-fill30-a3.0-21"], "support": "wide", "actor": "linear", "features": "local", "epochs": 250, "teacher": "set-valued over witness-consistent candidates; train lineages only", "evaluation": "from empty, no witness, no completion solver", "learning_rate": 0.01, "stop_bias": -6.0, "max_steps": 900, "config": {"corpus": "runs/quality/pegasus3_f30", "cells": "fill30-a3.0", "train": 20, "heldout": 4, "seed": 0, "actor": "linear", "features": "local", "expand_features": false, "width": 32, "init": "runs/curriculum/F_local_s0.pt", "epochs": 250, "learning_rate": 0.01, "max_steps": 900, "teacher_seconds": 300.0, "eval_episodes": 3, "eval_every": 50, "episode_seconds": 120.0, "support": "wide", "stop_bias": -6.0, "keep_incomplete": false, "out": "runs/quality/clone_long_local_p3.pt"}}
+{"teacher": "pegasus3-fill30-a3.0-10", "steps": 34, "reason": "valid", "valid": true, "progress": 1.0, "seconds": 2.3977512679994106}
+{"teacher": "pegasus3-fill30-a3.0-19", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.7124999999999999, "seconds": 46.98224705271423}
+{"dropped": "pegasus3-fill30-a3.0-19", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.7124999999999999}
+{"teacher": "pegasus3-fill30-a3.0-6", "steps": 35, "reason": "valid", "valid": true, "progress": 1.0, "seconds": 1.9315655059181154}
+{"teacher": "pegasus3-fill30-a3.0-28", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.9736842105263157, "seconds": 182.28811852494255}
+{"dropped": "pegasus3-fill30-a3.0-28", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.9736842105263157}
+{"teacher": "pegasus3-fill30-a3.0-18", "steps": 33, "reason": "valid", "valid": true, "progress": 1.0, "seconds": 3.4917469350621104}
+{"teacher": "pegasus3-fill30-a3.0-12", "steps": 22, "reason": "stuck", "valid": false, "progress": 0.6979638009049773, "seconds": 0.8140251389704645}
+{"dropped": "pegasus3-fill30-a3.0-12", "why": "teacher did not reach a valid COMMIT", "reason": "stuck", "progress": 0.6979638009049773}
+{"teacher": "pegasus3-fill30-a3.0-8", "steps": 37, "reason": "valid", "valid": true, "progress": 1.0, "seconds": 2.5258075878955424}
+{"teacher": "pegasus3-fill30-a3.0-23", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.7744708994708995, "seconds": 50.16688546072692}
+{"dropped": "pegasus3-fill30-a3.0-23", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.7744708994708995}
+{"teacher": "pegasus3-fill30-a3.0-3", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.9230769230769231, "seconds": 94.64440295891836}
+{"dropped": "pegasus3-fill30-a3.0-3", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.9230769230769231}
+{"teacher": "pegasus3-fill30-a3.0-14", "steps": 36, "reason": "valid", "valid": true, "progress": 1.0, "seconds": 2.319559686817229}
+{"teacher": "pegasus3-fill30-a3.0-25", "steps": 36, "reason": "valid", "valid": true, "progress": 1.0, "seconds": 2.910661619156599}
+{"teacher": "pegasus3-fill30-a3.0-5", "steps": 37, "reason": "valid", "valid": true, "progress": 1.0, "seconds": 2.5175211131572723}
+{"teacher": "pegasus3-fill30-a3.0-11", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.7095238095238096, "seconds": 93.62498688185588}
+{"dropped": "pegasus3-fill30-a3.0-11", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.7095238095238096}
+{"teacher": "pegasus3-fill30-a3.0-9", "steps": 32, "reason": "stuck", "valid": false, "progress": 0.921875, "seconds": 1.8821919658221304}
+{"dropped": "pegasus3-fill30-a3.0-9", "why": "teacher did not reach a valid COMMIT", "reason": "stuck", "progress": 0.921875}
+{"teacher": "pegasus3-fill30-a3.0-16", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.5325670498084292, "seconds": 37.4094137926586}
+{"dropped": "pegasus3-fill30-a3.0-16", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.5325670498084292}
+{"teacher": "pegasus3-fill30-a3.0-0", "steps": 20, "reason": "valid", "valid": true, "progress": 1.0, "seconds": 1.1485947659239173}
+{"teacher": "pegasus3-fill30-a3.0-26", "steps": 0, "reason": "stuck", "valid": false, "progress": 0.0, "seconds": 0.03519102232530713}
+{"teacher": "pegasus3-fill30-a3.0-2", "steps": 7, "reason": "stuck", "valid": false, "progress": 0.2463054187192118, "seconds": 0.21512678498402238}
+{"dropped": "pegasus3-fill30-a3.0-2", "why": "teacher did not reach a valid COMMIT", "reason": "stuck", "progress": 0.2463054187192118}
+{"teacher": "pegasus3-fill30-a3.0-27", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.41346153846153844, "seconds": 33.01540572429076}
+{"dropped": "pegasus3-fill30-a3.0-27", "why": "teacher did not reach a valid COMMIT", "reason": "HORIZON", "progress": 0.41346153846153844}
+{"teacher": "pegasus3-fill30-a3.0-20", "steps": 32, "reason": "valid", "valid": true, "progress": 1.0, "seconds": 2.627022909000516}
+{"evaluation": "init", "set": "heldout", "rate": 1.0, "instances": 4, "per_instance": {"pegasus3-fill30-a3.0-15": 1.0, "pegasus3-fill30-a3.0-13": 1.0, "pegasus3-fill30-a3.0-24": 1.0, "pegasus3-fill30-a3.0-21": 1.0}}
+{"epoch": 0, "loss": 3.411201318105062, "trajectories": 9}
+{"epoch": 1, "loss": 3.3746204906039767, "trajectories": 9}
+{"epoch": 2, "loss": 3.3416820102267795, "trajectories": 9}
+{"epoch": 3, "loss": 3.310806804233127, "trajectories": 9}
+{"epoch": 4, "loss": 3.2789008617401123, "trajectories": 9}
+{"epoch": 5, "loss": 3.250357018576728, "trajectories": 9}
+{"epoch": 6, "loss": 3.2210147380828857, "trajectories": 9}
+{"epoch": 7, "loss": 3.1902643044789634, "trajectories": 9}
+{"epoch": 8, "loss": 3.158123360739814, "trajectories": 9}
+{"epoch": 9, "loss": 3.125000476837158, "trajectories": 9}
+{"epoch": 10, "loss": 3.0893469386630588, "trajectories": 9}
+{"epoch": 11, "loss": 3.0521444744533963, "trajectories": 9}
+{"epoch": 12, "loss": 3.0120593706766763, "trajectories": 9}
+{"epoch": 13, "loss": 2.970952696270413, "trajectories": 9}
+{"epoch": 14, "loss": 2.932768768734402, "trajectories": 9}
+{"epoch": 15, "loss": 2.8810615804460316, "trajectories": 9}
+{"epoch": 16, "loss": 2.845203399658203, "trajectories": 9}
+{"epoch": 17, "loss": 2.8035878075493708, "trajectories": 9}
+{"epoch": 18, "loss": 2.763875722885132, "trajectories": 9}
+{"epoch": 19, "loss": 2.735766649246216, "trajectories": 9}
+{"epoch": 20, "loss": 2.7028235594431558, "trajectories": 9}
+{"epoch": 21, "loss": 2.678634458118015, "trajectories": 9}
+{"epoch": 22, "loss": 2.658755991193983, "trajectories": 9}
+{"epoch": 23, "loss": 2.639835304684109, "trajectories": 9}
+{"epoch": 24, "loss": 2.6236200067732067, "trajectories": 9}
+{"epoch": 25, "loss": 2.6114019287957086, "trajectories": 9}
+{"epoch": 26, "loss": 2.5992115338643393, "trajectories": 9}
+{"epoch": 27, "loss": 2.589879459804959, "trajectories": 9}
+{"epoch": 28, "loss": 2.580742041269938, "trajectories": 9}
+{"epoch": 29, "loss": 2.5729082690344915, "trajectories": 9}
+{"epoch": 30, "loss": 2.5658070776197643, "trajectories": 9}
+{"epoch": 31, "loss": 2.5589741600884333, "trajectories": 9}
+{"epoch": 32, "loss": 2.5537522633870444, "trajectories": 9}
+{"epoch": 33, "loss": 2.5475447177886963, "trajectories": 9}
+{"epoch": 34, "loss": 2.5422120889027915, "trajectories": 9}
+{"epoch": 35, "loss": 2.5378973219129772, "trajectories": 9}
+{"epoch": 36, "loss": 2.533502552244398, "trajectories": 9}
+{"epoch": 37, "loss": 2.5292354424794516, "trajectories": 9}
+{"epoch": 38, "loss": 2.52632114622328, "trajectories": 9}
+{"epoch": 39, "loss": 2.521685971154107, "trajectories": 9}
+{"epoch": 40, "loss": 2.518528832329644, "trajectories": 9}
+{"epoch": 41, "loss": 2.515491671032376, "trajectories": 9}
+{"epoch": 42, "loss": 2.512637827131483, "trajectories": 9}
+{"epoch": 43, "loss": 2.5093951755099826, "trajectories": 9}
+{"epoch": 44, "loss": 2.506463130315145, "trajectories": 9}
+{"epoch": 45, "loss": 2.5036966270870633, "trajectories": 9}
+{"epoch": 46, "loss": 2.5014038350847034, "trajectories": 9}
+{"epoch": 47, "loss": 2.499260081185235, "trajectories": 9}
+{"epoch": 48, "loss": 2.4964230060577393, "trajectories": 9}
+{"epoch": 49, "loss": 2.494829124874539, "trajectories": 9}
+{"evaluation": "epoch 49", "set": "heldout", "rate": 1.0, "instances": 4, "per_instance": {"pegasus3-fill30-a3.0-15": 1.0, "pegasus3-fill30-a3.0-13": 1.0, "pegasus3-fill30-a3.0-24": 1.0, "pegasus3-fill30-a3.0-21": 1.0}}
+{"epoch": 50, "loss": 2.4919351206885443, "trajectories": 9}
+{"epoch": 51, "loss": 2.4901291529337564, "trajectories": 9}
+{"epoch": 52, "loss": 2.4878810511695013, "trajectories": 9}
+{"epoch": 53, "loss": 2.4858566919962564, "trajectories": 9}
+{"epoch": 54, "loss": 2.48433518409729, "trajectories": 9}
+{"epoch": 55, "loss": 2.4826362397935657, "trajectories": 9}
+{"epoch": 56, "loss": 2.4805446200900607, "trajectories": 9}
+{"epoch": 57, "loss": 2.479446623060438, "trajectories": 9}
+{"epoch": 58, "loss": 2.4776214758555093, "trajectories": 9}
+{"epoch": 59, "loss": 2.475798580381605, "trajectories": 9}
+{"epoch": 60, "loss": 2.474591785007053, "trajectories": 9}
+{"epoch": 61, "loss": 2.4726068708631725, "trajectories": 9}
+{"epoch": 62, "loss": 2.471510542763604, "trajectories": 9}
+{"epoch": 63, "loss": 2.4698183271620007, "trajectories": 9}
+{"epoch": 64, "loss": 2.468454811308119, "trajectories": 9}
+{"epoch": 65, "loss": 2.466959079106649, "trajectories": 9}
+{"epoch": 66, "loss": 2.465375132030911, "trajectories": 9}
+{"epoch": 67, "loss": 2.4643346998426647, "trajectories": 9}
+{"epoch": 68, "loss": 2.4631860786014133, "trajectories": 9}
+{"epoch": 69, "loss": 2.462248060438368, "trajectories": 9}
+{"epoch": 70, "loss": 2.4604463312360974, "trajectories": 9}
+{"epoch": 71, "loss": 2.459548420376248, "trajectories": 9}
+{"epoch": 72, "loss": 2.4579581949445934, "trajectories": 9}
+{"epoch": 73, "loss": 2.4572714964548745, "trajectories": 9}
+{"epoch": 74, "loss": 2.455868403116862, "trajectories": 9}
+{"epoch": 75, "loss": 2.4547235568364463, "trajectories": 9}
+{"epoch": 76, "loss": 2.4536987940470376, "trajectories": 9}
+{"epoch": 77, "loss": 2.452476143836975, "trajectories": 9}
+{"epoch": 78, "loss": 2.4520829253726535, "trajectories": 9}
+{"epoch": 79, "loss": 2.4517229000727334, "trajectories": 9}
+{"epoch": 80, "loss": 2.449933158026801, "trajectories": 9}
+{"epoch": 81, "loss": 2.448618359035916, "trajectories": 9}
+{"epoch": 82, "loss": 2.4475862317615085, "trajectories": 9}
+{"epoch": 83, "loss": 2.44646684328715, "trajectories": 9}
+{"epoch": 84, "loss": 2.445731692843967, "trajectories": 9}
+{"epoch": 85, "loss": 2.4446716573503284, "trajectories": 9}
+{"epoch": 86, "loss": 2.44412624835968, "trajectories": 9}
+{"epoch": 87, "loss": 2.4433303674062095, "trajectories": 9}
+{"epoch": 88, "loss": 2.4427882035573325, "trajectories": 9}
+{"epoch": 89, "loss": 2.441342340575324, "trajectories": 9}
+{"epoch": 90, "loss": 2.440721140967475, "trajectories": 9}
+{"epoch": 91, "loss": 2.4394030968348184, "trajectories": 9}
+{"epoch": 92, "loss": 2.4388562440872192, "trajectories": 9}
+{"epoch": 93, "loss": 2.4375057220458984, "trajectories": 9}
+{"epoch": 94, "loss": 2.4369376367992825, "trajectories": 9}
+{"epoch": 95, "loss": 2.4360683891508312, "trajectories": 9}
+{"epoch": 96, "loss": 2.4354486995273166, "trajectories": 9}
+{"epoch": 97, "loss": 2.4341112507714167, "trajectories": 9}
+{"epoch": 98, "loss": 2.433608995543586, "trajectories": 9}
+{"epoch": 99, "loss": 2.432437115245395, "trajectories": 9}
+{"evaluation": "epoch 99", "set": "heldout", "rate": 1.0, "instances": 4, "per_instance": {"pegasus3-fill30-a3.0-15": 1.0, "pegasus3-fill30-a3.0-13": 1.0, "pegasus3-fill30-a3.0-24": 1.0, "pegasus3-fill30-a3.0-21": 1.0}}
+{"epoch": 100, "loss": 2.431931654612223, "trajectories": 9}
+{"epoch": 101, "loss": 2.431392192840576, "trajectories": 9}
+{"epoch": 102, "loss": 2.4305089049869113, "trajectories": 9}
+{"epoch": 103, "loss": 2.4295656283696494, "trajectories": 9}
+{"epoch": 104, "loss": 2.4288256433275013, "trajectories": 9}
+{"epoch": 105, "loss": 2.4281925095452204, "trajectories": 9}
+{"epoch": 106, "loss": 2.427441212866041, "trajectories": 9}
+{"epoch": 107, "loss": 2.4267478783925376, "trajectories": 9}
+{"epoch": 108, "loss": 2.425427781211005, "trajectories": 9}
+{"epoch": 109, "loss": 2.4249678982628717, "trajectories": 9}
+{"epoch": 110, "loss": 2.4244872596528797, "trajectories": 9}
+{"epoch": 111, "loss": 2.4235565529929266, "trajectories": 9}
+{"epoch": 112, "loss": 2.4227043125364514, "trajectories": 9}
+{"epoch": 113, "loss": 2.422280232111613, "trajectories": 9}
+{"epoch": 114, "loss": 2.4216056134965687, "trajectories": 9}
+{"epoch": 115, "loss": 2.420565552181668, "trajectories": 9}
+{"epoch": 116, "loss": 2.4200410313076444, "trajectories": 9}
+{"epoch": 117, "loss": 2.4192212952507868, "trajectories": 9}
+{"epoch": 118, "loss": 2.418351901902093, "trajectories": 9}
+{"epoch": 119, "loss": 2.4177132580015392, "trajectories": 9}
+{"epoch": 120, "loss": 2.4170994228786893, "trajectories": 9}
+{"epoch": 121, "loss": 2.4166214333640204, "trajectories": 9}
+{"epoch": 122, "loss": 2.415636804368761, "trajectories": 9}
+{"epoch": 123, "loss": 2.415233532587687, "trajectories": 9}
+{"epoch": 124, "loss": 2.4149852063920765, "trajectories": 9}
+{"epoch": 125, "loss": 2.413890070385403, "trajectories": 9}
+{"epoch": 126, "loss": 2.41360260380639, "trajectories": 9}
+{"epoch": 127, "loss": 2.4123578336503773, "trajectories": 9}
+{"epoch": 128, "loss": 2.4119626681009927, "trajectories": 9}
+{"epoch": 129, "loss": 2.41107616159651, "trajectories": 9}
+{"epoch": 130, "loss": 2.410829199684991, "trajectories": 9}
+{"epoch": 131, "loss": 2.4098092317581177, "trajectories": 9}
+{"epoch": 132, "loss": 2.4088199536005654, "trajectories": 9}
+{"epoch": 133, "loss": 2.4083624415927463, "trajectories": 9}
+{"epoch": 134, "loss": 2.4075592623816595, "trajectories": 9}
+{"epoch": 135, "loss": 2.4069014390309653, "trajectories": 9}
+{"epoch": 136, "loss": 2.406464841630724, "trajectories": 9}
+{"epoch": 137, "loss": 2.405741148524814, "trajectories": 9}
+{"epoch": 138, "loss": 2.4052811198764377, "trajectories": 9}
+{"epoch": 139, "loss": 2.4048415554894342, "trajectories": 9}
+{"epoch": 140, "loss": 2.4035562541749744, "trajectories": 9}
+{"epoch": 141, "loss": 2.4028943909539118, "trajectories": 9}
+{"epoch": 142, "loss": 2.4023218154907227, "trajectories": 9}
+{"epoch": 143, "loss": 2.4019582668940225, "trajectories": 9}
+{"epoch": 144, "loss": 2.4011658562554254, "trajectories": 9}
+{"epoch": 145, "loss": 2.401008407274882, "trajectories": 9}
+{"epoch": 146, "loss": 2.4000306526819863, "trajectories": 9}
+{"epoch": 147, "loss": 2.399763994746738, "trajectories": 9}
+{"epoch": 148, "loss": 2.3984606530931263, "trajectories": 9}
+{"epoch": 149, "loss": 2.399110052320692, "trajectories": 9}
+{"evaluation": "epoch 149", "set": "heldout", "rate": 1.0, "instances": 4, "per_instance": {"pegasus3-fill30-a3.0-15": 1.0, "pegasus3-fill30-a3.0-13": 1.0, "pegasus3-fill30-a3.0-24": 1.0, "pegasus3-fill30-a3.0-21": 1.0}}
+{"epoch": 150, "loss": 2.397480501068963, "trajectories": 9}
+{"epoch": 151, "loss": 2.3970645136303372, "trajectories": 9}
+{"epoch": 152, "loss": 2.3967978954315186, "trajectories": 9}
+{"epoch": 153, "loss": 2.395537429385715, "trajectories": 9}
+{"epoch": 154, "loss": 2.3949614895714655, "trajectories": 9}
+{"epoch": 155, "loss": 2.3941521644592285, "trajectories": 9}
+{"epoch": 156, "loss": 2.3940191533830433, "trajectories": 9}
+{"epoch": 157, "loss": 2.3930601278940835, "trajectories": 9}
+{"epoch": 158, "loss": 2.392664220598009, "trajectories": 9}
+{"epoch": 159, "loss": 2.3916857639948526, "trajectories": 9}
+{"epoch": 160, "loss": 2.3911342223485312, "trajectories": 9}
+{"epoch": 161, "loss": 2.390427748362223, "trajectories": 9}
+{"epoch": 162, "loss": 2.3900271919038563, "trajectories": 9}
+{"epoch": 163, "loss": 2.389254927635193, "trajectories": 9}
+{"epoch": 164, "loss": 2.3885103861490884, "trajectories": 9}
+{"epoch": 165, "loss": 2.3881550365024142, "trajectories": 9}
+{"epoch": 166, "loss": 2.387566407521566, "trajectories": 9}
+{"epoch": 167, "loss": 2.3872211376825967, "trajectories": 9}
+{"epoch": 168, "loss": 2.386720127529568, "trajectories": 9}
+{"epoch": 169, "loss": 2.3857195907168918, "trajectories": 9}
+{"epoch": 170, "loss": 2.3851957586076526, "trajectories": 9}
+{"epoch": 171, "loss": 2.384377598762512, "trajectories": 9}
+{"epoch": 172, "loss": 2.383795460065206, "trajectories": 9}
+{"epoch": 173, "loss": 2.383341113726298, "trajectories": 9}
+{"epoch": 174, "loss": 2.3823814259635077, "trajectories": 9}
+{"epoch": 175, "loss": 2.381963928540548, "trajectories": 9}
+{"epoch": 176, "loss": 2.3809482786390515, "trajectories": 9}
+{"epoch": 177, "loss": 2.3805482387542725, "trajectories": 9}
+{"epoch": 178, "loss": 2.3798388242721558, "trajectories": 9}
+{"epoch": 179, "loss": 2.379348291291131, "trajectories": 9}
+{"epoch": 180, "loss": 2.3785923851860895, "trajectories": 9}
+{"epoch": 181, "loss": 2.378361807929145, "trajectories": 9}
+{"epoch": 182, "loss": 2.3782043192121716, "trajectories": 9}
+{"epoch": 183, "loss": 2.377049061987135, "trajectories": 9}
+{"epoch": 184, "loss": 2.3763553963767157, "trajectories": 9}
+{"epoch": 185, "loss": 2.375603516896566, "trajectories": 9}
+{"epoch": 186, "loss": 2.375128149986267, "trajectories": 9}
+{"epoch": 187, "loss": 2.374396880467733, "trajectories": 9}
+{"epoch": 188, "loss": 2.374349938498603, "trajectories": 9}
+{"epoch": 189, "loss": 2.3732171853383384, "trajectories": 9}
+{"epoch": 190, "loss": 2.3722858826319375, "trajectories": 9}
+{"epoch": 191, "loss": 2.372209390004476, "trajectories": 9}
+{"epoch": 192, "loss": 2.3713304334216647, "trajectories": 9}
+{"epoch": 193, "loss": 2.371171712875366, "trajectories": 9}
+{"epoch": 194, "loss": 2.3705949915779962, "trajectories": 9}
+{"epoch": 195, "loss": 2.3695355123943753, "trajectories": 9}
+{"epoch": 196, "loss": 2.3691255251566568, "trajectories": 9}
+{"epoch": 197, "loss": 2.3682041433122425, "trajectories": 9}
+{"epoch": 198, "loss": 2.367953406439887, "trajectories": 9}
+{"epoch": 199, "loss": 2.3670013348261514, "trajectories": 9}
+{"evaluation": "epoch 199", "set": "heldout", "rate": 1.0, "instances": 4, "per_instance": {"pegasus3-fill30-a3.0-15": 1.0, "pegasus3-fill30-a3.0-13": 1.0, "pegasus3-fill30-a3.0-24": 1.0, "pegasus3-fill30-a3.0-21": 1.0}}
+{"epoch": 200, "loss": 2.366242832607693, "trajectories": 9}
+{"epoch": 201, "loss": 2.3657226032680936, "trajectories": 9}
+{"epoch": 202, "loss": 2.3649938503901162, "trajectories": 9}
+{"epoch": 203, "loss": 2.3645408683353, "trajectories": 9}
+{"epoch": 204, "loss": 2.363680455419752, "trajectories": 9}
+{"epoch": 205, "loss": 2.3632407983144126, "trajectories": 9}
+{"epoch": 206, "loss": 2.3626104725731745, "trajectories": 9}
+{"epoch": 207, "loss": 2.36184381114112, "trajectories": 9}
+{"epoch": 208, "loss": 2.361271368132697, "trajectories": 9}
+{"epoch": 209, "loss": 2.360870109664069, "trajectories": 9}
+{"epoch": 210, "loss": 2.36014191309611, "trajectories": 9}
+{"epoch": 211, "loss": 2.3594135310914783, "trajectories": 9}
+{"epoch": 212, "loss": 2.3586887783474393, "trajectories": 9}
+{"epoch": 213, "loss": 2.3585155540042453, "trajectories": 9}
+{"epoch": 214, "loss": 2.3577933311462402, "trajectories": 9}
+{"epoch": 215, "loss": 2.356968773735894, "trajectories": 9}
+{"epoch": 216, "loss": 2.3560999499426947, "trajectories": 9}
+{"epoch": 217, "loss": 2.3555982377794056, "trajectories": 9}
+{"epoch": 218, "loss": 2.3549679252836437, "trajectories": 9}
+{"epoch": 219, "loss": 2.354659822252062, "trajectories": 9}
+{"epoch": 220, "loss": 2.3538593318727283, "trajectories": 9}
+{"epoch": 221, "loss": 2.3532003031836615, "trajectories": 9}
+{"epoch": 222, "loss": 2.3527272409862943, "trajectories": 9}
+{"epoch": 223, "loss": 2.3519634273317127, "trajectories": 9}
+{"epoch": 224, "loss": 2.351078165902032, "trajectories": 9}
+{"epoch": 225, "loss": 2.3507245911492243, "trajectories": 9}
+{"epoch": 226, "loss": 2.350071430206299, "trajectories": 9}
+{"epoch": 227, "loss": 2.349529253111945, "trajectories": 9}
+{"epoch": 228, "loss": 2.3484771384133234, "trajectories": 9}
+{"epoch": 229, "loss": 2.3480628728866577, "trajectories": 9}
+{"epoch": 230, "loss": 2.347423103120592, "trajectories": 9}
+{"epoch": 231, "loss": 2.3466481367746987, "trajectories": 9}
+{"epoch": 232, "loss": 2.3458364804585776, "trajectories": 9}
+{"epoch": 233, "loss": 2.345502985848321, "trajectories": 9}
+{"epoch": 234, "loss": 2.344637473424276, "trajectories": 9}
+{"epoch": 235, "loss": 2.344466050465902, "trajectories": 9}
+{"epoch": 236, "loss": 2.3435504966311984, "trajectories": 9}
+{"epoch": 237, "loss": 2.3433120250701904, "trajectories": 9}
+{"epoch": 238, "loss": 2.3420596652560763, "trajectories": 9}
+{"epoch": 239, "loss": 2.3415572775734796, "trajectories": 9}
+{"epoch": 240, "loss": 2.3409349653455944, "trajectories": 9}
+{"epoch": 241, "loss": 2.3406942817899914, "trajectories": 9}
+{"epoch": 242, "loss": 2.339531514379713, "trajectories": 9}
+{"epoch": 243, "loss": 2.338891135321723, "trajectories": 9}
+{"epoch": 244, "loss": 2.3380478488074408, "trajectories": 9}
+{"epoch": 245, "loss": 2.3373510572645397, "trajectories": 9}
+{"epoch": 246, "loss": 2.3369881179597645, "trajectories": 9}
+{"epoch": 247, "loss": 2.3359687328338623, "trajectories": 9}
+{"epoch": 248, "loss": 2.335298869344923, "trajectories": 9}
+{"epoch": 249, "loss": 2.3349275721444025, "trajectories": 9}
+{"evaluation": "final", "set": "heldout", "rate": 1.0, "instances": 4, "per_instance": {"pegasus3-fill30-a3.0-15": 1.0, "pegasus3-fill30-a3.0-13": 1.0, "pegasus3-fill30-a3.0-24": 1.0, "pegasus3-fill30-a3.0-21": 1.0}}
+CLONE DONE

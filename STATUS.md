@@ -2094,3 +2094,38 @@ own thesis turned on the paper's own method. It also closes off the whole family
 at frugality: the method does not lose because it spends, and it will not win by spending less.
 What separates a good embedding from a bad one here is not in any count of qubits, and the method
 question is what it is in. `results/quality/excess20_*_p3.log`.
+
+## What the quality loss is actually made of
+
+Qubit count and chain length are both ruled out by two interventions each. The channel left
+standing is whether the chains hold, and the evaluator reports it. Twenty instances, Pegasus 3 at
+fill 0.30, 4096-read assessment:
+
+| | policy | policy pruned | minorminer |
+|---|---|---|---|
+| qubits | 76.4 | 45.8 | 31.7 |
+| residual | 0.1015 | 0.1048 | 0.0671 |
+| **broken-chain fraction** | **0.0734** | 0.0641 | **0.0187** |
+
+The constructor's chains break **3.9 times as often** as minorminer's, and that is the mechanism
+of the quality loss. But it is not a length effect: pruning removes forty percent of the qubits
+and the broken fraction falls by twelve percent, with residual unchanged. The chains are not too
+long, they are shaped badly, and what makes a chain hold at a fixed strength is how the logical
+coupling mass distributes over its realised contacts and where its internal links sit.
+
+That is a precise target and it is exactly what the physics observation was built to describe:
+coefficient-weighted contact coverage and redundancy, load concentration, a bridge-load
+bottleneck proxy, cycle redundancy and signed realised coupling. The representation comparison on
+the cloning loss, same teachers, the 32-channel schema zero-padded from the same 20-channel
+checkpoint so its new channels start with no influence:
+
+| epoch | 1 | 60 | 120 | 180 | 240 |
+|---|---|---|---|---|---|
+| 20 channels, local | 3.411 | 2.476 | 2.418 | 2.379 | 2.342 |
+| **32 channels, physics** | 3.410 | **2.380** | **2.295** | **2.243** | **2.204** |
+
+The physics schema fits the teacher better from early on and holds the lead, putting 11.0 percent
+of its mass on the witness-consistent candidates against 9.6, which is fifteen percent more in
+relative terms. Both hold held-out validity 1.00 at every evaluation. Whether the better fit
+becomes better samples is being measured now on the same twenty instances.
+`results/quality/broken_pre_p3.log`, `results/quality/clone_long_*_p3.log`.
