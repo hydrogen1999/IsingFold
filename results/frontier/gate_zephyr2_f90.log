@@ -1,0 +1,2 @@
+{"probe": "solvability_frontier", "host": "zephyr", "sizes": [2], "fill": 0.9, "sweeps": [20000], "reads": 2048, "field_rates": [0.0], "instances": 12}
+  host       vars qubits   fill   chain  field   sweeps    p_reg   p_best     p_mm  p_grown

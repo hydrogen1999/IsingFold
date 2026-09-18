@@ -1378,9 +1378,21 @@ minorminer fails outright and solve probability still moves: 93 variables, certi
 minorminer 0 of 12 at 200 tries, p_solve 0.018 at 200 sweeps, 0.027 at 2000 and 0.084 at 20000.
 Zephyr 2 at named fill 0.90 is its companion at 116 variables. Below this the congestion claim
 fails, because minorminer solves 0.17 to 0.58 of the smaller instances; above it solve
-probability does. Whether it is earned depends on the discrimination gate now running
-(`results/frontier/gate_*.log`, 12 instances, 2048 reads, witness against a 24-qubit growth on
-the same instance, gate at 0.05 absolute with a paired interval above zero).
+probability does. It is not earned for solve probability, and the gate says so. Twelve paired instances,
+registered 200-sweep schedule, 8192 reads, witness against a 24-qubit growth on the same
+instance:
+
+| channel | witness minus grown | discriminates |
+|---|---|---|
+| solve probability | +0.0026 [-0.0009, +0.0062] | no, the interval crosses zero |
+| residual, sign flipped so positive is better | +0.0044 [+0.0024, +0.0064] | yes |
+| broken fraction, flipped | -0.0011 [-0.0020, -0.0002] | yes, and against the witness |
+
+minorminer is valid on 0 of the 12. Witness solve probability averages 0.0147 there, so the
+0.05 absolute gate was never reachable: the whole quantity is three times smaller than the gate.
+This is the measurement that forces two regimes. Where congestion is real, solve probability
+exists but is too small to separate embeddings; residual separates them at the same cell with
+the same effect size the record already reports at fill 80. `results/frontier/gate_*.log`.
 
 **A smaller congested cell, for reference.** Zephyr 1 at named fill 0.95, 38
 variables, 12 instances, 200-try minorminer: p_solve 0.225 at the registered strength and 0.368
@@ -1406,7 +1418,7 @@ different strength policies and not a like-for-like comparison.
 |---|---|---|---|
 | solvability frontier | whether solve probability can be restored on the congestion axis | apollo `runs/frontier/*_f90.log`, `*_field.log`, `*_deep.log` -> `results/frontier/` | **done**: no. Exponential decay in variables at 0.038 to 0.050 per variable, invariant to depth; fields dead from 195 variables; depth saturates at 94 variables between 20000 and 200000 sweeps |
 | witness pruning audit | whether named fill is the certified congestion | apollo `runs/frontier/prune_*.log` -> `results/frontier/` | **done**: it is not. Named fill overstates the certificate by 5 to 7 points on every host and fill measured; minorminer, where it succeeds, uses as many qubits as the pruned witness |
-| discrimination gate | whether the restored solve probability separates embeddings at the chosen cell | apollo `runs/frontier/gate_pegasus3_f90.log`, `gate_zephyr2_f90.log`, `gate_pegasus3_f90_registered.log` | running: 12 instances, 2048 reads at 20000 sweeps and 8192 reads at the registered 200, witness against a 24-qubit growth on the same instance. Gate: 0.05 absolute with a paired 95 percent interval above zero |
+| discrimination gate | whether the restored solve probability separates embeddings at the chosen cell | apollo `runs/frontier/gate_pegasus3_f90_registered.log` -> `results/frontier/` | **done at the registered depth, and it fails**: 12 paired instances, solve probability +0.0026 [-0.0009, +0.0062], residual +0.0044 [+0.0024, +0.0064], minorminer 0 of 12. Solve probability cannot separate embeddings where congestion is real. The 20000-sweep arms are still running and cannot change the sign |
 | congested training, measurable cell | held-out validity where minorminer is 0 and solve probability is readable | apollo `runs/congested/c3_f{90,95}_s*.log`, `z2_f{90,95}_s0.log` | running: Pegasus 3 and Zephyr 2 fill 90 and 95, 93 to 120 variables, wide support, warm start from the F and G checkpoints, held-out evaluation every 5 iterations |
 | congested training, large cell | the same at 488 variables, feasibility only | goose Slurm 3338, `runs/curriculum/sfill*_s*.log` | at risk: no training iteration in the first hour. The witness needs 500 to 589 decisions at about 0.64 s a step, against a 400 s training deadline, so an untrained policy should be timing out before COMMIT. Diagnose before trusting any number from it |
 | behaviour cloning at fill 80 | whether a teacher trajectory exists to imitate on the large hosts | apollo `runs/clone/fill80_*_clone_s0.log` | **done, negative**: teacher records end in `stuck` or at the 6000-step horizon with validity false on almost every instance, so there is no successful trajectory to clone at that cell |
