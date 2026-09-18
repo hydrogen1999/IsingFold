@@ -1,0 +1,15 @@
+{"probe": "solvability_frontier", "host": "zephyr", "sizes": [3], "fill": 0.9, "sweeps": [200, 2000, 20000], "reads": 512, "field_rates": [0.0], "instances": 2}
+  host       vars qubits   fill   chain  field   sweeps    p_reg   p_best     p_mm
+{"host": "zephyr3", "qubits": 336, "vars": 248, "witness_qubits": 302, "realised_fill": 0.8988095238095238, "mean_chain": 1.217741935483871, "field_rate": 0.0, "sweeps": 200, "reads": 512, "p_registered": 0.0, "p_by_strength": [0.0, 0.0, 0.0, 0.0], "p_best": 0.0, "mm_valid": false, "mm_qubits": null, "mm_secs": 32.21940469741821, "p_minorminer": null, "instance": 1}
+  zephyr3     248    302   0.90    1.22   0.00      200    0.000    0.000        -
+{"host": "zephyr3", "qubits": 336, "vars": 248, "witness_qubits": 302, "realised_fill": 0.8988095238095238, "mean_chain": 1.217741935483871, "field_rate": 0.0, "sweeps": 2000, "reads": 512, "p_registered": 0.0, "p_by_strength": [0.0, 0.0, 0.0, 0.0], "p_best": 0.0, "mm_valid": false, "mm_qubits": null, "mm_secs": 32.21940469741821, "p_minorminer": null, "instance": 1}
+  zephyr3     248    302   0.90    1.22   0.00     2000    0.000    0.000        -
+{"host": "zephyr3", "qubits": 336, "vars": 248, "witness_qubits": 302, "realised_fill": 0.8988095238095238, "mean_chain": 1.217741935483871, "field_rate": 0.0, "sweeps": 20000, "reads": 512, "p_registered": 0.0, "p_by_strength": [0.0, 0.0, 0.0, 0.0], "p_best": 0.0, "mm_valid": false, "mm_qubits": null, "mm_secs": 32.21940469741821, "p_minorminer": null, "instance": 1}
+  zephyr3     248    302   0.90    1.22   0.00    20000    0.000    0.000        -
+{"host": "zephyr3", "qubits": 336, "vars": 255, "witness_qubits": 302, "realised_fill": 0.8988095238095238, "mean_chain": 1.184313725490196, "field_rate": 0.0, "sweeps": 200, "reads": 512, "p_registered": 0.0, "p_by_strength": [0.0, 0.0, 0.0, 0.0], "p_best": 0.0, "mm_valid": false, "mm_qubits": null, "mm_secs": 23.18396759033203, "p_minorminer": null, "instance": 2}
+  zephyr3     255    302   0.90    1.18   0.00      200    0.000    0.000        -
+{"host": "zephyr3", "qubits": 336, "vars": 255, "witness_qubits": 302, "realised_fill": 0.8988095238095238, "mean_chain": 1.184313725490196, "field_rate": 0.0, "sweeps": 2000, "reads": 512, "p_registered": 0.0, "p_by_strength": [0.0, 0.0, 0.0, 0.0], "p_best": 0.0, "mm_valid": false, "mm_qubits": null, "mm_secs": 23.18396759033203, "p_minorminer": null, "instance": 2}
+  zephyr3     255    302   0.90    1.18   0.00     2000    0.000    0.000        -
+{"host": "zephyr3", "qubits": 336, "vars": 255, "witness_qubits": 302, "realised_fill": 0.8988095238095238, "mean_chain": 1.184313725490196, "field_rate": 0.0, "sweeps": 20000, "reads": 512, "p_registered": 0.0, "p_by_strength": [0.0, 0.0, 0.0, 0.0], "p_best": 0.0, "mm_valid": false, "mm_qubits": null, "mm_secs": 23.18396759033203, "p_minorminer": null, "instance": 2}
+  zephyr3     255    302   0.90    1.18   0.00    20000    0.000    0.000        -
+SOLVABILITY FRONTIER DONE

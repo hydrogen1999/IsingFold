@@ -1,0 +1,45 @@
+{"probe": "witness_prune", "host": "zephyr", "sizes": [1, 2], "fills": [0.8, 0.9, 0.95], "instances": 12, "mm_tries": 200}
+  host       vars  named  witness   pruned prunedfl lowbound mmqubits   mm_ok   mmfill
+{"host": "zephyr1", "named_fill": 0.8, "qubits": 48, "vars": 32, "witness": 38, "pruned": 37, "mm": 44, "pruned_fill": 0.7708333333333334, "lower_bound_fill": 0.6666666666666666, "instance": 1}
+{"host": "zephyr1", "named_fill": 0.8, "qubits": 48, "vars": 31, "witness": 38, "pruned": 37, "mm": 46, "pruned_fill": 0.7708333333333334, "lower_bound_fill": 0.6458333333333334, "instance": 2}
+{"host": "zephyr1", "named_fill": 0.8, "qubits": 48, "vars": 30, "witness": 38, "pruned": 35, "mm": null, "pruned_fill": 0.7291666666666666, "lower_bound_fill": 0.625, "instance": 3}
+{"host": "zephyr1", "named_fill": 0.8, "qubits": 48, "vars": 27, "witness": 38, "pruned": 34, "mm": 34, "pruned_fill": 0.7083333333333334, "lower_bound_fill": 0.5625, "instance": 4}
+{"host": "zephyr1", "named_fill": 0.8, "qubits": 48, "vars": 29, "witness": 38, "pruned": 37, "mm": 35, "pruned_fill": 0.7708333333333334, "lower_bound_fill": 0.6041666666666666, "instance": 5}
+{"host": "zephyr1", "named_fill": 0.8, "qubits": 48, "vars": 31, "witness": 38, "pruned": 37, "mm": 38, "pruned_fill": 0.7708333333333334, "lower_bound_fill": 0.6458333333333334, "instance": 6}
+{"host": "zephyr1", "named_fill": 0.8, "qubits": 48, "vars": 26, "witness": 38, "pruned": 33, "mm": 34, "pruned_fill": 0.6875, "lower_bound_fill": 0.5416666666666666, "instance": 7}
+{"host": "zephyr1", "named_fill": 0.8, "qubits": 48, "vars": 30, "witness": 38, "pruned": 36, "mm": 42, "pruned_fill": 0.75, "lower_bound_fill": 0.625, "instance": 8}
+{"host": "zephyr1", "named_fill": 0.8, "qubits": 48, "vars": 35, "witness": 38, "pruned": 38, "mm": 45, "pruned_fill": 0.7916666666666666, "lower_bound_fill": 0.7291666666666666, "instance": 9}
+{"host": "zephyr1", "named_fill": 0.8, "qubits": 48, "vars": 26, "witness": 38, "pruned": 33, "mm": 33, "pruned_fill": 0.6875, "lower_bound_fill": 0.5416666666666666, "instance": 10}
+{"host": "zephyr1", "named_fill": 0.8, "qubits": 48, "vars": 29, "witness": 38, "pruned": 37, "mm": 41, "pruned_fill": 0.7708333333333334, "lower_bound_fill": 0.6041666666666666, "instance": 11}
+{"host": "zephyr1", "named_fill": 0.8, "qubits": 48, "vars": 35, "witness": 38, "pruned": 38, "mm": 48, "pruned_fill": 0.7916666666666666, "lower_bound_fill": 0.7291666666666666, "instance": 12}
+  zephyr1      30   0.80     38.0     36.0     0.75     0.63     40.0    0.92     0.83
+{"host": "zephyr1", "named_fill": 0.9, "qubits": 48, "vars": 37, "witness": 43, "pruned": 41, "mm": null, "pruned_fill": 0.8541666666666666, "lower_bound_fill": 0.7708333333333334, "instance": 13}
+{"host": "zephyr1", "named_fill": 0.9, "qubits": 48, "vars": 29, "witness": 43, "pruned": 38, "mm": 36, "pruned_fill": 0.7916666666666666, "lower_bound_fill": 0.6041666666666666, "instance": 14}
+{"host": "zephyr1", "named_fill": 0.9, "qubits": 48, "vars": 34, "witness": 43, "pruned": 40, "mm": 45, "pruned_fill": 0.8333333333333334, "lower_bound_fill": 0.7083333333333334, "instance": 15}
+{"host": "zephyr1", "named_fill": 0.9, "qubits": 48, "vars": 37, "witness": 43, "pruned": 41, "mm": null, "pruned_fill": 0.8541666666666666, "lower_bound_fill": 0.7708333333333334, "instance": 16}
+{"host": "zephyr1", "named_fill": 0.9, "qubits": 48, "vars": 37, "witness": 43, "pruned": 42, "mm": null, "pruned_fill": 0.875, "lower_bound_fill": 0.7708333333333334, "instance": 17}
+{"host": "zephyr1", "named_fill": 0.9, "qubits": 48, "vars": 33, "witness": 43, "pruned": 39, "mm": null, "pruned_fill": 0.8125, "lower_bound_fill": 0.6875, "instance": 18}
+{"host": "zephyr1", "named_fill": 0.9, "qubits": 48, "vars": 36, "witness": 43, "pruned": 43, "mm": null, "pruned_fill": 0.8958333333333334, "lower_bound_fill": 0.75, "instance": 19}
+{"host": "zephyr1", "named_fill": 0.9, "qubits": 48, "vars": 37, "witness": 43, "pruned": 42, "mm": null, "pruned_fill": 0.875, "lower_bound_fill": 0.7708333333333334, "instance": 20}
+{"host": "zephyr1", "named_fill": 0.9, "qubits": 48, "vars": 35, "witness": 43, "pruned": 42, "mm": 46, "pruned_fill": 0.875, "lower_bound_fill": 0.7291666666666666, "instance": 21}
+{"host": "zephyr1", "named_fill": 0.9, "qubits": 48, "vars": 37, "witness": 43, "pruned": 42, "mm": null, "pruned_fill": 0.875, "lower_bound_fill": 0.7708333333333334, "instance": 22}
+{"host": "zephyr1", "named_fill": 0.9, "qubits": 48, "vars": 34, "witness": 43, "pruned": 41, "mm": null, "pruned_fill": 0.8541666666666666, "lower_bound_fill": 0.7083333333333334, "instance": 23}
+{"host": "zephyr1", "named_fill": 0.9, "qubits": 48, "vars": 40, "witness": 43, "pruned": 43, "mm": null, "pruned_fill": 0.8958333333333334, "lower_bound_fill": 0.8333333333333334, "instance": 24}
+  zephyr1      36   0.90     43.0     41.2     0.86     0.74     42.3    0.25     0.88
+{"host": "zephyr1", "named_fill": 0.95, "qubits": 48, "vars": 38, "witness": 46, "pruned": 45, "mm": null, "pruned_fill": 0.9375, "lower_bound_fill": 0.7916666666666666, "instance": 25}
+{"host": "zephyr1", "named_fill": 0.95, "qubits": 48, "vars": 39, "witness": 46, "pruned": 46, "mm": null, "pruned_fill": 0.9583333333333334, "lower_bound_fill": 0.8125, "instance": 26}
+{"host": "zephyr1", "named_fill": 0.95, "qubits": 48, "vars": 36, "witness": 46, "pruned": 44, "mm": null, "pruned_fill": 0.9166666666666666, "lower_bound_fill": 0.75, "instance": 27}
+{"host": "zephyr1", "named_fill": 0.95, "qubits": 48, "vars": 36, "witness": 46, "pruned": 41, "mm": null, "pruned_fill": 0.8541666666666666, "lower_bound_fill": 0.75, "instance": 28}
+{"host": "zephyr1", "named_fill": 0.95, "qubits": 48, "vars": 33, "witness": 46, "pruned": 45, "mm": 44, "pruned_fill": 0.9375, "lower_bound_fill": 0.6875, "instance": 29}
+{"host": "zephyr1", "named_fill": 0.95, "qubits": 48, "vars": 39, "witness": 46, "pruned": 43, "mm": null, "pruned_fill": 0.8958333333333334, "lower_bound_fill": 0.8125, "instance": 30}
+{"host": "zephyr1", "named_fill": 0.95, "qubits": 48, "vars": 41, "witness": 46, "pruned": 46, "mm": null, "pruned_fill": 0.9583333333333334, "lower_bound_fill": 0.8541666666666666, "instance": 31}
+{"host": "zephyr1", "named_fill": 0.95, "qubits": 48, "vars": 37, "witness": 46, "pruned": 41, "mm": null, "pruned_fill": 0.8541666666666666, "lower_bound_fill": 0.7708333333333334, "instance": 32}
+{"host": "zephyr1", "named_fill": 0.95, "qubits": 48, "vars": 36, "witness": 46, "pruned": 45, "mm": null, "pruned_fill": 0.9375, "lower_bound_fill": 0.75, "instance": 33}
+{"host": "zephyr1", "named_fill": 0.95, "qubits": 48, "vars": 36, "witness": 46, "pruned": 45, "mm": 46, "pruned_fill": 0.9375, "lower_bound_fill": 0.75, "instance": 34}
+{"host": "zephyr1", "named_fill": 0.95, "qubits": 48, "vars": 42, "witness": 46, "pruned": 45, "mm": null, "pruned_fill": 0.9375, "lower_bound_fill": 0.875, "instance": 35}
+{"host": "zephyr1", "named_fill": 0.95, "qubits": 48, "vars": 40, "witness": 46, "pruned": 45, "mm": null, "pruned_fill": 0.9375, "lower_bound_fill": 0.8333333333333334, "instance": 36}
+  zephyr1      38   0.95     46.0     44.2     0.92     0.79     45.0    0.17     0.94
+{"host": "zephyr2", "named_fill": 0.8, "qubits": 160, "vars": 112, "witness": 128, "pruned": 128, "mm": null, "pruned_fill": 0.8, "lower_bound_fill": 0.7, "instance": 37}
+{"host": "zephyr2", "named_fill": 0.8, "qubits": 160, "vars": 103, "witness": 128, "pruned": 122, "mm": null, "pruned_fill": 0.7625, "lower_bound_fill": 0.64375, "instance": 38}
+{"host": "zephyr2", "named_fill": 0.8, "qubits": 160, "vars": 104, "witness": 128, "pruned": 124, "mm": null, "pruned_fill": 0.775, "lower_bound_fill": 0.65, "instance": 39}
+{"host": "zephyr2", "named_fill": 0.8, "qubits": 160, "vars": 90, "witness": 128, "pruned": 120, "mm": 136, "pruned_fill": 0.75, "lower_bound_fill": 0.5625, "instance": 40}

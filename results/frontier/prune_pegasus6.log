@@ -1,0 +1,2 @@
+{"probe": "witness_prune", "host": "pegasus", "sizes": [6], "fills": [0.9], "instances": 4, "mm_tries": 50}
+  host       vars  named  witness   pruned prunedfl lowbound mmqubits   mm_ok   mmfill

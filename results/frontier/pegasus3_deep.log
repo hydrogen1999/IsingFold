@@ -1,0 +1,4 @@
+{"probe": "solvability_frontier", "host": "pegasus", "sizes": [3], "fill": 0.9, "sweeps": [20000, 200000], "reads": 512, "field_rates": [0.0], "instances": 2}
+  host       vars qubits   fill   chain  field   sweeps    p_reg   p_best     p_mm
+{"host": "pegasus3", "qubits": 128, "vars": 94, "witness_qubits": 115, "realised_fill": 0.8984375, "mean_chain": 1.2234042553191489, "field_rate": 0.0, "sweeps": 20000, "reads": 512, "p_registered": 0.0625, "p_by_strength": [0.033203125, 0.0625, 0.083984375, 0.00390625], "p_best": 0.083984375, "mm_valid": false, "mm_qubits": null, "mm_secs": 1.3444249629974365, "p_minorminer": null, "instance": 1}
+  pegasus3     94    115   0.90    1.22   0.00    20000    0.062    0.084        -

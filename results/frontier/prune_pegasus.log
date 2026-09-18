@@ -1,0 +1,50 @@
+{"probe": "witness_prune", "host": "pegasus", "sizes": [2, 3], "fills": [0.8, 0.9, 0.95], "instances": 12, "mm_tries": 200}
+  host       vars  named  witness   pruned prunedfl lowbound mmqubits   mm_ok   mmfill
+{"host": "pegasus2", "named_fill": 0.8, "qubits": 40, "vars": 28, "witness": 32, "pruned": 31, "mm": 33, "pruned_fill": 0.775, "lower_bound_fill": 0.7, "instance": 1}
+{"host": "pegasus2", "named_fill": 0.8, "qubits": 40, "vars": 25, "witness": 32, "pruned": 29, "mm": 29, "pruned_fill": 0.725, "lower_bound_fill": 0.625, "instance": 2}
+{"host": "pegasus2", "named_fill": 0.8, "qubits": 40, "vars": 32, "witness": 32, "pruned": 32, "mm": 35, "pruned_fill": 0.8, "lower_bound_fill": 0.8, "instance": 3}
+{"host": "pegasus2", "named_fill": 0.8, "qubits": 40, "vars": 26, "witness": 32, "pruned": 29, "mm": 31, "pruned_fill": 0.725, "lower_bound_fill": 0.65, "instance": 4}
+{"host": "pegasus2", "named_fill": 0.8, "qubits": 40, "vars": 28, "witness": 32, "pruned": 31, "mm": 36, "pruned_fill": 0.775, "lower_bound_fill": 0.7, "instance": 5}
+{"host": "pegasus2", "named_fill": 0.8, "qubits": 40, "vars": 27, "witness": 32, "pruned": 30, "mm": 31, "pruned_fill": 0.75, "lower_bound_fill": 0.675, "instance": 6}
+{"host": "pegasus2", "named_fill": 0.8, "qubits": 40, "vars": 30, "witness": 32, "pruned": 31, "mm": 33, "pruned_fill": 0.775, "lower_bound_fill": 0.75, "instance": 7}
+{"host": "pegasus2", "named_fill": 0.8, "qubits": 40, "vars": 22, "witness": 32, "pruned": 28, "mm": 31, "pruned_fill": 0.7, "lower_bound_fill": 0.55, "instance": 8}
+{"host": "pegasus2", "named_fill": 0.8, "qubits": 40, "vars": 26, "witness": 32, "pruned": 30, "mm": 31, "pruned_fill": 0.75, "lower_bound_fill": 0.65, "instance": 9}
+{"host": "pegasus2", "named_fill": 0.8, "qubits": 40, "vars": 24, "witness": 32, "pruned": 26, "mm": 29, "pruned_fill": 0.65, "lower_bound_fill": 0.6, "instance": 10}
+{"host": "pegasus2", "named_fill": 0.8, "qubits": 40, "vars": 27, "witness": 32, "pruned": 30, "mm": 33, "pruned_fill": 0.75, "lower_bound_fill": 0.675, "instance": 11}
+{"host": "pegasus2", "named_fill": 0.8, "qubits": 40, "vars": 26, "witness": 32, "pruned": 29, "mm": null, "pruned_fill": 0.725, "lower_bound_fill": 0.65, "instance": 12}
+  pegasus2     27   0.80     32.0     29.7     0.74     0.67     32.0    0.92     0.80
+{"host": "pegasus2", "named_fill": 0.9, "qubits": 40, "vars": 23, "witness": 36, "pruned": 29, "mm": 27, "pruned_fill": 0.725, "lower_bound_fill": 0.575, "instance": 13}
+{"host": "pegasus2", "named_fill": 0.9, "qubits": 40, "vars": 29, "witness": 36, "pruned": 33, "mm": null, "pruned_fill": 0.825, "lower_bound_fill": 0.725, "instance": 14}
+{"host": "pegasus2", "named_fill": 0.9, "qubits": 40, "vars": 31, "witness": 36, "pruned": 35, "mm": null, "pruned_fill": 0.875, "lower_bound_fill": 0.775, "instance": 15}
+{"host": "pegasus2", "named_fill": 0.9, "qubits": 40, "vars": 29, "witness": 36, "pruned": 33, "mm": 33, "pruned_fill": 0.825, "lower_bound_fill": 0.725, "instance": 16}
+{"host": "pegasus2", "named_fill": 0.9, "qubits": 40, "vars": 30, "witness": 36, "pruned": 33, "mm": 36, "pruned_fill": 0.825, "lower_bound_fill": 0.75, "instance": 17}
+{"host": "pegasus2", "named_fill": 0.9, "qubits": 40, "vars": 35, "witness": 36, "pruned": 36, "mm": null, "pruned_fill": 0.9, "lower_bound_fill": 0.875, "instance": 18}
+{"host": "pegasus2", "named_fill": 0.9, "qubits": 40, "vars": 29, "witness": 36, "pruned": 34, "mm": 35, "pruned_fill": 0.85, "lower_bound_fill": 0.725, "instance": 19}
+{"host": "pegasus2", "named_fill": 0.9, "qubits": 40, "vars": 30, "witness": 36, "pruned": 34, "mm": null, "pruned_fill": 0.85, "lower_bound_fill": 0.75, "instance": 20}
+{"host": "pegasus2", "named_fill": 0.9, "qubits": 40, "vars": 34, "witness": 36, "pruned": 36, "mm": 39, "pruned_fill": 0.9, "lower_bound_fill": 0.85, "instance": 21}
+{"host": "pegasus2", "named_fill": 0.9, "qubits": 40, "vars": 32, "witness": 36, "pruned": 34, "mm": 33, "pruned_fill": 0.85, "lower_bound_fill": 0.8, "instance": 22}
+{"host": "pegasus2", "named_fill": 0.9, "qubits": 40, "vars": 26, "witness": 36, "pruned": 30, "mm": 32, "pruned_fill": 0.75, "lower_bound_fill": 0.65, "instance": 23}
+{"host": "pegasus2", "named_fill": 0.9, "qubits": 40, "vars": 31, "witness": 36, "pruned": 35, "mm": null, "pruned_fill": 0.875, "lower_bound_fill": 0.775, "instance": 24}
+  pegasus2     30   0.90     36.0     33.5     0.84     0.75     33.6    0.58     0.84
+{"host": "pegasus2", "named_fill": 0.95, "qubits": 40, "vars": 30, "witness": 38, "pruned": 33, "mm": 33, "pruned_fill": 0.825, "lower_bound_fill": 0.75, "instance": 25}
+{"host": "pegasus2", "named_fill": 0.95, "qubits": 40, "vars": 32, "witness": 38, "pruned": 34, "mm": 34, "pruned_fill": 0.85, "lower_bound_fill": 0.8, "instance": 26}
+{"host": "pegasus2", "named_fill": 0.95, "qubits": 40, "vars": 31, "witness": 38, "pruned": 35, "mm": null, "pruned_fill": 0.875, "lower_bound_fill": 0.775, "instance": 27}
+{"host": "pegasus2", "named_fill": 0.95, "qubits": 40, "vars": 33, "witness": 38, "pruned": 37, "mm": null, "pruned_fill": 0.925, "lower_bound_fill": 0.825, "instance": 28}
+{"host": "pegasus2", "named_fill": 0.95, "qubits": 40, "vars": 33, "witness": 38, "pruned": 35, "mm": null, "pruned_fill": 0.875, "lower_bound_fill": 0.825, "instance": 29}
+{"host": "pegasus2", "named_fill": 0.95, "qubits": 40, "vars": 29, "witness": 38, "pruned": 36, "mm": null, "pruned_fill": 0.9, "lower_bound_fill": 0.725, "instance": 30}
+{"host": "pegasus2", "named_fill": 0.95, "qubits": 40, "vars": 33, "witness": 38, "pruned": 35, "mm": 36, "pruned_fill": 0.875, "lower_bound_fill": 0.825, "instance": 31}
+{"host": "pegasus2", "named_fill": 0.95, "qubits": 40, "vars": 26, "witness": 38, "pruned": 32, "mm": null, "pruned_fill": 0.8, "lower_bound_fill": 0.65, "instance": 32}
+{"host": "pegasus2", "named_fill": 0.95, "qubits": 40, "vars": 34, "witness": 38, "pruned": 37, "mm": 38, "pruned_fill": 0.925, "lower_bound_fill": 0.85, "instance": 33}
+{"host": "pegasus2", "named_fill": 0.95, "qubits": 40, "vars": 29, "witness": 38, "pruned": 34, "mm": 35, "pruned_fill": 0.85, "lower_bound_fill": 0.725, "instance": 34}
+{"host": "pegasus2", "named_fill": 0.95, "qubits": 40, "vars": 29, "witness": 38, "pruned": 34, "mm": 32, "pruned_fill": 0.85, "lower_bound_fill": 0.725, "instance": 35}
+{"host": "pegasus2", "named_fill": 0.95, "qubits": 40, "vars": 33, "witness": 38, "pruned": 36, "mm": 36, "pruned_fill": 0.9, "lower_bound_fill": 0.825, "instance": 36}
+  pegasus2     31   0.95     38.0     34.8     0.87     0.78     34.9    0.58     0.87
+{"host": "pegasus3", "named_fill": 0.8, "qubits": 128, "vars": 83, "witness": 102, "pruned": 96, "mm": null, "pruned_fill": 0.75, "lower_bound_fill": 0.6484375, "instance": 37}
+{"host": "pegasus3", "named_fill": 0.8, "qubits": 128, "vars": 84, "witness": 102, "pruned": 98, "mm": null, "pruned_fill": 0.765625, "lower_bound_fill": 0.65625, "instance": 38}
+{"host": "pegasus3", "named_fill": 0.8, "qubits": 128, "vars": 89, "witness": 102, "pruned": 97, "mm": null, "pruned_fill": 0.7578125, "lower_bound_fill": 0.6953125, "instance": 39}
+{"host": "pegasus3", "named_fill": 0.8, "qubits": 128, "vars": 86, "witness": 102, "pruned": 97, "mm": null, "pruned_fill": 0.7578125, "lower_bound_fill": 0.671875, "instance": 40}
+{"host": "pegasus3", "named_fill": 0.8, "qubits": 128, "vars": 71, "witness": 102, "pruned": 92, "mm": 110, "pruned_fill": 0.71875, "lower_bound_fill": 0.5546875, "instance": 41}
+{"host": "pegasus3", "named_fill": 0.8, "qubits": 128, "vars": 73, "witness": 102, "pruned": 92, "mm": 108, "pruned_fill": 0.71875, "lower_bound_fill": 0.5703125, "instance": 42}
+{"host": "pegasus3", "named_fill": 0.8, "qubits": 128, "vars": 79, "witness": 102, "pruned": 98, "mm": null, "pruned_fill": 0.765625, "lower_bound_fill": 0.6171875, "instance": 43}
+{"host": "pegasus3", "named_fill": 0.8, "qubits": 128, "vars": 90, "witness": 102, "pruned": 99, "mm": null, "pruned_fill": 0.7734375, "lower_bound_fill": 0.703125, "instance": 44}
+{"host": "pegasus3", "named_fill": 0.8, "qubits": 128, "vars": 74, "witness": 102, "pruned": 95, "mm": null, "pruned_fill": 0.7421875, "lower_bound_fill": 0.578125, "instance": 45}

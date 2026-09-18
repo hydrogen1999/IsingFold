@@ -562,8 +562,10 @@ schedule (`results/scale/objective_*.log`):
     Zephyr 4       250 to 300   0.0000             0.128 to 0.150      0.0000                5 / 6
 
 Solve probability is already at 0.02 and below at 50 to 75 variables of frustrated loops and
-is exactly zero from 250 on: at that size 512 reads never reach the planted ground state
-whatever the embedding, so p_solve cannot separate embeddings there. The energy residual
+scores zero hits in a 512-read block from 250 on. Zero hits bounds the per-read rate below
+about 0.006 at 95 percent confidence; it does not establish that the rate is zero, and the
+earlier wording here said it did. What the bound supports is that 512 reads cannot separate
+embeddings at that size, not that no embedding ever solves. The energy residual
 does, and it is the objective the record uses above 100 variables (Task 9 measured the
 witness against minorminer's draw with paired intervals at fill 80 and found -0.021 to
 -0.032). The paper therefore reports p_solve on the modern corpora (16 to 20 variables,
@@ -1291,3 +1293,87 @@ rather than by me.
 
 The pattern is the same every time: report the first result, state its limits correctly, then let
 it become the headline anyway. Nothing goes into the results README now before three seeds.
+
+## The solvability frontier, 2026-09-18
+
+Asked: restore solve probability on the congestion axis so the paper reports one objective
+instead of two. Answer: it cannot be restored above about 100 variables, the reason is a
+measured property of the sampler rather than a choice, and two declared regimes are the
+stronger design. Probes `probes/solvability_frontier.py` and `probes/witness_prune.py`, logs
+in `results/frontier/`, adversarial read in
+`docs/review/2026-09-18-codex-gpt6-astra-review-three-solvability.md`.
+
+**The diagnosis.** Two independent difficulties were being read as one number. Fill sets how
+hard an instance is to embed. Frustrated-loop density sets how hard it is to solve once
+embedded. Loop density is not usable as a knob: an edge survives into the logical graph only
+where its summed coupling is nonzero (`planting.py`, the `active` filter), so a sparser problem
+is a sparser embedding problem and the congestion claim moves with it.
+
+**What was ruled out, by measurement, not argument.**
+
+| knob | what it leaves alone | result | log |
+|---|---|---|---|
+| local field on a fraction of nodes | every edge, so the embedding problem exactly | dead: p_solve stays 0.000 at 195 to 475 variables at field rates 0.10, 0.25 and 0.50 | `results/frontier/*_field.log` |
+| anneal depth, 200 to 20000 sweeps | the instance entirely | buys about 15 variables per decade of sweeps, no change in decay rate | `results/frontier/*_f90.log` |
+| host size at fixed fill | one ratio, not the graph | restores p_solve, but builds a different instance and does not preserve congestion | `results/frontier/*_f90.log` |
+
+**The law.** Decoded solve probability decays exponentially in the variable count at fixed
+congestion, and the decay rate is invariant to anneal depth over two decades:
+
+| sweeps | slope of log p_solve per variable | variables at p_solve 0.05 |
+|---|---|---|
+| 200 | -0.0499 | 66 |
+| 2000 | -0.0383 | 83 |
+| 20000 | -0.0457 | 80 |
+
+Fitted on cells with a resolvable rate, so the zeros are censored and the true slope is at
+least this steep. A hundredfold increase in sweeps moves the intercept, not the slope, so
+reaching 434 variables at p_solve 0.05 needs roughly twenty-four further decades of sampling.
+That is the quantitative reason the congested regime reports residual, and it replaces the
+earlier hand-wave.
+
+**The named fill overstates the congestion.** The witness certifies a sufficient occupancy,
+not a necessary one. Greedy pruning, keeping every chain connected and every logical contact
+realised:
+
+| host, named fill | witness qubits | pruned | certified fill | lower bound | minorminer valid at 200 tries |
+|---|---|---|---|---|---|
+| Pegasus 2, 0.90 | 36.0 | 33.5 | 0.84 | 0.75 | 0.58 |
+| Pegasus 2, 0.95 | 38.0 | 34.8 | 0.87 | 0.78 | 0.58 |
+| Zephyr 1, 0.90 | 43.0 | 41.2 | 0.86 | 0.74 | 0.25 |
+| Zephyr 1, 0.95 | 46.0 | 44.2 | 0.92 | 0.79 | 0.17 |
+
+Named fill runs 5 to 7 points above what is certified. Where minorminer succeeds it uses about
+as many qubits as the pruned witness (33.6 against 33.5, 42.3 against 41.2), so its failures
+are failures to find anything, not failures to pack tightly. Corpus cells should be reported by
+pruned fill from here. `results/frontier/prune_*.log`.
+
+**All three channels discriminate, given a large enough dose.** Same instance, same host,
+chains lengthened by absorbing free qubits, Pegasus 3 at fill 0.50, 2000 sweeps:
+
+| absorbed | mean chain | p_solve | residual | broken fraction |
+|---|---|---|---|---|
+| 16 | 1.28 to 1.60 | 0.234 to 0.203 | 0.0484 to 0.0514 | 0.008 to 0.009 |
+| 32 | 1.23 to 1.86 | 0.128 to 0.087 | 0.0449 to 0.0528 | 0.005 to 0.012 |
+| 64 | 1.23 to 2.46 | 0.212 to 0.110 | 0.0335 to 0.0572 | 0.002 to 0.014 |
+
+The earlier null at 8 absorbed qubits was an underpowered dose, not an insensitive channel.
+`results/frontier/mech_*.log`, `results/frontier/discrim_*.log`.
+
+**The one congested cell where both conditions hold.** Zephyr 1 at named fill 0.95, 38
+variables, 12 instances, 200-try minorminer: p_solve 0.225 at the registered strength and 0.368
+at the best of four, residual 0.0325, minorminer valid on 0.08 to 0.17 of instances. Pegasus 2
+does not qualify: minorminer solves 0.55 to 0.58 of its fill-0.95 instances, so the earlier
+"0 of 3 at 20 tries" was small-sample and small-budget. `results/frontier/cell_zephyr1_f95_*.log`,
+`results/frontier/confirm_*.log`.
+
+**Verdict.** Keep two declared regimes. Solve probability is primary below about 80 variables,
+where it is measurable and now shown to discriminate; residual and feasibility are the
+endpoints above it, with zero-hit upper bounds reported rather than zeros. The regime boundary
+is itself a result, with the depth and field arms as the evidence that it is not a choice.
+
+**Corrections this work forced.** Four claims were wrong and are retracted here: p_solve is not
+"exactly zero" at scale, only bounded below 0.006; holding fill fixed does not hold the logical
+graph fixed; named fill is not certified congestion; and the earlier table compared the
+witness at the registered strength against minorminer at its best strength, which is two
+different strength policies and not a like-for-like comparison.

@@ -1,0 +1,15 @@
+{"probe": "solvability_frontier", "host": "pegasus", "sizes": [2], "fill": 0.8, "sweeps": [200, 2000], "reads": 512, "field_rates": [0.0], "instances": 3}
+  host       vars qubits   fill   chain  field   sweeps    p_reg   p_best     p_mm
+{"host": "pegasus2", "qubits": 40, "vars": 25, "witness_qubits": 32, "realised_fill": 0.8, "mean_chain": 1.28, "field_rate": 0.0, "sweeps": 200, "reads": 512, "p_registered": 0.19921875, "p_by_strength": [0.0859375, 0.19921875, 0.3984375, 0.173828125], "p_best": 0.3984375, "mm_valid": true, "mm_qubits": 30, "mm_secs": 0.010771036148071289, "p_minorminer": 0.416015625, "instance": 1}
+  pegasus2     25     32   0.80    1.28   0.00      200    0.199    0.398    0.416
+{"host": "pegasus2", "qubits": 40, "vars": 25, "witness_qubits": 32, "realised_fill": 0.8, "mean_chain": 1.28, "field_rate": 0.0, "sweeps": 2000, "reads": 512, "p_registered": 0.240234375, "p_by_strength": [0.099609375, 0.240234375, 0.458984375, 0.19921875], "p_best": 0.458984375, "mm_valid": true, "mm_qubits": 30, "mm_secs": 0.010771036148071289, "p_minorminer": 0.544921875, "instance": 1}
+  pegasus2     25     32   0.80    1.28   0.00     2000    0.240    0.459    0.545
+{"host": "pegasus2", "qubits": 40, "vars": 30, "witness_qubits": 32, "realised_fill": 0.8, "mean_chain": 1.0666666666666667, "field_rate": 0.0, "sweeps": 200, "reads": 512, "p_registered": 0.2421875, "p_by_strength": [0.185546875, 0.2421875, 0.203125, 0.068359375], "p_best": 0.2421875, "mm_valid": true, "mm_qubits": 32, "mm_secs": 0.04975175857543945, "p_minorminer": 0.234375, "instance": 2}
+  pegasus2     30     32   0.80    1.07   0.00      200    0.242    0.242    0.234
+{"host": "pegasus2", "qubits": 40, "vars": 30, "witness_qubits": 32, "realised_fill": 0.8, "mean_chain": 1.0666666666666667, "field_rate": 0.0, "sweeps": 2000, "reads": 512, "p_registered": 0.275390625, "p_by_strength": [0.220703125, 0.275390625, 0.240234375, 0.1015625], "p_best": 0.275390625, "mm_valid": true, "mm_qubits": 32, "mm_secs": 0.04975175857543945, "p_minorminer": 0.2890625, "instance": 2}
+  pegasus2     30     32   0.80    1.07   0.00     2000    0.275    0.275    0.289
+{"host": "pegasus2", "qubits": 40, "vars": 23, "witness_qubits": 32, "realised_fill": 0.8, "mean_chain": 1.391304347826087, "field_rate": 0.0, "sweeps": 200, "reads": 512, "p_registered": 0.79296875, "p_by_strength": [0.796875, 0.79296875, 0.8046875, 0.431640625], "p_best": 0.8046875, "mm_valid": true, "mm_qubits": 29, "mm_secs": 0.003268718719482422, "p_minorminer": 0.767578125, "instance": 3}
+  pegasus2     23     32   0.80    1.39   0.00      200    0.793    0.805    0.768
+{"host": "pegasus2", "qubits": 40, "vars": 23, "witness_qubits": 32, "realised_fill": 0.8, "mean_chain": 1.391304347826087, "field_rate": 0.0, "sweeps": 2000, "reads": 512, "p_registered": 0.814453125, "p_by_strength": [0.771484375, 0.814453125, 0.828125, 0.478515625], "p_best": 0.828125, "mm_valid": true, "mm_qubits": 29, "mm_secs": 0.003268718719482422, "p_minorminer": 0.80859375, "instance": 3}
+  pegasus2     23     32   0.80    1.39   0.00     2000    0.814    0.828    0.809
+SOLVABILITY FRONTIER DONE

@@ -1,0 +1,12 @@
+{"probe": "solvability_frontier", "host": "pegasus", "sizes": [5], "fill": 0.9, "sweeps": [200, 2000, 20000], "reads": 512, "field_rates": [0.0], "instances": 2}
+  host       vars qubits   fill   chain  field   sweeps    p_reg   p_best     p_mm
+{"host": "pegasus5", "qubits": 448, "vars": 332, "witness_qubits": 403, "realised_fill": 0.8995535714285714, "mean_chain": 1.213855421686747, "field_rate": 0.0, "sweeps": 200, "reads": 512, "p_registered": 0.0, "p_by_strength": [0.0, 0.0, 0.0, 0.0], "p_best": 0.0, "mm_valid": false, "mm_qubits": null, "mm_secs": 52.772316455841064, "p_minorminer": null, "instance": 1}
+  pegasus5    332    403   0.90    1.21   0.00      200    0.000    0.000        -
+{"host": "pegasus5", "qubits": 448, "vars": 332, "witness_qubits": 403, "realised_fill": 0.8995535714285714, "mean_chain": 1.213855421686747, "field_rate": 0.0, "sweeps": 2000, "reads": 512, "p_registered": 0.0, "p_by_strength": [0.0, 0.0, 0.0, 0.0], "p_best": 0.0, "mm_valid": false, "mm_qubits": null, "mm_secs": 52.772316455841064, "p_minorminer": null, "instance": 1}
+  pegasus5    332    403   0.90    1.21   0.00     2000    0.000    0.000        -
+{"host": "pegasus5", "qubits": 448, "vars": 332, "witness_qubits": 403, "realised_fill": 0.8995535714285714, "mean_chain": 1.213855421686747, "field_rate": 0.0, "sweeps": 20000, "reads": 512, "p_registered": 0.0, "p_by_strength": [0.0, 0.0, 0.0, 0.0], "p_best": 0.0, "mm_valid": false, "mm_qubits": null, "mm_secs": 52.772316455841064, "p_minorminer": null, "instance": 1}
+  pegasus5    332    403   0.90    1.21   0.00    20000    0.000    0.000        -
+{"host": "pegasus5", "qubits": 448, "vars": 317, "witness_qubits": 403, "realised_fill": 0.8995535714285714, "mean_chain": 1.2712933753943219, "field_rate": 0.0, "sweeps": 200, "reads": 512, "p_registered": 0.0, "p_by_strength": [0.0, 0.0, 0.0, 0.0], "p_best": 0.0, "mm_valid": false, "mm_qubits": null, "mm_secs": 27.980940103530884, "p_minorminer": null, "instance": 2}
+  pegasus5    317    403   0.90    1.27   0.00      200    0.000    0.000        -
+{"host": "pegasus5", "qubits": 448, "vars": 317, "witness_qubits": 403, "realised_fill": 0.8995535714285714, "mean_chain": 1.2712933753943219, "field_rate": 0.0, "sweeps": 2000, "reads": 512, "p_registered": 0.0, "p_by_strength": [0.0, 0.0, 0.0, 0.0], "p_best": 0.0, "mm_valid": false, "mm_qubits": null, "mm_secs": 27.980940103530884, "p_minorminer": null, "instance": 2}
+  pegasus5    317    403   0.90    1.27   0.00     2000    0.000    0.000        -
