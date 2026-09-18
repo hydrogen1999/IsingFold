@@ -2066,3 +2066,31 @@ spend and the quality, and it moves them together. Cloning had not converged at 
 loss still falling from 3.411 to 2.522, so this is a lower bound on what the supervision is
 worth. A twenty-instance replication of both checkpoints is running before the residual effect is
 called anything. `results/quality/excess_clone_p3.log`.
+
+## The cloning result failed replication, and the two failures agree
+
+The eight-instance table above put cloning's residual improvement at +0.0366 with the interval
+crossing zero, and said it would not be called a result until replicated. Twenty fresh instances,
+paired, same protocol:
+
+| quantity | 8 instances | 20 instances |
+|---|---|---|
+| cloning improves residual | +0.0366 [-0.0029, +0.0761], 6 of 8 | **-0.0200 [-0.0428, +0.0028], 9 of 20** |
+| cloning removes qubits | +14.1 [+5.6, +22.7] | **+9.3 [+4.0, +14.6]** |
+| gap to minorminer, before | +0.0801 | +0.0343 |
+| gap to minorminer, after | +0.0434 | **+0.0543** |
+
+The improvement does not replicate. The sign reverses, fewer than half the instances improve, and
+the gap to minorminer widens rather than closing. The forty-six percent was noise at n = 8. What
+does replicate is the qubit reduction, in both samples, with both intervals clear of zero.
+
+**Cloning makes the constructor's embeddings smaller without making them better**, and that is
+the second measurement to say so. Greedy pruning removes a third of the spend and recovers 0.0022
+of an 0.080 gap; cloning removes 9 to 14 qubits and recovers nothing. Two independent
+interventions on the resource axis, both effective on resources, both inert on quality.
+
+So for this constructor resource spend and solution quality are decoupled, which is the paper's
+own thesis turned on the paper's own method. It also closes off the whole family of fixes aimed
+at frugality: the method does not lose because it spends, and it will not win by spending less.
+What separates a good embedding from a bad one here is not in any count of qubits, and the method
+question is what it is in. `results/quality/excess20_*_p3.log`.
