@@ -1524,3 +1524,39 @@ registered, with no `-wide512` suffix to explain, and each step costs a quarter 
 runs were restarted on it (`runs/congested/n{3,2}_f9*_s*.log`); the wide-support attempts are
 kept under `runs/congested/wide_support/` and produced no post-init evaluation in seven hours.
 `results/control/replay_*_narrow.log`.
+
+## The ablation table, 2026-09-18
+
+Assembled from the summary record every curriculum run already emits, by
+`probes/ablation_table.py`; output in `results/ablation/feasibility.log`. Held-out feasibility,
+init to final, on the same instances within a rung. Cells with one seed are marked as such and
+are not comparisons.
+
+| rung | arm | seeds | init | final | gain | interval |
+|---|---|---|---|---|---|---|
+| b, 4 to 8 vars | 230 channels | 3 | 0.13 | 0.89 | **+0.760** | [+0.696, +0.823] |
+| b, 4 to 8 vars | 16 channels | 3 | 0.13 | 0.74 | +0.607 | [+0.566, +0.648] |
+| b, 4 to 8 vars | contextual actor, leave-one-out | 3 | 0.13 | 0.52 | +0.388 | [-0.093, +0.868] |
+| b, 4 to 8 vars | contextual actor, value baseline | 3 | 0.13 | 0.39 | +0.257 | [-0.112, +0.626] |
+| b, 4 to 8 vars | contextual actor, lr 3e-3 | 2 | 0.12 | 0.90 | +0.775 | [+0.751, +0.799] |
+| b, 4 to 8 vars | MLP | 1 | 0.15 | 0.70 | +0.546 | one seed |
+| a, 2 to 4 vars | 16 channels | 3 | 0.40 | 0.97 | +0.576 | [+0.539, +0.614] |
+| Pegasus 16 full | 16 channels | 3 | 0.07 | 0.73 | +0.656 | [+0.540, +0.771] |
+| Pegasus 16 full | 230 channels | 1 | 0.09 | 0.96 | +0.871 | one seed |
+| Zephyr 15 full | 16 channels | 3 | 0.08 | 0.83 | +0.751 | [+0.685, +0.817] |
+| Zephyr 15 full | 230 channels | 1 | 0.06 | 0.96 | +0.900 | one seed |
+| Zephyr 15 full | contextual, value baseline | 1 | 0.10 | 0.86 | +0.754 | one seed |
+| F, 20 vars | 16 channels | 1 | 0.08 | 0.80 | +0.717 | one seed |
+| G, 24 vars | 16 channels | 1 | 0.17 | 0.88 | +0.708 | one seed |
+| G, 24 vars | 230 channels | 1 | 0.17 | 0.94 | +0.775 | one seed |
+| G, 24 vars | contextual, lr 3e-3 | 1 | 0.15 | 0.93 | +0.783 | one seed |
+
+Two readings, and one of them is uncomfortable. The 230-channel observation beats the 16-channel
+one at every rung where both were run, by +0.15 at rung b with intervals that barely overlap and
+by +0.2 at both full hosts on single seeds. The headline hardware-scale runs used the 16-channel
+actor, so the paper is currently reporting the weaker of its own two feature sets. The value
+baseline loses to leave-one-out and both contextual arms at the registered learning rate have
+intervals across zero; the contextual actor only works at lr 3e-3.
+
+Seeds are missing where they matter most, at the F, G and full-host rungs. Those are cheap and
+are being filled.

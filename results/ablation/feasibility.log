@@ -1,0 +1,18 @@
+  rung                   arm                seeds    init   final     gain note
+  F, 20 vars             linear                 1    0.08    0.80    0.717 one seed, not a comparison
+  G, 24 vars             ctx_lr3e3              1    0.15    0.93    0.783 one seed, not a comparison
+  G, 24 vars             lin230                 1    0.17    0.94    0.775 one seed, not a comparison
+  G, 24 vars             linear                 1    0.17    0.88    0.708 one seed, not a comparison
+  Pegasus 16 full        lin230                 1    0.09    0.96    0.871 one seed, not a comparison
+  Pegasus 16 full        linear                 3    0.07    0.73    0.656 [+0.540, +0.771]
+  Zephyr 15 full         ctx_value              1    0.10    0.86    0.754 one seed, not a comparison
+  Zephyr 15 full         lin230                 1    0.06    0.96    0.900 one seed, not a comparison
+  Zephyr 15 full         linear                 3    0.08    0.83    0.751 [+0.685, +0.817]
+  a, 2 to 4 vars         linear                 3    0.40    0.97    0.576 [+0.539, +0.614]
+  b, 4 to 8 vars         ctx_loo                3    0.13    0.52    0.388 [-0.093, +0.868]
+  b, 4 to 8 vars         ctx_loo_lr3e3          2    0.12    0.90    0.775 [+0.751, +0.799]
+  b, 4 to 8 vars         ctx_value              3    0.13    0.39    0.257 [-0.112, +0.626]
+  b, 4 to 8 vars         lin230                 3    0.13    0.89    0.760 [+0.696, +0.823]
+  b, 4 to 8 vars         linear                 3    0.13    0.74    0.607 [+0.566, +0.648]
+  b, 4 to 8 vars         mlp                    1    0.15    0.70    0.546 one seed, not a comparison
+ABLATION TABLE DONE
