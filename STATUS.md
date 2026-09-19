@@ -2289,11 +2289,15 @@ path**, and that is the largest controllable effect measured. Articulation point
 fact from the other side. Mean break rate still rises with length, from 0.065 at two qubits to
 0.255 at seven.
 
-**This explains the puzzle two sections above.** Greedy pruning removes qubits while keeping every
-chain connected and every contact realised, so it shortens chains, which should reduce breaking,
-and it removes exactly the edges beyond a spanning tree, which increases it. The two effects
-cancel, which is why pruning cut forty percent of the qubits and moved residual by nothing. The
-same cancellation explains cloning for compactness.
+**A candidate explanation of the puzzle two sections above, not a demonstration.** Greedy pruning
+removes qubits while keeping every chain connected and every contact realised, so it shortens
+chains, which should reduce breaking, and it removes exactly the edges beyond a spanning tree,
+which should increase it. Those two effects cancelling would account for pruning cutting forty
+percent of the qubits and moving residual by nothing, and for cloning doing the same. But this is
+an association at fixed length motivating an intervention, not evidence that adding redundancy
+causes the residual to improve, and the interventions already tried reduced breaking without the
+energy benefit the association predicts. The branch-and-compare experiment is what would settle
+it, by building two completions from one prefix that differ in redundancy and measuring both.
 
 It also names what the constructor should be building and it is not a resource target: chains with
 internal cycles, placed so no single qubit carries the whole connection, with the heaviest
