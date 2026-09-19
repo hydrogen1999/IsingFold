@@ -398,6 +398,58 @@ def prefix_fraction(schedule, iteration, iterations):
     return start + (end - start) * iteration / (iterations - 1)
 
 
+
+_TRAJECTORY_CACHE: dict[str, list] = {}
+
+
+def trajectory_states(task, features, max_steps, seconds, wide=True):
+    """The partial embeddings a successful witness walk passes through, in order.
+
+    The occupancy prefix hands the environment a random subset of the witness's chains. That is a
+    valid partial embedding but not one the environment's own actions would have produced, and it
+    teaches nothing about the order in which a construction has to be built. These are the states
+    an actual forward walk occupies, so starting an episode at the k-th from last is asking the
+    policy to finish a real construction with k decisions left, which is the question deployment
+    asks with k equal to the whole trajectory.
+
+    Empty when the walk does not reach a valid COMMIT; the caller falls back to no prefix.
+    """
+    if task.name in _TRAJECTORY_CACHE:
+        return _TRAJECTORY_CACHE[task.name]
+    from constructor_clone import teacher_steps  # late, because that module imports this one
+    import time as _time
+    from isingfold.rl.contracts import Opcode
+    from isingfold.rl.env import DecisionState, EmbeddingEnv, Mode, TerminalRecord, fixed_strength_selector
+    from witness_replay import consistent
+    from _context import construction_context as _context
+
+    witness = {v: frozenset(c) for v, c in (getattr(task, "prefix_source", None) or {}).items()}
+    if not witness:
+        _TRAJECTORY_CACHE[task.name] = []
+        return []
+    started = _time.monotonic()
+    ctx = _context(task, len(task.host), max_steps, 8, None, 2, wide=wide)
+    env = EmbeddingEnv(task, ctx, mode=Mode.CONSTRUCTION, initializer=None,
+                       selector=fixed_strength_selector(), reward_reads=8, build_observation=False)
+    env.generator.allow_satisfied_growth = True
+    current = env.reset(0)
+    states = []
+    while isinstance(current, DecisionState):
+        if _time.monotonic() - started > seconds or len(states) >= max_steps:
+            break
+        chains = env.state.chains
+        legal = [i for i, ok in enumerate(current.legal_mask) if ok]
+        good = [i for i in legal if consistent(current.candidates[i], witness, chains)]
+        if not good:
+            break
+        states.append({v: frozenset(c) for v, c in chains.items() if c})
+        commit = [i for i in good if current.candidates[i].opcode is Opcode.COMMIT]
+        current = env.step(current, commit[0] if commit else good[0],
+                           evaluate_training_reward=False).next_decision_or_terminal
+    ok = isinstance(current, TerminalRecord) and current.returned_valid
+    _TRAJECTORY_CACHE[task.name] = states if ok else []
+    return _TRAJECTORY_CACHE[task.name]
+
 def prefix_initializer(task, fraction, seed, unit="qubits"):
     """A random subset of the task's prefix source as the environment's partial-start
     initializer; None when nothing to start from. ``unit="qubits"`` takes variables in a
@@ -424,8 +476,17 @@ def prefix_initializer(task, fraction, seed, unit="qubits"):
                 break
             chosen.append(v)
             covered += len(source[v])
+    elif unit == "trajectory":
+        # A real state from a successful forward walk, at this fraction of the way along it, so
+        # the episode has to finish the remainder the way the construction actually proceeds.
+        states = getattr(task, "_trajectory", None)
+        if not states:
+            return None
+        index = min(int(round(fraction * len(states))), len(states) - 1)
+        chosen_state = states[index]
+        return (lambda logical, host, s, _c=chosen_state: dict(_c)) if chosen_state else None
     else:
-        raise ValueError("unit must be qubits or variables")
+        raise ValueError("unit must be qubits, variables or trajectory")
     if not chosen:
         return None
     partial = {v: frozenset(source[v]) for v in chosen}
@@ -504,6 +565,23 @@ def run(args, train, heldout):
     torch.set_num_threads(1)
     torch.manual_seed(args.seed)
     features = {t.name: make_features(args.features, t) for t in train + heldout}
+    if args.prefix_unit == "trajectory":
+        # Collect the forward walks once, before any update, and report the coverage: a training
+        # instance whose walk does not finish contributes no reverse start and falls back to an
+        # empty one, so the number that did finish is the size of the curriculum, not the number
+        # of instances asked for.
+        wide_support = args.support == "wide"
+        covered = 0
+        for t in train:
+            t._trajectory = trajectory_states(t, features[t.name], args.max_steps,
+                                              args.episode_seconds, wide_support)
+            covered += bool(t._trajectory)
+        print(json.dumps({"reverse_start": "trajectories collected", "instances": len(train),
+                          "with_a_complete_walk": covered,
+                          "mean_decisions": (sum(len(t._trajectory) for t in train) /
+                                             max(1, covered))}), flush=True)
+        if not covered:
+            raise SystemExit("no training instance produced a complete forward walk to start from")
     actor = make_actor(args.actor, args.width, FEATURE_WIDTHS[args.features])
     init_summary = load_init(args.init, actor, args.actor, args.features, args.expand_features) if args.init else None
     biased = apply_terminal_bias(actor, args.features, args.stop_bias)
@@ -913,7 +991,7 @@ def parse(argv=None):
     parser.add_argument("--prefix-fraction", default="",
                         help="training curriculum 'start:end': fraction of a train task's prefix "
                              "source pre-placed at the first and last iteration; evaluation is from empty")
-    parser.add_argument("--prefix-unit", choices=("qubits", "variables"), default="qubits",
+    parser.add_argument("--prefix-unit", choices=("qubits", "variables", "trajectory"), default="qubits",
                         help="what the prefix fraction counts: occupied qubits (default) or variables")
     parser.add_argument("--prefix-schedule", choices=("linear", "mastery"), default="linear",
                         help="mastery: lower the prefix by --mastery-step only after an iteration whose "

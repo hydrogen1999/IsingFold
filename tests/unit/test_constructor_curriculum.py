@@ -446,3 +446,37 @@ def test_training_temperature_is_tunable_and_evaluation_is_not():
     # Both deployment-evaluation call sites stay at a literal temperature of one.
     evaluation_calls = source.count("features[t.name], 1., args.max_steps")
     assert evaluation_calls == 2, f"expected two fixed evaluation call sites, found {evaluation_calls}"
+
+
+def test_trajectory_prefix_returns_a_real_state_and_none_without_one():
+    """The reverse-start prefix hands back a state from a forward walk, not a random subset.
+
+    The occupancy prefix takes a random subset of the witness's chains: a valid partial embedding
+    that the environment's own actions need never have produced, and one that says nothing about
+    the order a construction has to follow. The trajectory prefix is a state the walk actually
+    occupied, so an episode started at the k-th from last has to finish a real construction with
+    k decisions left.
+    """
+    import constructor_curriculum as cc
+
+    train, _ = cc.build_sets("b", 2, 2, seed=13)
+    t = train[0]
+    source = t.prefix_source
+    names = sorted(source, key=repr)[:3]
+    states = [{names[0]: frozenset(source[names[0]])},
+              {n: frozenset(source[n]) for n in names[:2]},
+              {n: frozenset(source[n]) for n in names[:3]}]
+    t._trajectory = states
+
+    # A fraction of zero is no prefix at all, whatever the unit.
+    assert cc.prefix_initializer(t, 0.0, 0, unit="trajectory") is None
+
+    # The last state is never handed over whole; the index is clamped inside the walk.
+    for fraction, expected in ((0.34, states[1]), (0.67, states[2]), (1.0, states[-1])):
+        init = cc.prefix_initializer(t, fraction, 0, unit="trajectory")
+        assert init is not None
+        assert init(t.logical, t.host, 0) == expected
+
+    # An instance whose walk never finished carries no trajectory and gets no prefix.
+    t._trajectory = []
+    assert cc.prefix_initializer(t, 0.9, 0, unit="trajectory") is None
