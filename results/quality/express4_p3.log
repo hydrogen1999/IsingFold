@@ -1,0 +1,44 @@
+{"probe": "expressiveness_audit", "corpus": "runs/quality/pegasus3_f30_large", "cells": ["fill30-a3.0"], "features": "physics", "channels": 32, "support": "wide", "train": 24, "heldout": 12}
+{"set": "train", "task": "pegasus3-fill30-a3.0-151", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.5222222222222221}
+{"set": "train", "task": "pegasus3-fill30-a3.0-74", "steps": 38, "reason": "valid", "valid": true, "progress": 1.0}
+{"set": "train", "task": "pegasus3-fill30-a3.0-24", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.860989010989011}
+{"set": "train", "task": "pegasus3-fill30-a3.0-40", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.5834942084942085}
+{"set": "train", "task": "pegasus3-fill30-a3.0-172", "steps": 37, "reason": "valid", "valid": true, "progress": 1.0}
+{"set": "train", "task": "pegasus3-fill30-a3.0-8", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.7424242424242424}
+{"set": "train", "task": "pegasus3-fill30-a3.0-2", "steps": 33, "reason": "valid", "valid": true, "progress": 1.0}
+{"set": "train", "task": "pegasus3-fill30-a3.0-67", "steps": 13, "reason": "stuck", "valid": false, "progress": 0.875}
+{"set": "train", "task": "pegasus3-fill30-a3.0-23", "steps": 28, "reason": "valid", "valid": true, "progress": 1.0}
+{"set": "train", "task": "pegasus3-fill30-a3.0-145", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.7839285714285714}
+{"set": "train", "task": "pegasus3-fill30-a3.0-7", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.859375}
+{"set": "train", "task": "pegasus3-fill30-a3.0-91", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.9652941176470589}
+{"set": "train", "task": "pegasus3-fill30-a3.0-0", "steps": 0, "reason": "stuck", "valid": false, "progress": 0.0}
+{"set": "train", "task": "pegasus3-fill30-a3.0-131", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.703125}
+{"set": "train", "task": "pegasus3-fill30-a3.0-169", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.5586206896551724}
+{"set": "train", "task": "pegasus3-fill30-a3.0-27", "steps": 37, "reason": "valid", "valid": true, "progress": 1.0}
+{"set": "train", "task": "pegasus3-fill30-a3.0-5", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.675}
+{"set": "train", "task": "pegasus3-fill30-a3.0-165", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.9852941176470589}
+{"set": "train", "task": "pegasus3-fill30-a3.0-35", "steps": 33, "reason": "valid", "valid": true, "progress": 1.0}
+{"set": "train", "task": "pegasus3-fill30-a3.0-81", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.2833333333333333}
+{"set": "train", "task": "pegasus3-fill30-a3.0-174", "steps": 36, "reason": "valid", "valid": true, "progress": 1.0}
+{"set": "train", "task": "pegasus3-fill30-a3.0-37", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.9166666666666667}
+{"set": "train", "task": "pegasus3-fill30-a3.0-22", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.5234521575984991}
+{"set": "train", "task": "pegasus3-fill30-a3.0-191", "steps": 30, "reason": "valid", "valid": true, "progress": 1.0}
+{"set": "heldout", "task": "pegasus3-fill30-a3.0-171", "steps": 32, "reason": "valid", "valid": true, "progress": 1.0}
+{"set": "heldout", "task": "pegasus3-fill30-a3.0-31", "steps": 36, "reason": "valid", "valid": true, "progress": 1.0}
+{"set": "heldout", "task": "pegasus3-fill30-a3.0-104", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.7113636363636364}
+{"set": "heldout", "task": "pegasus3-fill30-a3.0-53", "steps": 31, "reason": "valid", "valid": true, "progress": 1.0}
+{"set": "heldout", "task": "pegasus3-fill30-a3.0-73", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.5756938603868798}
+{"set": "heldout", "task": "pegasus3-fill30-a3.0-95", "steps": 35, "reason": "valid", "valid": true, "progress": 1.0}
+{"set": "heldout", "task": "pegasus3-fill30-a3.0-113", "steps": 35, "reason": "valid", "valid": true, "progress": 1.0}
+{"set": "heldout", "task": "pegasus3-fill30-a3.0-142", "steps": 29, "reason": "valid", "valid": true, "progress": 1.0}
+{"set": "heldout", "task": "pegasus3-fill30-a3.0-183", "steps": 0, "reason": "stuck", "valid": false, "progress": 0.0}
+{"set": "heldout", "task": "pegasus3-fill30-a3.0-193", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.807741935483871}
+{"set": "heldout", "task": "pegasus3-fill30-a3.0-47", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.5792682926829269}
+{"set": "heldout", "task": "pegasus3-fill30-a3.0-120", "steps": 900, "reason": "HORIZON", "valid": false, "progress": 0.7185714285714286}
+{"train_decisions": 272, "train_paths": 8, "heldout_decisions": 198, "heldout_paths": 6}
+
+  model      train top1  held top1  chance top1     whole path
+  linear          0.276      0.278        0.031       4.39e-19
+  mlp             0.522      0.187        0.031       9.13e-25
+{"summary": "expressiveness_audit", "models": {"linear": {"train_top1": 0.2757352941176471, "heldout_top1": 0.2777777777777778, "chance_top1": 0.031470025868856145, "decisions_per_path": 33.0, "whole_path_probability": 4.385483432618537e-19}, "mlp": {"train_top1": 0.5220588235294118, "heldout_top1": 0.18686868686868688, "chance_top1": 0.031470025868856145, "decisions_per_path": 33.0, "whole_path_probability": 9.134938241770746e-25}}, "reading": "a linear model near chance while the small network is far above it implicates capacity; both near chance implicates the observation; both high while reinforcement learning fails implicates exploration and credit assignment"}
+EXPRESSIVENESS AUDIT DONE

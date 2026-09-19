@@ -2364,3 +2364,36 @@ would be claiming noise, which this record has now done seven times in one day.
 
 The corpus carries 12 validation instances a cell, so it is two to four times too small, and a
 larger one is being generated before any further training is bought.
+
+## The expressiveness audit: not capacity, and not enough teacher data
+
+The witness path is reachable under the wide support and the policy does not reach it. The audit
+caches the exact candidate rows the environment offered at each witness decision, marks the
+witness-consistent ones, fits a linear scorer and the small network to the same records under the
+same ranking loss, and reports top-one accuracy. Splitting is over training instances, because a
+held-out instance deliberately carries no witness. Eight fitted paths, 272 decisions, six scored
+paths, 198 decisions, physics32:
+
+| model | top one on fitted instances | top one on unfitted instances | chance |
+|---|---|---|---|
+| linear | 0.276 | **0.278** | 0.031 |
+| small network | **0.522** | **0.187** | 0.031 |
+
+**The observation carries real signal**: a linear scorer puts a witness-consistent candidate first
+nine times as often as chance, and it does so equally on instances it did not fit, so it is not
+memorising.
+
+**Capacity is not the binding constraint.** The network fits the training decisions almost twice
+as well, 0.522 against 0.276, and generalises worse, 0.187 against 0.278. That is overfitting,
+and with 272 decisions from eight paths there is nothing else it could do.
+
+So the cheapest thing available to the supervised path is more teacher data, and the corpus holds
+140 training instances against the eight used here. Two larger audits are running, at eighty
+instances, one on physics32 and one on local20, because if the two schemas rank alike then the
+twelve physics channels are not carrying the decision and the representation question reopens.
+
+**What this audit cannot say.** The witness is one valid solution among many, so a move that is
+not witness-consistent may still be a good move, and a top-one figure against the witness
+understates how often the model picks something that works. The whole-path numbers, 4e-19 and
+9e-25, are lower bounds against one particular path and are not the probability of completing a
+construction. `results/quality/express4_p3.log`.
