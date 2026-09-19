@@ -2326,3 +2326,37 @@ So the pilot as configured cannot answer its question, and the fix is not a long
 evaluation needs enough held-out instances that its noise is below the 0.005 the deciding number
 is set at, and that sample size has to be estimated from the spread already observed before any
 further training is bought. `results/quality_study/*.log`.
+
+## How large the held-out set has to be, from the noise this pilot measured
+
+The pilot evaluated the same arm twice on the same four instances, so the spread of the
+per-instance difference is the evaluation's own noise with the arm's change folded in. It is
+0.0231 for the quality arm between iteration 9 and the end, and 0.0454 for the feasibility arm.
+Taking those as the range, a paired comparison at 95 percent confidence and 80 percent power
+needs:
+
+| effect to detect | instances at sd 0.023 | at sd 0.035 | at sd 0.045 |
+|---|---|---|---|
+| **0.005**, the review's threshold | **166** | **385** | **636** |
+| 0.010 | 42 | 97 | 159 |
+| **0.017** | **15** | **34** | **55** |
+| 0.020 | 11 | 25 | 40 |
+| 0.046, the whole gap to minorminer | 2 | 5 | 8 |
+
+One evaluation costs the instance count times five arms times a 300-second deadline, so 24
+instances is 10 core-hours and 166 is 69. A full study is three arms by three evaluations by
+three seeds, twenty-seven of them.
+
+**The 0.005 threshold is therefore not measurable here.** It would cost between 1900 and 7000
+core-hours of deployment alone, on a shared 32-core machine, before any training. The affordable
+bar is **0.017**, needing 24 to 48 held-out instances at 10 to 20 core-hours an evaluation, and
+0.017 is thirty-seven percent of the gap to minorminer, which is a real bar for a pilot rather
+than a token one.
+
+So the deciding number is restated: the quality arm must beat the matched feasibility arm by at
+least **0.017 residual** with a positive paired interval over at least 24 held-out instances,
+replicated on a second seed. Anything smaller than that this protocol cannot see, and claiming it
+would be claiming noise, which this record has now done seven times in one day.
+
+The corpus carries 12 validation instances a cell, so it is two to four times too small, and a
+larger one is being generated before any further training is bought.
