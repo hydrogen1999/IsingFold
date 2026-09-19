@@ -2253,3 +2253,51 @@ the constructor is also at 0.00 there. A benchmark nobody can solve is a benchma
 capability, and the paper cannot claim the cell until the ladder reaches it.
 
 `results/curriculum/w[23]_f9*.log`.
+
+## What makes a chain hold: redundancy, not size
+
+Chain breaking is the strongest predictor of solution quality here, and length does not explain
+it. `probes/break_predictors.py` decodes each chain's break rate directly over 2048 reads and
+regresses it on structure the policy could compute while building. 1347 chains over 16 instances,
+Pegasus 3 at fill 0.30. Singleton chains are excluded from every score: a one-qubit chain cannot
+break, they are 53 percent of the chains here, and leaving them in made length alone look like a
+better predictor than the full feature set, at +0.929 against +0.753.
+
+Within one instance, over its own multi-qubit chains:
+
+| feature | rank correlation with break rate |
+|---|---|
+| articulation points | +0.505 [+0.435, +0.575] |
+| chain length | +0.406 [+0.320, +0.492] |
+| internal edges | +0.362 [+0.271, +0.453] |
+| load on the heaviest contact | +0.204 [+0.112, +0.296] |
+
+Longer chains break more, which is not news. The question is what a constructor can do about it at
+a length it has already committed to, so the same comparison with **length held fixed**, inside
+each instance-and-length group of at least six chains, 496 chains in 41 groups:
+
+| feature, at one length | rank correlation with break rate |
+|---|---|
+| **internal redundancy, edges beyond a spanning tree** | **-0.439 [-0.589, -0.289]** |
+| articulation points | +0.326 [+0.153, +0.499] |
+| load on the heaviest contact | +0.182 [+0.070, +0.295] |
+| concentration of load | +0.001 [-0.097, +0.098] |
+| total coupling mass | +0.017 [-0.116, +0.150] |
+
+**At a fixed length, a chain that contains a cycle breaks substantially less than one that is a
+path**, and that is the largest controllable effect measured. Articulation points are the same
+fact from the other side. Mean break rate still rises with length, from 0.065 at two qubits to
+0.255 at seven.
+
+**This explains the puzzle two sections above.** Greedy pruning removes qubits while keeping every
+chain connected and every contact realised, so it shortens chains, which should reduce breaking,
+and it removes exactly the edges beyond a spanning tree, which increases it. The two effects
+cancel, which is why pruning cut forty percent of the qubits and moved residual by nothing. The
+same cancellation explains cloning for compactness.
+
+It also names what the constructor should be building and it is not a resource target: chains with
+internal cycles, placed so no single qubit carries the whole connection, with the heaviest
+external load spread rather than concentrated. None of that is visible in a qubit count, which is
+the paper's thesis arriving at the level of one chain.
+
+`results/quality/breakpred2_p3.log`.
