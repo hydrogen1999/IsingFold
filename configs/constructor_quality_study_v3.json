@@ -1,0 +1,77 @@
+{
+ "protocol": "constructor-quality-v3",
+ "purpose": "Quality attribution on the representation that can see what decides quality. The measurement says chain breaking sets solution quality and, at a fixed chain length, internal cycle redundancy is what prevents breaking; the physics schema carries a cycle-redundancy channel and a bridge-bottleneck channel and the local schema carries neither, so every earlier quality run was blind to it.",
+ "data_seed": 20260918,
+ "seeds": [
+  0,
+  1,
+  2
+ ],
+ "hosts": {
+  "pegasus3": {
+   "corpus": "runs/quality/pegasus3_f30_large",
+   "init": "runs/quality/r30_p3_s0.best.pt"
+  }
+ },
+ "features": [
+  "local",
+  "physics"
+ ],
+ "common": {
+  "cells": "fill30-a3.0",
+  "actor": "linear",
+  "baseline": "loo",
+  "train": 40,
+  "heldout": 30,
+  "instances_per_iteration": 4,
+  "episodes": 6,
+  "eval_episodes": 5,
+  "max_steps": 250,
+  "episode_seconds": 90,
+  "train_episode_seconds": 45,
+  "learning_rate": 0.003,
+  "advantage_scale": 1.0,
+  "entropy_coef": 0.0,
+  "support": "wide",
+  "stop_bias": -6.0,
+  "reward_reads": 256,
+  "selection_reads": 256,
+  "assessment_reads": 4096,
+  "select_cap": 8,
+  "deadline": 300,
+  "proposal_fraction": 0.5,
+  "comparison": "minorminer_grown",
+  "grow_extra": 2,
+  "baseline_tries": 20,
+  "baseline_router_seconds": 2,
+  "evaluation_objective": "quality",
+  "eval_sets": "heldout",
+  "features": "physics"
+ },
+ "pilot": {
+  "iterations": 40,
+  "eval_every": 40,
+  "seeds": [
+   0
+  ]
+ },
+ "replication": {
+  "iterations": 40,
+  "eval_every": 40,
+  "seeds": [
+   0,
+   1,
+   2
+  ]
+ },
+ "notes": [
+  "The held-out set is thirty instances because the pilot's own evaluation noise, measured as the spread of the same arm at two evaluations on the same instances, is 0.023 to 0.045. At that noise a paired comparison sees 0.017 with 15 to 55 instances and 0.005 with 166 to 636, so 0.017 is the bar and 0.005 is not measurable here.",
+  "Three comparison arms rather than five, because one evaluation costs the instance count times the arm count times a 300-second deadline and the instance count is what the bar needs.",
+  "The quality arm uses conditional quality: draw until six valid episodes an instance and centre only those. That estimates the gradient of quality given validity rather than of the mixed utility, and it is an objective change, so coverage is reported at every evaluation.",
+  "Both training arms start from the same local20 feasibility checkpoint zero-padded into the physics schema, so the twelve new channels begin with no influence on any action logit and the comparison is the reward, not the initialisation."
+ ],
+ "quality_arm": {
+  "conditional_quality": 6,
+  "conditional_attempts": 4
+ }
+}

@@ -29,6 +29,11 @@ def build_plan(config, *, phase="pilot", hosts=None, features=None, out_dir="run
                                    objective="feasibility" if arm == "continued_feasibility" else "quality",
                                    iterations=0 if arm == "frozen" else settings["iterations"],
                                    eval_every=settings["eval_every"], out=output + ".pt")
+                    # Options that belong to one arm only. Conditional quality changes the
+                    # objective being optimised, so it must not touch the arm that exists to
+                    # show what the ordinary objective does with the same budget.
+                    if arm == "quality":
+                        options.update(config.get("quality_arm", {}))
                     command = [sys.executable, "-u", str(ROOT / "probes/constructor_curriculum.py")]
                     command.append("--manifest-split")
                     if feature == "physics":
