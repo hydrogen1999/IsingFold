@@ -752,6 +752,7 @@ def run(args, train, heldout):
         picks = order.choice(len(train), size=min(args.instances_per_iteration, len(train)), replace=False)
         losses, valid, rewards, entropies, diagnostics = [], 0, [], [], []
         assisted_valid = assisted_episodes = 0
+        rejected, drawn = 0, 0
         if args.prefix_schedule == "mastery" and args.prefix_fraction:
             fraction = mastery_fraction
         else:
@@ -762,11 +763,41 @@ def run(args, train, heldout):
             # compares episodes from the same start; a share of the slots start from empty
             slot_fraction = 0.0 if (fraction and mix.random() < args.prefix_empty_mix) else fraction
             group_seed = args.seed * 1000000 + iteration * 1000 + slot * 100
-            records = [draw(t, group_seed + i, True,
+            def one(i):
+                return draw(t, group_seed + i, True,
                             initializer=prefix_initializer(
                                 t, slot_fraction, group_seed + (i if args.prefix_per_episode else 0),
                                 unit=args.prefix_unit))
-                       for i in range(args.episodes)]
+
+            if args.conditional_quality:
+                # Conditional quality optimisation. The mixed utility scores an invalid episode
+                # zero and a valid one between a half and one, so a failure moves the advantage
+                # by more than the whole quality range and the quality term is the smaller part of
+                # what the gradient sees. Drawing until a fixed number of valid trajectories is in
+                # hand, and centring only those, estimates the gradient of quality conditional on
+                # validity instead. That is a different objective and it is declared as one: it
+                # does not carry the term that teaches the policy to be valid at all, so validity
+                # has to be held up separately and coverage is reported every evaluation.
+                records, attempts = [], 0
+                while (len(records) < args.conditional_quality
+                       and attempts < args.conditional_attempts * args.conditional_quality):
+                    rec = one(attempts)
+                    attempts += 1
+                    if rec["valid"]:
+                        records.append(rec)
+                    else:
+                        rejected += 1
+                drawn += attempts
+                if len(records) < 2:
+                    # A leave-one-out centre needs two. Nothing is learned from this instance
+                    # this iteration, and the attempt cost is still counted.
+                    diagnostics.append({"reward_mean": 0.0, "normalized_entropy": 1.0,
+                                        "conditional_short": len(records)})
+                    valid += len(records)
+                    continue
+            else:
+                records = [one(i) for i in range(args.episodes)]
+                drawn += len(records)
             if slot_fraction:
                 assisted_episodes += len(records)
                 assisted_valid += sum(r["valid"] for r in records)
@@ -793,7 +824,12 @@ def run(args, train, heldout):
                 mastery_fraction = max(schedule_end, mastery_fraction - args.mastery_step)
         if iteration % 10 == 9:
             print(json.dumps({"iteration": iteration, "seed": args.seed, "train_valid": valid,
-                              "train_episodes": len(picks) * args.episodes, "prefix_fraction": fraction,
+                              # Under conditional quality the batch is drawn until enough valid
+                              # episodes exist, so the number actually drawn is not the number
+                              # wanted and the rejected ones are the extra cost of the objective.
+                              "train_episodes": drawn, "episodes_wanted": len(picks) * (
+                                  args.conditional_quality or args.episodes),
+                              "rejected_invalid": rejected, "prefix_fraction": fraction,
                               "assisted_valid": assisted_valid, "assisted_episodes": assisted_episodes,
                               "reward": float(np.mean(rewards)), "entropy": float(np.mean(entropies)),
                               "grad_norm": float(norm), "updated": bool(losses),
@@ -909,6 +945,15 @@ def parse(argv=None):
     parser.add_argument("--eval-episodes", type=int, default=20)
     parser.add_argument("--eval-every", type=int, default=50)
     parser.add_argument("--learning-rate", type=float, default=.03)
+    parser.add_argument("--conditional-quality", type=int, default=0,
+                        help="draw until this many valid episodes an instance and centre "
+                             "only those, estimating the gradient of quality conditional "
+                             "on validity. Zero keeps the mixed utility. This is an "
+                             "objective change, not a variance trick: it drops the term "
+                             "that teaches validity, so coverage must be watched.")
+    parser.add_argument("--conditional-attempts", type=int, default=4,
+                        help="attempts allowed per wanted valid episode before the "
+                             "instance is skipped for the iteration")
     parser.add_argument("--advantage-scale", type=float, default=1.,
                         help="fixed positive multiplier of the whole policy advantage; no per-batch normalization")
     parser.add_argument("--temperature", type=float, default=1.0,
@@ -931,6 +976,13 @@ def parse(argv=None):
         parser.error("seed must be a nonnegative 32-bit integer")
     if args.data_seed is not None and not 0 <= args.data_seed < 2 ** 32:
         parser.error("data seed must be a nonnegative 32-bit integer")
+    if args.conditional_quality:
+        if args.conditional_quality < 2:
+            parser.error("conditional quality needs at least two valid episodes to centre")
+        if args.objective != "quality":
+            parser.error("conditional quality is a quality objective; pass --objective quality")
+        if args.conditional_attempts < 1:
+            parser.error("conditional attempts must be at least one per wanted episode")
     if not np.isfinite(args.advantage_scale) or args.advantage_scale <= 0:
         parser.error("advantage scale must be positive and finite")
     if not np.isfinite(args.entropy_coef) or args.entropy_coef < 0:
