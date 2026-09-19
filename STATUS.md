@@ -2301,3 +2301,28 @@ external load spread rather than concentrated. None of that is visible in a qubi
 the paper's thesis arriving at the level of one chain.
 
 `results/quality/breakpred2_p3.log`.
+
+## Retracted: the feasibility arm did not take fifty-three percent of the gap
+
+That entry reported 0.0633 residual and 0.316 solve probability for twenty updates of the
+feasibility reward, against a frozen 0.0877 and 0.237, and called it fifty-three percent of the
+gap to minorminer. It was the arm's **mid-training** evaluation. The full trajectory:
+
+| arm | init | iteration 9 | final |
+|---|---|---|---|
+| continued feasibility | 0.0898 / 0.213 | **0.0633 / 0.316** | **0.1089 / 0.206** |
+| quality reward | 0.0921 / 0.205 | 0.1019 / 0.163 | running |
+
+The arm ends worse than it started. A swing of 0.046 in ten iterations is exactly the size of the
+gap to minorminer that the whole study exists to close, so it is measurement noise and not
+learning, and the earlier claim should never have been made from a single mid-training point.
+
+**The cause is the evaluation, and it invalidates the pilot rather than the method.** Four
+held-out instances at five episodes each, with a stochastic policy and a 300-second deployment
+deadline, produce a number whose run-to-run spread exceeds every effect the study is looking for.
+No arm can be distinguished from any other at that sample size, including the frozen one.
+
+So the pilot as configured cannot answer its question, and the fix is not a longer run. The
+evaluation needs enough held-out instances that its noise is below the 0.005 the deciding number
+is set at, and that sample size has to be estimated from the spread already observed before any
+further training is bought. `results/quality_study/*.log`.
