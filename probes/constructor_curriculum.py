@@ -421,7 +421,7 @@ def trajectory_states(task, features, max_steps, seconds, wide=True):
     from isingfold.rl.contracts import Opcode
     from isingfold.rl.env import DecisionState, EmbeddingEnv, Mode, TerminalRecord, fixed_strength_selector
     from witness_replay import consistent
-    from _context import construction_context as _context
+    from constructor_rollout import _context  # the walk's own context, quotas and horizon
 
     witness = {v: frozenset(c) for v, c in (getattr(task, "prefix_source", None) or {}).items()}
     if not witness:
