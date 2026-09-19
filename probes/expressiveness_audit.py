@@ -31,15 +31,20 @@ from constructor_tiny_gate import no_completion_solver
 
 
 def top1(model, steps):
-    """Fraction of decisions whose highest-scored candidate is witness-consistent."""
+    """Fraction of decisions whose highest-scored candidate is witness-consistent.
+
+    The teacher records the consistent candidates as a list of row indices, not as a mask over
+    the rows; reading it as a mask indexes past the end whenever fewer rows are consistent than
+    offered, which is every decision.
+    """
     hits, total, offered, good = 0, 0, 0.0, 0.0
     with torch.no_grad():
         for rows, ok in steps:
             scores = model(torch.as_tensor(rows, dtype=torch.float32)).reshape(-1)
-            hits += int(bool(ok[int(torch.argmax(scores))]))
+            hits += int(int(torch.argmax(scores)) in set(ok))
             total += 1
             offered += len(rows)
-            good += sum(1 for x in ok if x)
+            good += len(ok)
     return hits / total if total else 0.0, total, offered / max(1, total), good / max(1, total)
 
 
@@ -52,7 +57,7 @@ def fit(model, steps, epochs, lr, seed):
             rows, ok = steps[int(i)]
             x = torch.as_tensor(rows, dtype=torch.float32)
             s = model(x).reshape(-1)
-            good = torch.as_tensor([j for j, v in enumerate(ok) if v], dtype=torch.long)
+            good = torch.as_tensor(list(ok), dtype=torch.long)
             if len(good) == 0 or len(good) == len(s):
                 continue
             loss = torch.logsumexp(s, 0) - torch.logsumexp(s[good], 0)
@@ -80,7 +85,12 @@ def main() -> int:
     a = ap.parse_args()
 
     cells = [c for c in a.cells.split(",") if c]
-    train, heldout = cc.build_corpus_sets(a.corpus, cells, a.train, a.heldout, a.seed)
+    # Only training instances carry a witness, by design: a held-out instance with a witness
+    # would leak the answer into every evaluation. So the split here is over the training
+    # instances themselves, fitting on the decisions of some and scoring on the decisions of
+    # others, which is the same question asked of instances the scorer has not seen.
+    train, _ = cc.build_corpus_sets(a.corpus, cells, a.train + a.heldout, 1, a.seed)
+    train, heldout = train[:a.train], train[a.train:a.train + a.heldout]
     wide = a.support == "wide"
     width = cc.FEATURE_WIDTHS[a.features]
     print(json.dumps({"probe": "expressiveness_audit", "corpus": a.corpus, "cells": cells,
