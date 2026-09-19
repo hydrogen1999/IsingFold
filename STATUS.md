@@ -1950,11 +1950,19 @@ into a leave-one-out advantage is 0.99 times the square root of 0.75 times 0.25,
 | one invalid episode | 0.99 |
 | standard deviation from validity at p = 0.75 | **0.43** |
 
-The quality signal is fifty-four times smaller than the validity noise. Resolving it would need
-about three thousand episodes per comparison, against the four the leave-one-out baseline gets.
-**Quality training cannot learn quality until training-episode validity is essentially one.** At
-validity 1.00 the validity term vanishes and the only remaining noise is the 256-read measurement
-on the residual, whose signal-to-noise the calibration puts at 19 to 40.
+**Corrected, after the seventh review.** That comparison is not sound as it stands and the
+factor of fifty-four overstates the case in two ways. The 0.046 is the gap between the policy and
+minorminer, which is not the signal a policy gradient sees; what REINFORCE sees is the spread of
+utility among the policy's **own** valid episodes inside one instance, and that had not been
+measured. And return variance is not gradient variance, so a large ratio of the first does not
+establish that learning is impossible. What survives is the shape of the problem: an invalid
+episode costs 0.99 where the whole quality range is 0.5, so validity failures do dominate the
+advantage, and the size of that domination is an empirical question the temperature calibration
+now answers within instances and in utility units.
+
+Taken literally the earlier arithmetic would demand validity above 0.9999 before the validity term
+fell under the quality term, which no achievable training rate reaches. That is another sign the
+comparison was the wrong one rather than a target to chase.
 
 This is not a tuning observation. It explains the modern-corpus losses, the borderline
 fragment-rung gains and today's frozen-arm result with one number, and it makes the order of work

@@ -57,14 +57,20 @@ def main() -> int:
                       "init": a.init, "temperatures": temps, "tasks": len(tasks),
                       "episodes_per_task": a.episodes}), flush=True)
     print("  %6s %8s %10s %12s %12s %10s"
-          % ("temp", "valid", "episodes", "residual sd", "qubits sd", "signal/noise"), flush=True)
+          % ("temp", "valid", "episodes", "quality sd", "validity sd", "ratio"), flush=True)
+
+    from constructor_objective import quality_utility
 
     for temp in temps:
-        valid, total, residuals, qubits = 0, 0, [], []
+        # Everything is computed within an instance and then averaged over instances. Pooling
+        # residuals across instances measures how much instances differ, which is not what a
+        # leave-one-out advantage inside one instance ever sees.
+        per_instance, valid_total, total = [], 0, 0
         for k, t in enumerate(tasks):
             fc = cc.make_features(a.features, t)
+            utilities, valid_here, here = [], 0, 0
             for e in range(a.episodes):
-                total += 1
+                here += 1
                 with torch.no_grad():
                     rec = episode(t, actor, fc, temp, a.max_steps,
                                   np.random.default_rng(a.seed + 1000 * k + e),
@@ -72,25 +78,43 @@ def main() -> int:
                                   evaluate_reward=False, wide=wide)
                 if not rec["valid"]:
                     continue
-                valid += 1
-                term = rec["terminal"]
-                residuals.append(measure_terminal(t, term, a.seed + 50000 + 100 * k + e,
-                                                  a.reward_reads))
-                qubits.append(sum(len(c) for c in term.embedding.values()))
-        rate = valid / total if total else 0.0
-        rsd = statistics.stdev(residuals) if len(residuals) > 1 else 0.0
-        qsd = statistics.stdev(qubits) if len(qubits) > 1 else 0.0
-        # The comparison the batch actually faces: spread among valid episodes against the
-        # spread a validity coin at this rate injects into the same advantage.
-        validity_sd = 0.99 * math.sqrt(rate * (1 - rate))
-        ratio = (0.5 * rsd) / validity_sd if validity_sd > 0 else float("inf")
-        print("  %6.2f %8.2f %10d %12.4f %12.1f %10.2f"
-              % (temp, rate, total, rsd, qsd, ratio), flush=True)
+                valid_here += 1
+                r = measure_terminal(t, rec["terminal"], a.seed + 50000 + 100 * k + e,
+                                     a.reward_reads)
+                # The instance's own divisor, so this is in the units the advantage works in.
+                utilities.append(quality_utility(t, r))
+            total += here
+            valid_total += valid_here
+            rate = valid_here / here if here else 0.0
+            spread = statistics.stdev(utilities) if len(utilities) > 1 else 0.0
+            per_instance.append({"task": t.name, "valid_rate": rate, "valid": valid_here,
+                                 "episodes": here, "quality_sd_in_utility": spread,
+                                 "mean_utility": (sum(utilities) / len(utilities))
+                                                 if utilities else 0.0})
+        rate = valid_total / total if total else 0.0
+        qsd = statistics.median([r["quality_sd_in_utility"] for r in per_instance])
+        # The validity term is the spread a Bernoulli at this rate puts into the same advantage,
+        # within an instance. At zero observed failures it is not zero but unmeasured: a rate of
+        # one over n episodes is consistent with a true failure rate up to about 3/n.
+        rates = [r["valid_rate"] for r in per_instance]
+        vsd = statistics.median([0.99 * math.sqrt(x * (1 - x)) for x in rates])
+        unresolved = sum(1 for x in rates if x in (0.0, 1.0))
+        ratio = (qsd / vsd) if vsd > 0 else None
+        print("  %6.2f %8.2f %10d %12.4f %12s %10s"
+              % (temp, rate, total, qsd, "%.4f" % vsd,
+                 ("%.2f" % ratio) if ratio is not None else "unmeasured"), flush=True)
         print(json.dumps({"temperature": temp, "valid_rate": rate, "episodes": total,
-                          "residual_sd": rsd, "qubits_sd": qsd,
-                          "validity_sd_in_utility": validity_sd,
-                          "quality_sd_in_utility": 0.5 * rsd,
-                          "signal_over_validity_noise": ratio}), flush=True)
+                          "median_quality_sd_in_utility": qsd,
+                          "median_validity_sd_in_utility": vsd,
+                          "quality_over_validity": ratio,
+                          "instances_with_no_failure_observed": unresolved,
+                          "instances": per_instance,
+                          "reading": ("both columns are within-instance and in utility units. A "
+                                      "ratio above one means the spread among an instance's own "
+                                      "valid episodes is larger than the spread its failures "
+                                      "inject. Where no failure was observed the validity term "
+                                      "is unmeasured rather than zero, and the instance count "
+                                      "for that is reported.")}), flush=True)
     print("TEMPERATURE CALIBRATION DONE", flush=True)
     return 0
 
