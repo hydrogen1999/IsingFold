@@ -2397,3 +2397,36 @@ not witness-consistent may still be a good move, and a top-one figure against th
 understates how often the model picks something that works. The whole-path numbers, 4e-19 and
 9e-25, are lower bounds against one particular path and are not the probability of completing a
 construction. `results/quality/express4_p3.log`.
+
+## One decision is worth twice the whole gap, and the policy is choosing at random
+
+Terminal policy gradient gives every decision in a trajectory the same advantage, so a good final
+embedding never says which early choice produced it. `probes/branch_compare.py` asks locally
+instead. From one construction prefix it takes four competing legal actions, spread across the
+policy's own ranking rather than drawn from its favourites, finishes each with the same policy
+under the same continuation randomness, and measures the terminal residual of each completion.
+The prefix and the continuation are fixed, so the only difference is the branch. Forty-seven
+branch points over twelve instances at Pegasus 3, fill 0.30, physics32:
+
+| quantity | value |
+|---|---|
+| **residual spread across the four actions at one branch point** | **0.0572 [0.0438, 0.0706]** |
+| the policy's preferred action was the best | 14 of 47, 0.298 |
+| chance, with four actions | 0.250 |
+| distance above chance | 0.76 standard errors |
+
+**A single decision is worth more than twice the entire gap to minorminer.** That gap is 0.0268
+and the spread between the best and the worst action at one branch point is 0.0572. The policy
+does not have to be better everywhere; choosing well at a handful of branch points would close it.
+
+**And the policy is not choosing.** At 0.298 against a chance rate of 0.250, with a standard
+error of 0.063, its preference is statistically indistinguishable from picking at random with
+respect to which action leads to the better embedding. Its ranking is ordering something, and
+that something is not solution quality.
+
+This is the clearest statement yet of what the method is missing, and it is neither capacity nor
+the physics channels, both of which the expressiveness audit ruled out. The quality available at
+each decision is large and the learning rule cannot see it, which is exactly the case a
+branch-point supervision signal exists to fix. The forty-seven branch points are recorded with
+their candidate rows and measured orderings and are the training set for it.
+`results/quality/branch_p3.log`.

@@ -1,0 +1,52 @@
+{"probe": "branch_compare", "corpus": "runs/quality/pegasus3_f30_large", "cells": ["fill30-a3.0"], "init": "runs/quality/r30_p3_s0.best.pt", "features": "physics", "tasks": 12, "prefixes": 4, "actions": 4, "continuations": 2, "reads": 256}
+  task                        depth actions      best    policy    spread policy was best
+  pegasus3-fill30-a3.0-25        23       4    0.0770    0.0794    0.0247 no
+  pegasus3-fill30-a3.0-25        43       4    0.0946    0.0987    0.0218 no
+  pegasus3-fill30-a3.0-25        49       4    0.0702    0.0704    0.0321 no
+  pegasus3-fill30-a3.0-25        68       4    0.0900    0.1078    0.0203 no
+  pegasus3-fill30-a3.0-43         4       4    0.0778    0.0956    0.0269 no
+  pegasus3-fill30-a3.0-43        18       4    0.0687    0.0687    0.0691 yes
+  pegasus3-fill30-a3.0-43        24       4    0.0547    0.0938    0.0979 no
+  pegasus3-fill30-a3.0-43        70       4    0.0572    0.1064    0.0530 no
+  pegasus3-fill30-a3.0-93        19       4    0.0994    0.1148    0.0325 no
+  pegasus3-fill30-a3.0-93        20       4    0.0987    0.1106    0.0738 no
+  pegasus3-fill30-a3.0-93        30       4    0.0986    0.1204    0.0367 no
+  pegasus3-fill30-a3.0-178        2       4    0.0369    0.0625    0.0256 no
+  pegasus3-fill30-a3.0-178       25       4    0.0392    0.0581    0.0189 no
+  pegasus3-fill30-a3.0-178       38       4    0.0372    0.0372    0.0083 yes
+  pegasus3-fill30-a3.0-178       40       4    0.0339    0.0421    0.0213 no
+  pegasus3-fill30-a3.0-146       22       4    0.0568    0.1377    0.0809 no
+  pegasus3-fill30-a3.0-146       34       4    0.0905    0.1042    0.0747 no
+  pegasus3-fill30-a3.0-146       52       4    0.0915    0.0915    0.0598 yes
+  pegasus3-fill30-a3.0-146       56       4    0.0715    0.0715    0.0210 yes
+  pegasus3-fill30-a3.0-125       14       4    0.1183    0.1183    0.1275 yes
+  pegasus3-fill30-a3.0-125       32       4    0.1016    0.1327    0.0311 no
+  pegasus3-fill30-a3.0-125       66       4    0.1087    0.1152    0.0605 no
+  pegasus3-fill30-a3.0-125       68       4    0.1502    0.2236    0.0734 no
+  pegasus3-fill30-a3.0-1          3       4    0.1097    0.1506    0.0409 no
+  pegasus3-fill30-a3.0-1         10       4    0.0919    0.2343    0.1424 no
+  pegasus3-fill30-a3.0-1         24       4    0.1132    0.2053    0.0930 no
+  pegasus3-fill30-a3.0-1         26       4    0.0642    0.2675    0.2962 no
+  pegasus3-fill30-a3.0-46        10       4    0.0964    0.0964    0.0209 yes
+  pegasus3-fill30-a3.0-46        33       4    0.0832    0.0832    0.0363 yes
+  pegasus3-fill30-a3.0-46        43       4    0.0730    0.0957    0.0949 no
+  pegasus3-fill30-a3.0-46        45       4    0.0770    0.0979    0.0809 no
+  pegasus3-fill30-a3.0-58         2       4    0.0612    0.1169    0.0557 no
+  pegasus3-fill30-a3.0-58         6       4    0.0317    0.0317    0.0944 yes
+  pegasus3-fill30-a3.0-58        28       4    0.0492    0.0492    0.0241 yes
+  pegasus3-fill30-a3.0-58        31       4    0.0350    0.0350    0.0602 yes
+  pegasus3-fill30-a3.0-45         4       4    0.0601    0.0601    0.0697 yes
+  pegasus3-fill30-a3.0-45        10       4    0.0601    0.0601    0.0396 yes
+  pegasus3-fill30-a3.0-45        13       4    0.0691    0.0840    0.0348 no
+  pegasus3-fill30-a3.0-45        31       4    0.0837    0.1219    0.0448 no
+  pegasus3-fill30-a3.0-88         2       4    0.1140    0.1485    0.0799 no
+  pegasus3-fill30-a3.0-88         6       4    0.1296    0.1463    0.0403 no
+  pegasus3-fill30-a3.0-88        47       4    0.0995    0.1647    0.0809 no
+  pegasus3-fill30-a3.0-88        51       4    0.1355    0.1432    0.0320 no
+  pegasus3-fill30-a3.0-95        15       4    0.0763    0.0845    0.0082 no
+  pegasus3-fill30-a3.0-95        17       4    0.0718    0.0718    0.0518 yes
+  pegasus3-fill30-a3.0-95        27       4    0.0610    0.0795    0.0252 no
+  pegasus3-fill30-a3.0-95        30       4    0.0724    0.0724    0.0483 yes
+{"summary": "branch_compare", "branch_points": 47, "policy_pick_was_best": 14, "rate": 0.2978723404255319, "chance_rate": 0.25, "mean_residual_spread": 0.057171220343360835, "spread_interval": [0.043751423687581587, 0.07059101699914008], "reading": "a rate near chance with a spread well above the measurement noise says the branch choice matters and the policy is not making it; a spread near zero says the branch choice does not matter here and this is the wrong place to teach"}
+{"dumped": "runs/quality/branch_records_p3.jsonl", "records": 47}
+BRANCH COMPARE DONE
