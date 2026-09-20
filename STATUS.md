@@ -2455,3 +2455,32 @@ Restarted at a start of 0.999 and a step of 0.01, which is one decision, with th
 cut from 0.15 to 0.05: an assisted episode at the end of the walk takes seconds and an
 empty-start one runs the full 300-second deadline, so those episodes set the iteration cost and
 contribute nothing until the start has walked most of the way back.
+
+## Is the branch signal learnable? Not answerable at forty-seven points
+
+The branch measurement says a single decision moves the final residual by 0.057 while the policy
+picks the better action 0.298 of the time against a chance rate of 0.250. Before that is worth a
+week of training, one question has to be answered from the records already collected: fitted to
+the measured orderings, can a model put the better action on top at branch points it was not
+fitted to? `probes/branch_learnable.py` asks it with five folds grouped by instance, so no branch
+point is scored by a model that saw another branch point of the same construction. No sampler
+runs; the residuals were measured when the branches were.
+
+| model | branch points not fitted | chance | branch points fitted |
+|---|---|---|---|
+| linear | 0.120 | 0.250 | 0.432 |
+| small network | 0.273 | 0.250 | **0.943** |
+
+**This is not a negative result, it is an empty one.** The network reproduces 0.943 of the
+thirty-eight records in a fold and generalises at 0.273, which is memorisation of a set far too
+small to generalise from, exactly the pattern the expressiveness audit showed at eight teacher
+paths before thirty-nine fixed it. Forty-seven points over twelve instances cannot decide whether
+the offered rows carry the branch decision.
+
+Four shards of thirty instances each are collecting about four hundred points. Until they land,
+nothing should be concluded about the representation from this table.
+
+**A sign error was caught by the same table.** The first run reported fitted accuracies of 0.078
+and 0.005, below the chance rate of 0.250 on the very records the models had just been fitted to.
+The fit raises the score of the measured-best action, so the model's choice is its highest score,
+and the scorer was taking the lowest. `results/quality/branch_learnable*.log`.
