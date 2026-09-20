@@ -2430,3 +2430,28 @@ each decision is large and the learning rule cannot see it, which is exactly the
 branch-point supervision signal exists to fix. The forty-seven branch points are recorded with
 their candidate rows and measured orderings and are the training set for it.
 `results/quality/branch_p3.log`.
+
+## The reverse-start schedule, corrected by a direct test
+
+The first reverse-start runs held their training validity at exactly zero: six assisted episodes
+an iteration, none reaching a valid COMMIT, with the prefix parked at 0.97 of the walk. A direct
+test on one congested instance says why. Starting an untrained policy at successive points of a
+110-state trajectory at Pegasus 3, fill 0.90:
+
+| start | outcome |
+|---|---|
+| 0.999 of the walk | valid COMMIT in 26 decisions |
+| 0.99 | valid COMMIT in 26 decisions |
+| 0.97 | STOP with no valid embedding |
+| 0.90 | STOP with no valid embedding |
+
+**Two decisions earlier is already past what it can finish.** At this fill every variable is
+placed by the last tenth of the walk and what remains is routing, which is tightly constrained,
+so the curriculum has to begin at the last state where only the COMMIT remains and step back one
+decision at a time. The schedule was starting three decisions back and stepping by eleven, since
+the default mastery step of 0.1 is eleven decisions on a walk this long.
+
+Restarted at a start of 0.999 and a step of 0.01, which is one decision, with the empty-start mix
+cut from 0.15 to 0.05: an assisted episode at the end of the walk takes seconds and an
+empty-start one runs the full 300-second deadline, so those episodes set the iteration cost and
+contribute nothing until the start has walked most of the way back.
