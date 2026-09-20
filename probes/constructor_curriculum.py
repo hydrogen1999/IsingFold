@@ -900,7 +900,12 @@ def run(args, train, heldout):
             # separate training component and its failures must not hold the curriculum back
             if assisted_episodes and assisted_valid / assisted_episodes >= args.mastery_threshold:
                 mastery_fraction = max(schedule_end, mastery_fraction - args.mastery_step)
-        if iteration % 10 == 9:
+        # Every tenth iteration by default, but never less often than an evaluation: a run whose
+        # evaluations arrive faster than its iteration records leaves the mastery schedule and the
+        # training validity invisible, which is exactly what has to be watched on a reverse-start
+        # curriculum whose held-out rate stays at zero until the start has walked back.
+        cadence = min(10, max(1, args.eval_every))
+        if iteration % cadence == cadence - 1:
             print(json.dumps({"iteration": iteration, "seed": args.seed, "train_valid": valid,
                               # Under conditional quality the batch is drawn until enough valid
                               # episodes exist, so the number actually drawn is not the number
