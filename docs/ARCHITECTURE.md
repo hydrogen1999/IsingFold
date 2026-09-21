@@ -120,15 +120,33 @@ over 496 chains, better than any other structural quantity measured.
 
 Three classes, one interface (`probes/constructor_curriculum.py:525-539`):
 
-| kind | structure | parameters |
-|---|---|---|
-| `linear` | `Linear(in_dim, 1, bias=False)`, **zero-initialised** | 16 to 32 |
-| `mlp` | `Linear(in_dim, w)` then `SiLU` then `Linear(w, 1, bias=False)`, last layer zero | a few thousand |
-| `contextual` | a candidate-set actor-critic with Deep Sets pooling and a state-value head | more |
+| kind | linear layers | structure | parameters (local / physics) |
+|---|---|---|---|
+| `linear` | **1** | `Linear(in_dim, 1, bias=False)`, **zero-initialised** | **20 / 32** |
+| `mlp`, w=32 | **2** | `Linear(in_dim, 32)` then `SiLU` then `Linear(32, 1, bias=False)`, last layer zero | 704 / 1088 |
+| `mlp`, w=64 | **2** | the same at width 64 | 1408 / 2176 |
+| `contextual`, w=32 | **6** | Deep Sets encoder, candidate actor, state-value critic | 7042 / 7426 |
+| `contextual`, w=64 | **6** | the same at width 64 | 26370 / 27138 |
 
-Every headline result uses `linear`, which is **sixteen to thirty-two weights**. Zero
-initialisation is deliberate: the starting policy is uniform over the legal actions, so a run
+**The headline policy is one layer.** Every result on the ladder, from the tiny gate to the wide
+support at fill 90, comes from a single `torch.nn.Linear(in_dim, 1, bias=False)`: one weight per
+feature channel, no bias, no hidden layer, no nonlinearity. The count is exactly the schema width:
+
+| feature schema | channels | layers | weights |
+|---|---|---|---|
+| `tiny` | 16 | 1 | **16** |
+| `local` | 20 | 1 | **20** |
+| `physics` | 32 | 1 | **32** |
+| `construction` | 230 | 1 | 230 |
+
+Zero initialisation is deliberate: the starting policy is uniform over the legal actions, so a run
 begins with no preference to unlearn.
+
+The six layers of `contextual` are three two-layer blocks (`probes/layout_policy.py:77-84`). The
+encoder `Linear(in_dim, w), SiLU, Linear(w, w), SiLU` runs per candidate. The pooled context is
+the mean, the max and `log1p(candidate count)`, width `3w + 1`. The actor
+`Linear(3w+1, w), SiLU, Linear(w, 1)` emits the logit; the critic `Linear(2w+1, w), SiLU,
+Linear(w, 1)` emits the state value. It is the only class with a critic.
 
 `--expand-features` zero-pads a narrower checkpoint into a wider schema, so added channels begin
 with no influence on any action logit. The weights are preserved exactly; the logits agree to

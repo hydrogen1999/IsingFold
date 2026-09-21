@@ -74,11 +74,17 @@ identities, with equality tests proving identical episodes.
 The action set has no fixed size, so the policy is a **per-action scorer**: the same weights score
 every candidate row and a softmax over the set gives the action distribution.
 
-| class | structure |
-|---|---|
-| linear | one weight vector, zero-initialised, 16 to 32 parameters |
-| MLP | one hidden layer with SiLU |
-| contextual | candidate-set actor-critic with Deep Sets pooling and a value head |
+| class | linear layers | structure | parameters |
+|---|---|---|---|
+| linear | **1** | one weight vector, no bias, zero-initialised | **16, 20, 32 or 230**, one per channel |
+| MLP | **2** | `Linear(in, w)`, SiLU, `Linear(w, 1)`, width 32 or 64 | 704 to 2176 |
+| contextual | **6** | Deep Sets encoder (2), candidate actor (2), state-value critic (2) | 7042 to 27138 |
+
+**Every number reported below was produced by the one-layer model.** The headline policy is a
+single `Linear(in_dim, 1, bias=False)`: no hidden layer, no nonlinearity, one weight per feature
+channel, so twenty weights under the standard schema and thirty-two with the physics channels. The
+deeper classes exist as controls and neither replaces it; the capacity ablation in section 8 is
+the reason.
 
 Four observation schemas were built and compared: 16 channels, 20 with local capacity, **32 with
 physics channels** (contact coverage, redundancy, load concentration, a bridge bottleneck proxy,
