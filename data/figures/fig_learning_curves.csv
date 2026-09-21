@@ -1,0 +1,406 @@
+group,run,order,evaluation,rate,instances
+quality-cell ladder,clone_long_local_p3,0,init,1.0,4
+quality-cell ladder,clone_long_local_p3,1,epoch 49,1.0,4
+quality-cell ladder,clone_long_local_p3,2,epoch 99,1.0,4
+quality-cell ladder,clone_long_local_p3,3,epoch 149,1.0,4
+quality-cell ladder,clone_long_local_p3,4,epoch 199,1.0,4
+quality-cell ladder,clone_long_local_p3,5,final,1.0,4
+quality-cell ladder,clone_long_physics_p3,0,init,1.0,4
+quality-cell ladder,clone_long_physics_p3,1,epoch 49,1.0,4
+quality-cell ladder,clone_long_physics_p3,2,epoch 99,1.0,4
+quality-cell ladder,clone_long_physics_p3,3,epoch 149,1.0,4
+quality-cell ladder,clone_long_physics_p3,4,epoch 199,1.0,4
+quality-cell ladder,clone_long_physics_p3,5,final,1.0,4
+quality-cell ladder,clone_pegasus3_f30,0,init,1.0,4
+quality-cell ladder,clone_pegasus3_f30,1,epoch 9,1.0,4
+quality-cell ladder,clone_pegasus3_f30,2,epoch 19,1.0,4
+quality-cell ladder,clone_pegasus3_f30,3,epoch 29,1.0,4
+quality-cell ladder,clone_pegasus3_f30,4,final,1.0,4
+quality-cell ladder,r30_p3_s0,0,init,0.75,4
+quality-cell ladder,r30_p3_s0,1,iter 1,0.75,4
+quality-cell ladder,r30_p3_s0,2,iter 3,0.9166666666666666,4
+quality-cell ladder,r30_p3_s0,3,iter 5,0.75,4
+quality-cell ladder,r30_p3_s0,4,iter 7,0.9166666666666666,4
+quality-cell ladder,r30_p3_s0,5,iter 9,0.8333333333333333,4
+quality-cell ladder,r30_p3_s0,6,iter 11,1.0,4
+quality-cell ladder,r30_p3_s0,7,iter 13,0.8333333333333333,4
+quality-cell ladder,r30_p3_s0,8,iter 15,1.0,4
+quality-cell ladder,r30_p3_s0,9,iter 17,0.9166666666666666,4
+quality-cell ladder,r30_p3_s0,10,iter 19,0.9166666666666666,4
+quality-cell ladder,r30_p3_s0,11,iter 21,0.8333333333333333,4
+quality-cell ladder,r30_p3_s0,12,iter 23,1.0,4
+quality-cell ladder,r30_p3_s0,13,iter 25,1.0,4
+quality-cell ladder,r30_p3_s0,14,iter 27,1.0,4
+quality-cell ladder,r30_p3_s1,0,init,0.9166666666666666,4
+quality-cell ladder,r30_p3_s1,1,iter 1,0.9166666666666666,4
+quality-cell ladder,r30_p3_s1,2,iter 3,0.8333333333333333,4
+quality-cell ladder,r30_p3_s1,3,iter 5,1.0,4
+quality-cell ladder,r30_p3_s1,4,iter 7,1.0,4
+quality-cell ladder,r30_p3_s1,5,iter 9,0.9166666666666666,4
+quality-cell ladder,r30_p3_s1,6,iter 11,1.0,4
+quality-cell ladder,r30_p3_s1,7,iter 13,0.9166666666666666,4
+quality-cell ladder,r30_p3_s1,8,iter 15,0.9166666666666666,4
+quality-cell ladder,r30_p3_s1,9,iter 17,1.0,4
+quality-cell ladder,r30_p3_s1,10,iter 19,1.0,4
+quality-cell ladder,r30_p3_s1,11,iter 21,1.0,4
+quality-cell ladder,r30_p3_s1,12,iter 23,0.9166666666666666,4
+quality-cell ladder,r30_p3_s1,13,iter 25,0.7499999999999999,4
+quality-cell ladder,r30_p3_s1,14,iter 27,0.9166666666666666,4
+quality-cell ladder,r30_p3_s1,15,iter 29,1.0,4
+quality-cell ladder,r30_z2_s0,0,init,0.9166666666666666,4
+quality-cell ladder,r30_z2_s0,1,iter 1,1.0,4
+quality-cell ladder,r30_z2_s0,2,iter 3,0.8333333333333333,4
+quality-cell ladder,r30_z2_s0,3,iter 5,0.9166666666666666,4
+quality-cell ladder,r30_z2_s0,4,iter 7,0.9166666666666666,4
+quality-cell ladder,r30_z2_s0,5,iter 9,1.0,4
+quality-cell ladder,r30_z2_s0,6,iter 11,1.0,4
+quality-cell ladder,r30_z2_s0,7,iter 13,0.9166666666666666,4
+quality-cell ladder,r30_z2_s0,8,iter 15,1.0,4
+quality-cell ladder,r30_z2_s1,0,init,1.0,4
+quality-cell ladder,r30_z2_s1,1,iter 1,1.0,4
+quality-cell ladder,r30_z2_s1,2,iter 3,0.9166666666666666,4
+quality-cell ladder,r30_z2_s1,3,iter 5,0.9166666666666666,4
+quality-cell ladder,r30_z2_s1,4,iter 7,0.8333333333333333,4
+quality-cell ladder,r30_z2_s1,5,iter 9,1.0,4
+quality-cell ladder,r30_z2_s1,6,iter 11,0.8333333333333333,4
+quality-cell ladder,r30_z2_s1,7,iter 13,0.9166666666666666,4
+quality-cell ladder,r30_z2_s1,8,iter 15,1.0,4
+quality-cell ladder,r39_p3_s0,0,init,0.1111111111111111,6
+quality-cell ladder,r39_p3_s0,1,iter 1,0.16666666666666666,6
+quality-cell ladder,r39_p3_s1,0,init,0.05555555555555555,6
+quality-cell ladder,r39_p3_s1,1,iter 1,0.16666666666666666,6
+quality-cell ladder,r39_z2_s0,0,init,0.0,6
+quality-cell ladder,r39_z2_s1,0,init,0.05555555555555555,6
+quality-cell ladder,r39_z2_s1,1,iter 1,0.0,6
+hardware scale,ink24_pegasus16_prefix_s0,0,init,0.0,4
+hardware scale,ink24_pegasus16_prefixinit_s0,0,init,0.1,4
+hardware scale,ink24_pegasus16_prefixinit_s0,1,iter 24,0.25,4
+hardware scale,ink24_pegasus16_prefixinit_s0,2,iter 49,0.8500000000000001,4
+hardware scale,ink24_pegasus16_prefixinit_s0,3,iter 74,0.9,4
+hardware scale,ink24_pegasus16_prefixinit_s0,4,final,1.0,4
+hardware scale,ink24_zephyr15_prefix_s0,0,init,0.0,4
+hardware scale,ink24_zephyr15_prefixinit_s0,0,init,0.35,4
+hardware scale,ink24_zephyr15_prefixinit_s0,1,iter 24,0.6,4
+hardware scale,ink24_zephyr15_prefixinit_s0,2,iter 49,0.9,4
+hardware scale,ink24_zephyr15_prefixinit_s0,3,iter 74,0.9,4
+hardware scale,ink24_zephyr15_prefixinit_s0,4,final,0.95,4
+curriculum,F_ctx_lr3e3_s0,0,init,0.06666666666666667,12
+curriculum,F_ctx_lr3e3_s0,1,iter 24,0.8333333333333334,12
+curriculum,F_ctx_lr3e3_s0,2,iter 49,0.8333333333333334,12
+curriculum,F_ctx_lr3e3_s0,3,iter 74,0.8333333333333334,12
+curriculum,F_ctx_lr3e3_s0,4,final,0.8333333333333334,12
+curriculum,F_lin230_s0,0,init,0.08333333333333333,12
+curriculum,F_lin230_s0,1,iter 24,0.8166666666666668,12
+curriculum,F_lin230_s0,2,iter 49,0.8250000000000001,12
+curriculum,F_lin230_s0,3,iter 74,0.8250000000000001,12
+curriculum,F_lin230_s0,4,final,0.8333333333333334,12
+curriculum,F_linear_s0,0,init,0.08333333333333333,12
+curriculum,F_linear_s0,1,iter 24,0.40833333333333327,12
+curriculum,F_linear_s0,2,iter 49,0.7083333333333334,12
+curriculum,F_linear_s0,3,iter 74,0.7999999999999999,12
+curriculum,F_linear_s0,4,final,0.7999999999999999,12
+curriculum,F_linear_s1,0,init,0.03333333333333333,12
+curriculum,F_linear_s1,1,iter 24,0.44999999999999996,12
+curriculum,F_linear_s1,2,iter 49,0.7416666666666667,12
+curriculum,F_linear_s1,3,iter 74,0.8083333333333335,12
+curriculum,F_linear_s2,0,init,0.11666666666666665,12
+curriculum,F_linear_s2,1,iter 24,0.4833333333333334,12
+curriculum,F_linear_s2,2,iter 49,0.75,12
+curriculum,F_local_s0,0,init,0.4166666666666667,12
+curriculum,F_local_s0,1,iter 24,0.8333333333333334,12
+curriculum,F_local_s0,2,iter 49,0.8333333333333334,12
+curriculum,F_local_s0,3,iter 74,0.8333333333333334,12
+curriculum,F_local_s0,4,final,0.8333333333333334,12
+curriculum,F_local_s1,0,init,0.4166666666666667,12
+curriculum,F_local_s1,1,iter 24,0.8333333333333331,12
+curriculum,F_local_s1,2,iter 49,0.8611111111111112,12
+curriculum,F_local_s1,3,iter 74,0.861111111111111,12
+curriculum,F_local_s1,4,final,0.8333333333333334,12
+curriculum,G_ctx_lr3e3_s0,0,init,0.15,12
+curriculum,G_ctx_lr3e3_s0,1,iter 24,0.9166666666666666,12
+curriculum,G_ctx_lr3e3_s0,2,iter 49,0.9333333333333332,12
+curriculum,G_ctx_lr3e3_s0,3,iter 74,0.9583333333333334,12
+curriculum,G_ctx_lr3e3_s0,4,final,0.9333333333333332,12
+curriculum,G_lin230_s0,0,init,0.16666666666666666,12
+curriculum,G_lin230_s0,1,iter 24,0.9249999999999999,12
+curriculum,G_lin230_s0,2,iter 49,0.9333333333333332,12
+curriculum,G_lin230_s0,3,iter 74,0.9333333333333332,12
+curriculum,G_lin230_s0,4,final,0.9416666666666668,12
+curriculum,G_linear_s0,0,init,0.16666666666666666,12
+curriculum,G_linear_s0,1,iter 24,0.6333333333333332,12
+curriculum,G_linear_s0,2,iter 49,0.8333333333333334,12
+curriculum,G_linear_s0,3,iter 74,0.8666666666666667,12
+curriculum,G_linear_s0,4,final,0.875,12
+curriculum,G_linear_s1,0,init,0.08333333333333333,12
+curriculum,G_linear_s1,1,iter 24,0.6083333333333333,12
+curriculum,G_linear_s1,2,iter 49,0.775,12
+curriculum,G_linear_s1,3,iter 74,0.7833333333333333,12
+curriculum,G_linear_s2,0,init,0.09166666666666667,12
+curriculum,G_linear_s2,1,iter 24,0.39999999999999997,12
+curriculum,G_linear_s2,2,iter 49,0.6333333333333334,12
+curriculum,G_local_s0,0,init,0.5555555555555555,12
+curriculum,G_local_s0,1,iter 24,0.9166666666666666,12
+curriculum,G_local_s0,2,iter 49,0.9166666666666666,12
+curriculum,G_local_s0,3,iter 74,0.9166666666666666,12
+curriculum,G_local_s0,4,final,0.9444444444444443,12
+curriculum,G_local_s1,0,init,0.5277777777777778,12
+curriculum,G_local_s1,1,iter 24,0.9444444444444443,12
+curriculum,G_local_s1,2,iter 49,0.9444444444444443,12
+curriculum,G_local_s1,3,iter 74,0.8888888888888888,12
+curriculum,G_local_s1,4,final,0.9722222222222222,12
+curriculum,P_ctx_value_s0,0,init,0.075,12
+curriculum,P_ctx_value_s0,1,iter 49,0.22083333333333333,12
+curriculum,P_lin230_s0,0,init,0.07916666666666666,12
+curriculum,P_lin230_s0,1,iter 49,0.6875,12
+curriculum,P_lin230_s0,2,iter 99,0.7000000000000001,12
+curriculum,P_lin230_s1,0,init,0.08750000000000001,12
+curriculum,P_lin230_s1,1,iter 49,0.9291666666666666,12
+curriculum,P_lin230_s1,2,iter 99,0.9416666666666668,12
+curriculum,P_lin230_s1,3,iter 149,0.9041666666666667,12
+curriculum,P_lin230_s1,4,final,0.9583333333333334,12
+curriculum,P_lin230_s2,0,init,0.05416666666666666,12
+curriculum,P_lin230_s2,1,iter 49,0.7583333333333333,12
+curriculum,P_lin230_s2,2,iter 99,0.7583333333333333,12
+curriculum,P_lin230_s2,3,iter 149,0.7458333333333332,12
+curriculum,Pq_grown2_s1,0,init,,12
+curriculum,Pq_grown2_s1,1,final,,12
+curriculum,Pq_lin230_s1,0,init,,12
+curriculum,Pq_lin230_s1,1,iter 49,,12
+curriculum,Pq_lin230_s1,2,final,,12
+curriculum,Z_ctx_value_s0,0,init,0.10416666666666667,12
+curriculum,Z_ctx_value_s0,1,iter 49,0.9208333333333334,12
+curriculum,Z_ctx_value_s0,2,iter 99,0.9291666666666666,12
+curriculum,Z_ctx_value_s0,3,iter 149,0.9333333333333332,12
+curriculum,Z_ctx_value_s0,4,final,0.8583333333333334,12
+curriculum,Z_lin230_s0,0,init,0.10416666666666667,12
+curriculum,Z_lin230_s0,1,iter 49,0.8875000000000001,12
+curriculum,Z_lin230_s0,2,iter 99,0.9291666666666667,12
+curriculum,Z_lin230_s1,0,init,0.0625,12
+curriculum,Z_lin230_s1,1,iter 49,0.9166666666666666,12
+curriculum,Z_lin230_s1,2,iter 99,0.9500000000000001,12
+curriculum,Z_lin230_s1,3,iter 149,0.9375,12
+curriculum,Z_lin230_s1,4,final,0.9624999999999999,12
+curriculum,Z_lin230_s2,0,init,0.06666666666666667,12
+curriculum,Z_lin230_s2,1,iter 49,0.8291666666666667,12
+curriculum,Z_lin230_s2,2,iter 99,0.875,12
+curriculum,Zq_grown2_s1,0,init,,12
+curriculum,Zq_grown2_s1,1,final,,12
+curriculum,Zq_lin230_s1,0,init,,12
+curriculum,Zq_lin230_s1,1,iter 49,,12
+curriculum,Zq_lin230_s1,2,final,,12
+curriculum,a_linear_s0,0,init,0.3625,12
+curriculum,a_linear_s0,1,iter 49,0.9083333333333333,12
+curriculum,a_linear_s0,2,iter 99,0.9333333333333335,12
+curriculum,a_linear_s0,3,iter 149,0.9625,12
+curriculum,a_linear_s0,4,final,0.9708333333333332,12
+curriculum,a_linear_s1,0,init,0.4083333333333334,12
+curriculum,a_linear_s1,1,iter 49,0.9291666666666667,12
+curriculum,a_linear_s1,2,iter 99,0.9458333333333333,12
+curriculum,a_linear_s1,3,iter 149,0.975,12
+curriculum,a_linear_s1,4,final,0.9874999999999999,12
+curriculum,a_linear_s2,0,init,0.42083333333333334,12
+curriculum,a_linear_s2,1,iter 49,0.9041666666666667,12
+curriculum,a_linear_s2,2,iter 99,0.9333333333333335,12
+curriculum,a_linear_s2,3,iter 149,0.9500000000000001,12
+curriculum,a_linear_s2,4,final,0.9625,12
+curriculum,b_ctx_loo_lr3e3_s0,0,init,0.15416666666666665,12
+curriculum,b_ctx_loo_lr3e3_s0,1,iter 49,0.8000000000000002,12
+curriculum,b_ctx_loo_lr3e3_s0,2,iter 99,0.9208333333333334,12
+curriculum,b_ctx_loo_lr3e3_s0,3,iter 149,0.9791666666666666,12
+curriculum,b_ctx_loo_lr3e3_s0,4,final,0.9416666666666665,12
+curriculum,b_ctx_loo_lr3e3_s2,0,init,0.09166666666666667,12
+curriculum,b_ctx_loo_lr3e3_s2,1,iter 49,0.7416666666666667,12
+curriculum,b_ctx_loo_lr3e3_s2,2,iter 99,0.75,12
+curriculum,b_ctx_loo_lr3e3_s2,3,iter 149,0.8041666666666667,12
+curriculum,b_ctx_loo_lr3e3_s2,4,final,0.8541666666666666,12
+curriculum,b_ctx_loo_s0,0,init,0.15416666666666665,12
+curriculum,b_ctx_loo_s0,1,iter 49,0.7416666666666667,12
+curriculum,b_ctx_loo_s0,2,iter 99,0.85,12
+curriculum,b_ctx_loo_s0,3,iter 149,0.8708333333333332,12
+curriculum,b_ctx_loo_s0,4,final,0.8708333333333332,12
+curriculum,b_ctx_loo_s1,0,init,0.14166666666666666,12
+curriculum,b_ctx_loo_s1,1,iter 49,0.7333333333333334,12
+curriculum,b_ctx_loo_s1,2,iter 99,0.7416666666666667,12
+curriculum,b_ctx_loo_s1,3,iter 149,0.6958333333333333,12
+curriculum,b_ctx_loo_s1,4,final,0.6791666666666667,12
+curriculum,b_ctx_loo_s2,0,init,0.09166666666666667,12
+curriculum,b_ctx_loo_s2,1,iter 49,0.7291666666666666,12
+curriculum,b_ctx_loo_s2,2,iter 99,0.0,12
+curriculum,b_ctx_loo_s2,3,iter 149,0.0,12
+curriculum,b_ctx_loo_s2,4,final,0.0,12
+curriculum,b_ctx_value_s0,0,init,0.15416666666666665,12
+curriculum,b_ctx_value_s0,1,iter 49,0.8666666666666667,12
+curriculum,b_ctx_value_s0,2,iter 99,0.8958333333333331,12
+curriculum,b_ctx_value_s0,3,iter 149,0.19166666666666665,12
+curriculum,b_ctx_value_s0,4,final,0.46249999999999997,12
+curriculum,b_ctx_value_s1,0,init,0.14166666666666666,12
+curriculum,b_ctx_value_s1,1,iter 49,0.004166666666666667,12
+curriculum,b_ctx_value_s1,2,iter 99,0.6499999999999999,12
+curriculum,b_ctx_value_s1,3,iter 149,0.625,12
+curriculum,b_ctx_value_s1,4,final,0.6958333333333333,12
+curriculum,b_ctx_value_s2,0,init,0.09166666666666667,12
+curriculum,b_ctx_value_s2,1,iter 49,0.7958333333333333,12
+curriculum,b_ctx_value_s2,2,iter 99,0.7875,12
+curriculum,b_ctx_value_s2,3,iter 149,0.0,12
+curriculum,b_ctx_value_s2,4,final,0.0,12
+curriculum,b_lin230_s0,0,init,0.15416666666666665,12
+curriculum,b_lin230_s0,1,iter 49,0.8333333333333334,12
+curriculum,b_lin230_s0,2,iter 99,0.9125000000000001,12
+curriculum,b_lin230_s0,3,iter 149,0.9583333333333334,12
+curriculum,b_lin230_s0,4,final,0.9708333333333333,12
+curriculum,b_lin230_s1,0,init,0.14166666666666666,12
+curriculum,b_lin230_s1,1,iter 49,0.7083333333333334,12
+curriculum,b_lin230_s1,2,iter 99,0.8333333333333334,12
+curriculum,b_lin230_s1,3,iter 149,0.8374999999999999,12
+curriculum,b_lin230_s1,4,final,0.8458333333333332,12
+curriculum,b_lin230_s2,0,init,0.09166666666666667,12
+curriculum,b_lin230_s2,1,iter 49,0.85,12
+curriculum,b_lin230_s2,2,iter 99,0.8541666666666665,12
+curriculum,b_lin230_s2,3,iter 149,0.8166666666666668,12
+curriculum,b_lin230_s2,4,final,0.8500000000000001,12
+curriculum,b_linear_s0,0,init,0.15416666666666665,12
+curriculum,b_linear_s0,1,iter 49,0.6166666666666667,12
+curriculum,b_linear_s0,2,iter 99,0.7041666666666666,12
+curriculum,b_linear_s0,3,iter 149,0.8041666666666667,12
+curriculum,b_linear_s0,4,final,0.7999999999999999,12
+curriculum,b_linear_s1,0,init,0.14166666666666666,12
+curriculum,b_linear_s1,1,iter 49,0.5291666666666667,12
+curriculum,b_linear_s1,2,iter 99,0.6749999999999999,12
+curriculum,b_linear_s1,3,iter 149,0.7625000000000001,12
+curriculum,b_linear_s1,4,final,0.7416666666666667,12
+curriculum,b_linear_s2,0,init,0.09166666666666667,12
+curriculum,b_linear_s2,1,iter 49,0.575,12
+curriculum,b_linear_s2,2,iter 99,0.6291666666666667,12
+curriculum,b_linear_s2,3,iter 149,0.6375000000000001,12
+curriculum,b_linear_s2,4,final,0.6666666666666666,12
+curriculum,b_local_s0,0,init,0.65,12
+curriculum,b_local_s0,1,iter 24,0.6708333333333334,12
+curriculum,b_local_s0,2,iter 49,0.7333333333333334,12
+curriculum,b_local_s0,3,iter 74,0.7333333333333334,12
+curriculum,b_local_s0,4,iter 99,0.7666666666666667,12
+curriculum,b_local_s0,5,iter 124,0.7416666666666668,12
+curriculum,b_local_s0,6,iter 149,0.7375000000000002,12
+curriculum,b_local_s0,7,iter 174,0.8166666666666668,12
+curriculum,b_local_s0,8,final,0.7958333333333334,12
+curriculum,b_local_s1,0,init,0.5125,12
+curriculum,b_local_s1,1,iter 24,0.5375000000000001,12
+curriculum,b_local_s1,2,iter 49,0.5625,12
+curriculum,b_local_s1,3,iter 74,0.6458333333333334,12
+curriculum,b_local_s1,4,iter 99,0.7124999999999999,12
+curriculum,b_local_s1,5,iter 124,0.7708333333333334,12
+curriculum,b_local_s1,6,iter 149,0.7791666666666667,12
+curriculum,b_local_s1,7,iter 174,0.7625000000000001,12
+curriculum,b_local_s1,8,final,0.75,12
+curriculum,b_mlp_s0,0,init,0.15416666666666665,12
+curriculum,b_mlp_s0,1,iter 49,0.6916666666666668,12
+curriculum,b_mlp_s0,2,iter 99,0.6791666666666667,12
+curriculum,b_mlp_s0,3,iter 149,0.6875,12
+curriculum,b_mlp_s0,4,final,0.7000000000000002,12
+curriculum,bq16_grown2_s0,0,init,,12
+curriculum,bq16_grown2_s0,1,final,,12
+curriculum,bq_grown1_s0,0,init,,12
+curriculum,bq_grown1_s0,1,final,,12
+curriculum,bq_grown2_s0,0,init,,12
+curriculum,bq_grown2_s0,1,final,,12
+curriculum,bq_grown2_s1,0,init,,12
+curriculum,bq_grown2_s1,1,final,,12
+curriculum,bq_grown2_s2,0,init,,12
+curriculum,bq_grown2_s2,1,final,,12
+curriculum,bq_lin230_s0,0,init,,12
+curriculum,bq_lin230_s0,1,iter 49,,12
+curriculum,bq_lin230_s0,2,iter 99,,12
+curriculum,bq_lin230_s0,3,final,,12
+curriculum,bq_lin230_s1,0,init,,12
+curriculum,bq_lin230_s1,1,iter 49,,12
+curriculum,bq_lin230_s1,2,iter 99,,12
+curriculum,bq_lin230_s1,3,final,,12
+curriculum,bq_lin230_s2,0,init,,12
+curriculum,bq_lin230_s2,1,iter 49,,12
+curriculum,bq_lin230_s2,2,iter 99,,12
+curriculum,bq_lin230_s2,3,final,,12
+curriculum,bq_shape_s0,0,init,,12
+curriculum,bq_shape_s0,1,final,,12
+curriculum,fill80_pegasus6_scratch_s0,0,init,0.0,4
+curriculum,fill80_zephyr4_scratch_s0,0,init,0.0,4
+curriculum,fill90_pegasus6_scratch_s0,0,init,0.0,4
+curriculum,fill90_zephyr4_scratch_s0,0,init,0.0,4
+curriculum,modq_pegasus6_lin16,0,init,,12
+curriculum,modq_pegasus6_lin230,0,init,,12
+curriculum,modq_zephyr4_lin16,0,init,,12
+curriculum,modq_zephyr4_lin230,0,init,,12
+curriculum,p_linear_s0,0,init,0.07916666666666666,12
+curriculum,p_linear_s0,1,iter 49,0.5708333333333334,12
+curriculum,p_linear_s0,2,iter 99,0.5708333333333334,12
+curriculum,p_linear_s0,3,iter 149,0.6291666666666665,12
+curriculum,p_linear_s0,4,final,0.6291666666666665,12
+curriculum,p_linear_s1,0,init,0.08750000000000001,12
+curriculum,p_linear_s1,1,iter 49,0.7124999999999999,12
+curriculum,p_linear_s1,2,iter 99,0.8166666666666665,12
+curriculum,p_linear_s1,3,iter 149,0.8458333333333332,12
+curriculum,p_linear_s1,4,final,0.8416666666666668,12
+curriculum,p_linear_s2,0,init,0.05416666666666666,12
+curriculum,p_linear_s2,1,iter 49,0.5833333333333333,12
+curriculum,p_linear_s2,2,iter 99,0.6708333333333334,12
+curriculum,p_linear_s2,3,iter 149,0.7000000000000001,12
+curriculum,p_linear_s2,4,final,0.7166666666666667,12
+curriculum,pq_grown2_s0,0,init,,12
+curriculum,pq_shape_s0,0,init,,12
+curriculum,pq_shape_s0,1,final,,12
+curriculum,w2_f90_s0,0,init,0.0,2
+curriculum,w2_f90_s0,1,iter 2,0.0,2
+curriculum,w2_f90_s0,2,iter 5,0.0,2
+curriculum,w2_f90_s0,3,iter 8,0.0,2
+curriculum,w2_f90_s0,4,iter 11,0.0,2
+curriculum,w2_f90_s0,5,iter 14,0.0,2
+curriculum,w2_f90_s1,0,init,0.0,2
+curriculum,w2_f90_s1,1,iter 2,0.0,2
+curriculum,w2_f90_s1,2,iter 5,0.0,2
+curriculum,w2_f90_s1,3,iter 8,0.0,2
+curriculum,w2_f90_s1,4,iter 11,0.0,2
+curriculum,w2_f90_s1,5,iter 14,0.0,2
+curriculum,w2_f95_s0,0,init,0.0,1
+curriculum,w2_f95_s0,1,iter 2,0.0,1
+curriculum,w2_f95_s0,2,iter 5,0.0,1
+curriculum,w2_f95_s0,3,iter 8,0.0,1
+curriculum,w2_f95_s0,4,iter 11,0.0,1
+curriculum,w2_f95_s0,5,iter 14,0.0,1
+curriculum,w2_f95_s0,6,iter 17,0.0,1
+curriculum,w3_f90_s0,0,init,0.0,2
+curriculum,w3_f90_s0,1,iter 2,0.0,2
+curriculum,w3_f90_s0,2,iter 5,0.0,2
+curriculum,w3_f90_s0,3,iter 8,0.0,2
+curriculum,w3_f90_s0,4,iter 11,0.0,2
+curriculum,w3_f90_s0,5,iter 14,0.0,2
+curriculum,w3_f90_s0,6,iter 17,0.0,2
+curriculum,w3_f90_s1,0,init,0.0,2
+curriculum,w3_f90_s1,1,iter 2,0.0,2
+curriculum,w3_f90_s1,2,iter 5,0.0,2
+curriculum,w3_f90_s1,3,iter 8,0.0,2
+curriculum,w3_f90_s1,4,iter 11,0.0,2
+curriculum,w3_f90_s1,5,iter 14,0.0,2
+curriculum,w3_f90_s1,6,iter 17,0.0,2
+curriculum,w3_f95_s0,0,init,0.0,1
+curriculum,w3_f95_s0,1,iter 2,0.0,1
+curriculum,w3_f95_s0,2,iter 5,0.0,1
+curriculum,w3_f95_s0,3,iter 8,0.0,1
+curriculum,w3_f95_s0,4,iter 11,0.0,1
+curriculum,w3_f95_s0,5,iter 14,0.0,1
+curriculum,w3_f95_s0,6,iter 17,0.0,1
+curriculum,z_linear_s0,0,init,0.10416666666666667,12
+curriculum,z_linear_s0,1,iter 49,0.7333333333333334,12
+curriculum,z_linear_s0,2,iter 99,0.8166666666666668,12
+curriculum,z_linear_s0,3,iter 149,0.8249999999999998,12
+curriculum,z_linear_s0,4,final,0.8374999999999999,12
+curriculum,z_linear_s1,0,init,0.0625,12
+curriculum,z_linear_s1,1,iter 49,0.7416666666666666,12
+curriculum,z_linear_s1,2,iter 99,0.8416666666666667,12
+curriculum,z_linear_s1,3,iter 149,0.8583333333333333,12
+curriculum,z_linear_s1,4,final,0.8791666666666665,12
+curriculum,z_linear_s2,0,init,0.06666666666666667,12
+curriculum,z_linear_s2,1,iter 49,0.6916666666666668,12
+curriculum,z_linear_s2,2,iter 99,0.7416666666666667,12
+curriculum,z_linear_s2,3,iter 149,0.7999999999999999,12
+curriculum,z_linear_s2,4,final,0.7708333333333335,12
+curriculum,zq_grown2_s0,0,init,,12
+curriculum,zq_shape_s0,0,init,,12
+curriculum,zq_shape_s0,1,final,,12

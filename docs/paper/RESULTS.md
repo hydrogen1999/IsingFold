@@ -173,20 +173,35 @@ From one construction prefix, four competing legal actions spread across the pol
 ranking, each finished with the same policy under the same continuation randomness, each
 completion measured. Forty-seven branch points over twelve instances.
 
-| quantity | value |
-|---|---|
-| **residual spread across four actions at one branch point** | **0.0572 [0.0438, 0.0706]** |
-| gap between the policy and minorminer | 0.0268 |
-| the policy's preferred action was the best | 14 of 47, 0.298 |
-| chance, with four actions | 0.250 |
-| distance above chance | 0.76 standard errors |
+| quantity | 47 branch points | **518 branch points, 102 instances** |
+|---|---|---|
+| **residual spread across four actions at one branch point** | 0.0572 [0.0438, 0.0706] | **0.0491 [0.0467, 0.0515]** |
+| gap between the policy and minorminer | 0.0268 | 0.0268 |
+| the policy's preferred action was the best | 14 of 47, 0.298 | **119 of 518, 0.230** |
+| chance, with four actions | 0.250 | 0.250 |
+| distance from chance | +0.76 standard errors | **-1.07 standard errors** |
 
-A single decision carries more than twice the entire performance gap, and the policy's preference
-is statistically indistinguishable from choosing at random with respect to which action leads to
-the better embedding. A terminal reward gives every decision in the trajectory the same
-advantage, so a good final embedding never identifies the choice that produced it.
+A single decision carries nearly twice the entire performance gap. The policy's preference is at
+or slightly below chance with respect to which action leads to the better embedding; the 0.298
+seen on forty-seven points was noise and the larger sample puts it at 0.230. A terminal reward
+gives every decision in the trajectory the same advantage, so a good final embedding never
+identifies the choice that produced it.
 
-`results/quality/branch_p3.log`, `probes/branch_compare.py`.
+**And direct supervision on the measured orderings barely helps.** Fitted to the measured best
+action at each branch point, five folds grouped by instance:
+
+| model | branch points not fitted | chance | branch points fitted |
+|---|---|---|---|
+| linear | 0.257 | 0.250 | 0.321 |
+| small network | **0.290** | 0.250 | 0.692 |
+
+At 518 records the network reaches 0.290 against a chance rate of 0.250, which is 2.1 standard
+errors, a real effect and a tiny one. So the quality at a branch point is large, and the rows the
+environment offers do not distinguish which branch carries it. That is a statement about the
+representation, and no reward schedule changes it.
+
+`results/quality/branch_p3.log`, `results/quality/branch_all.jsonl`, `probes/branch_compare.py`,
+`probes/branch_learnable.py`.
 
 ### 4.2 Not capacity, and not the physics channels
 
@@ -370,11 +385,11 @@ reader can tell what the record currently supports from what it once said.
 
 ## 9. What is open
 
-- The quality objective has failed its pre-registered test at this cell and configuration. The
-  branch measurement says the signal must come from comparisons at a decision, not from a
-  terminal reward, and about four hundred branch points are being collected to decide whether the
-  offered rows carry that decision. Forty-seven were too few to tell: the small network
-  reproduced 0.943 of them and generalised at 0.273 against a chance rate of 0.250.
+- The quality objective has failed its pre-registered test, and the branch measurement at 518
+  points says why: the quality at a decision is large, 0.0491 [0.0467, 0.0515], and neither the
+  policy nor a model fitted directly to the measured orderings can find it from the rows the
+  environment offers, 0.290 against 0.250 by chance. The next thing to change is the action
+  representation, not the reward.
 - The congested cells, 93 to 116 variables at fill 0.90 and 0.95, have a benchmark result and no
   method result. minorminer is valid on 0 of 12 there under a 300-second wall clock and the
   constructor is at 0.00. A reverse-start curriculum, beginning at the last state of a successful

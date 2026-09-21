@@ -1,0 +1,254 @@
+{
+ "files": [
+  {
+   "file": "fig_selection_signal_rho.csv",
+   "rows": 129,
+   "columns": [
+    "host",
+    "task",
+    "rule",
+    "rho",
+    "draws",
+    "qubit_spread",
+    "assessed_mean"
+   ],
+   "sources": [
+    "results/rules/pegasus6.log",
+    "results/rules/zephyr4.log"
+   ]
+  },
+  {
+   "file": "fig_solvability_frontier.csv",
+   "rows": 563,
+   "columns": [
+    "host",
+    "variables",
+    "qubits",
+    "named_fill",
+    "mean_chain",
+    "field_rate",
+    "sweeps",
+    "reads",
+    "p_registered",
+    "p_best",
+    "minorminer_valid",
+    "p_minorminer",
+    "source"
+   ],
+   "sources": [
+    "results/frontier/cell_zephyr1_f95_d0.log",
+    "results/frontier/cell_zephyr1_f95_d2.log",
+    "results/frontier/confirm_pegasus_f95.log",
+    "results/frontier/confirm_zephyr_f95.log",
+    "results/frontier/discrim_pegasus2_d0.log",
+    "results/frontier/discrim_pegasus2_d2.log",
+    "results/frontier/discrim_pegasus2_d4.log",
+    "results/frontier/discrim_pegasus2_d8.log",
+    "results/frontier/discrim_zephyr1_d0.log",
+    "results/frontier/discrim_zephyr1_d2.log",
+    "results/frontier/discrim_zephyr1_d4.log",
+    "results/frontier/discrim_zephyr1_d8.log",
+    "results/frontier/gate2_pegasus3_f90_registered.log",
+    "results/frontier/gate2_zephyr2_f90_registered.log",
+    "results/frontier/gate_pegasus3_f90.log",
+    "results/frontier/gate_pegasus3_f90_registered.log",
+    "results/frontier/gate_zephyr2_f90.log",
+    "results/frontier/mech2_pegasus3_d0.log",
+    "results/frontier/mech2_pegasus3_d32.log",
+    "results/frontier/mech2_pegasus3_d64.log",
+    "results/frontier/mech_pegasus3_d0.log",
+    "results/frontier/mech_pegasus3_d16.log",
+    "results/frontier/mech_pegasus3_d32.log",
+    "results/frontier/mech_pegasus3_d64.log",
+    "results/frontier/pegasus2_f80.log",
+    "results/frontier/pegasus2_f90.log",
+    "results/frontier/pegasus2_f95.log",
+    "results/frontier/pegasus3_deep.log",
+    "results/frontier/pegasus3_f80.log",
+    "results/frontier/pegasus3_f90.log",
+    "results/frontier/pegasus3_f95.log",
+    "results/frontier/pegasus4_f90.log",
+    "results/frontier/pegasus4_field.log",
+    "results/frontier/pegasus5_f90.log",
+    "results/frontier/pegasus5_field.log",
+    "results/frontier/pegasus6_f90.log",
+    "results/frontier/pegasus6_field.log",
+    "results/frontier/qscale_pegasus4_f50.log",
+    "results/frontier/qscale_pegasus5_f50.log",
+    "results/frontier/qscale_pegasus6_f50.log",
+    "results/frontier/qscale_zephyr3_f50.log",
+    "results/frontier/qscale_zephyr4_f50.log",
+    "results/frontier/zephyr1_f90.log",
+    "results/frontier/zephyr2_f90.log",
+    "results/frontier/zephyr3_f90.log",
+    "results/frontier/zephyr3_field.log",
+    "results/frontier/zephyr4_f90.log",
+    "results/frontier/zephyr4_field.log"
+   ]
+  },
+  {
+   "file": "fig_chain_breaking.csv",
+   "rows": 1347,
+   "columns": [
+    "task_index",
+    "source",
+    "break_rate",
+    "length",
+    "internal_edges",
+    "redundancy",
+    "cut_vertices",
+    "logical_degree",
+    "coupling_mass",
+    "contacts",
+    "mass_per_contact",
+    "max_contact_load",
+    "load_concentration",
+    "field"
+   ],
+   "sources": [
+    "results/quality/breakpred2_p3.log"
+   ]
+  },
+  {
+   "file": "fig_embedding_quality.csv",
+   "rows": 348,
+   "columns": [
+    "source",
+    "task",
+    "variables",
+    "arm",
+    "qubits",
+    "longest",
+    "residual",
+    "p_solve",
+    "broken"
+   ],
+   "sources": [
+    "results/quality/broken_pre_p3.log",
+    "results/quality/broken_clone_local.log",
+    "results/quality/broken_clone_physics.log",
+    "results/quality/excess_p3_f30.log",
+    "results/quality/excess_clone_p3.log",
+    "results/quality/excess20_pre_p3.log",
+    "results/quality/excess20_clone_p3.log"
+   ]
+  },
+  {
+   "file": "fig_branch_points.csv",
+   "rows": 2072,
+   "columns": [
+    "source",
+    "task",
+    "depth",
+    "action",
+    "residual",
+    "is_policy_pick",
+    "is_measured_best",
+    "spread"
+   ],
+   "sources": [
+    "results/quality/branch_records_p3.jsonl",
+    "results/quality/branch_shard0.jsonl",
+    "results/quality/branch_shard1.jsonl",
+    "results/quality/branch_shard2.jsonl",
+    "results/quality/branch_shard3.jsonl"
+   ]
+  },
+  {
+   "file": "fig_learning_curves.csv",
+   "rows": 405,
+   "columns": [
+    "group",
+    "run",
+    "order",
+    "evaluation",
+    "rate",
+    "instances"
+   ],
+   "sources": [
+    "results/curriculum/F_ctx_lr3e3_s0.log",
+    "results/curriculum/F_lin230_s0.log",
+    "results/curriculum/F_linear_s0.log",
+    "results/curriculum/F_linear_s1.log",
+    "results/curriculum/F_linear_s2.log",
+    "results/curriculum/F_local_s0.log",
+    "results/curriculum/F_local_s1.log",
+    "results/curriculum/G_ctx_lr3e3_s0.log",
+    "results/curriculum/G_lin230_s0.log",
+    "results/curriculum/G_linear_s0.log",
+    "results/curriculum/G_linear_s1.log",
+    "results/curriculum/G_linear_s2.log",
+    "results/curriculum/G_local_s0.log",
+    "results/curriculum/G_local_s1.log",
+    "results/curriculum/P_ctx_value_s0.log",
+    "results/curriculum/P_lin230_s0.log",
+    "results/curriculum/P_lin230_s1.log",
+    "results/curriculum/P_lin230_s2.log",
+    "results/curriculum/Pq_grown2_s1.log",
+    "results/curriculum/Pq_lin230_s1.log",
+    "results/curriculum/Z_ctx_value_s0.log",
+    "results/curriculum/Z_lin230_s0.log",
+    "results/curriculum/Z_lin230_s1.log",
+    "results/curriculum/Z_lin230_s2.log",
+    "results/curriculum/Zq_grown2_s1.log",
+    "results/curriculum/Zq_lin230_s1.log",
+    "results/curriculum/a_linear_s0.log",
+    "results/curriculum/a_linear_s1.log",
+    "results/curriculum/a_linear_s2.log",
+    "results/curriculum/b_ctx_loo_lr3e3_s0.log",
+    "results/curriculum/b_ctx_loo_lr3e3_s2.log",
+    "results/curriculum/b_ctx_loo_s0.log",
+    "results/curriculum/b_ctx_loo_s1.log",
+    "results/curriculum/b_ctx_loo_s2.log",
+    "results/curriculum/b_ctx_value_s0.log",
+    "results/curriculum/b_ctx_value_s1.log",
+    "results/curriculum/b_ctx_value_s2.log",
+    "results/curriculum/b_lin230_s0.log",
+    "results/curriculum/b_lin230_s1.log",
+    "results/curriculum/b_lin230_s2.log"
+   ]
+  },
+  {
+   "file": "fig_paired_quality_study.csv",
+   "rows": 114,
+   "columns": [
+    "study",
+    "schema",
+    "arm",
+    "task",
+    "policy_residual",
+    "policy_p_solve",
+    "minorminer_residual",
+    "evaluation"
+   ],
+   "sources": [
+    "results/quality_study/pegasus3_local_continued_feasibility_s0.log",
+    "results/quality_study/pegasus3_local_frozen_s0.log",
+    "results/quality_study/pegasus3_local_quality_s0.log",
+    "results/quality_study/pegasus3_physics_continued_feasibility_s0.log",
+    "results/quality_study/pegasus3_physics_frozen_s0.log",
+    "results/quality_study/pegasus3_physics_quality_s0.log",
+    "results/quality_study/zephyr2_local_continued_feasibility_s0.log",
+    "results/quality_study/zephyr2_local_frozen_s0.log",
+    "results/quality_study/zephyr2_local_quality_s0.log"
+   ]
+  },
+  {
+   "file": "fig_congestion_wallclock.csv",
+   "rows": 20,
+   "columns": [
+    "host",
+    "fill",
+    "chain_shape",
+    "instances",
+    "valid_at_60s",
+    "valid_at_300s",
+    "mean_attempts"
+   ],
+   "sources": [
+    "results/control/anytime_pegasus3_300.log",
+    "results/control/anytime_zephyr2_300.log"
+   ]
+  }
+ ]
+}

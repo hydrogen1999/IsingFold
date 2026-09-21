@@ -2525,3 +2525,34 @@ so a good final embedding never identifies the choice that produced it. The qual
 large, local, and invisible to the estimator being used.
 
 `results/quality_study/pegasus3_physics_*_s0.log`.
+
+## The branch signal at full scale: the rows do not carry the decision
+
+Five hundred and eighteen branch points over 102 instances, against the forty-seven the first
+pass had.
+
+| quantity | 47 points | **518 points** |
+|---|---|---|
+| residual spread at one branch point | 0.0572 [0.0438, 0.0706] | **0.0491 [0.0467, 0.0515]** |
+| the policy's pick was the measured best | 0.298 | **0.230** |
+| chance | 0.250 | 0.250 |
+| distance from chance | +0.76 standard errors | **-1.07 standard errors** |
+
+**The 0.298 was noise and is withdrawn.** At 518 points the policy picks the better action 0.230
+of the time, which is at or slightly below chance. The spread is confirmed and its interval is
+now tight: one decision is worth 0.0491 against the 0.0268 that separates the policy from
+minorminer.
+
+Fitted directly to the measured orderings, five folds grouped by instance:
+
+| model | not fitted | chance | fitted |
+|---|---|---|---|
+| linear | 0.257 | 0.250 | 0.321 |
+| small network | **0.290** | 0.250 | 0.692 |
+
+Two point one standard errors above chance. **So the quality at a branch point is large and the
+rows the environment offers do not say which branch carries it.** That closes the diagnostic:
+not capacity, since the network overfits and then gains 0.04; not the physics channels, since
+physics32 and local20 rank alike; and not the learning rule alone, since direct supervision on
+the measured answer gets 0.290. The action representation is what has to change.
+`results/quality/branch_all.jsonl`.
