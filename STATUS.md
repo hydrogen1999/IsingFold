@@ -1,5 +1,37 @@
 # Status
 
+## Reverse-start curriculum does not open the congested cell, 2026-09-21
+
+Three runs on apollo, logs `~/prj_IsingFold_pr2/runs/reverse/rev2_{p3_f90_s0,p3_f90_s1,z2_f90_s0}.log`,
+Pegasus 3 and Zephyr 2 at named fill 90, wide support, physics32 from a local20 checkpoint,
+`--prefix-schedule mastery` starting at 0.999 with step 0.01 and the default threshold 0.8
+(`probes/constructor_curriculum.py:901-902`, `:1004-1005`).
+
+| run | iteration | prefix | training validity, last 20 iterations | decisions an episode |
+|---|---|---|---|---|
+| rev2_p3_f90_s0 | 149 | 0.969 | 0.274 (74/270) | ~135 |
+| rev2_p3_f90_s1 | 159 | 0.969 | 0.309 (89/288) | ~128 |
+| rev2_z2_f90_s0 | 179 | 0.959 | 0.364 (118/324) | ~91 |
+
+**The schedule is frozen, not slow.** Advancing needs training validity at or above 0.8. All three
+sit at 0.27 to 0.36 and have not moved the prefix since about iteration 129. Held-out validity is
+0.0 at every evaluation because evaluation starts from empty while the policy has only ever seen
+the last three to four percent of the witness. Under the 400-iteration cap these runs end near
+prefix 0.96, so no empty-start number will come out of them.
+
+**The informative number is the episode length.** The witness at this cell is 1007 to 1123
+decisions, so a 0.969 prefix leaves about 33 decisions to COMMIT. The policy spends 128 to 135 and
+closes it only a quarter to a third of the time. Handed ninety-seven percent of a correct
+embedding, it does not walk the remainder; it wanders.
+
+This is the same blocker found in the branch study: the policy picks the better of four competing
+legal actions 0.230 of the time against a chance rate of 0.250, and a model fitted directly to the
+measured orderings reaches only 0.290. Capacity and physics channels were ruled out separately. A
+curriculum that shortens the horizon does not help, because the difficulty is not horizon length,
+it is that the observation does not separate the candidates. **The action representation is the
+thing to change.**
+
+
 ## Quality-first implementation review, 2026-09-18 (v2)
 
 This section supersedes conflicting interpretations in the historical record below.
