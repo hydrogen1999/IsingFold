@@ -2484,3 +2484,44 @@ nothing should be concluded about the representation from this table.
 and 0.005, below the chance rate of 0.250 on the very records the models had just been fitted to.
 The fit raises the score of the measured-best action, so the model's choice is its highest score,
 and the scorer was taking the lowest. `results/quality/branch_learnable*.log`.
+
+## The quality objective fails its pre-registered test
+
+The paired study finished: three arms from the same physics32 checkpoint, the same forty updates,
+the same thirty held-out instances, the same 300-second deployment protocol, differing only in
+which reward those updates used.
+
+| arm | residual | solve probability | qubits | longest chain | valid |
+|---|---|---|---|---|---|
+| frozen | 0.0647 | 0.354 | 67.4 | 6.5 | 0.967 |
+| **forty updates of the feasibility reward** | **0.0557** | **0.402** | 68.8 | 6.6 | 1.000 |
+| forty updates of the quality reward | 0.0590 | 0.373 | 68.9 | 6.1 | 1.000 |
+| minorminer | 0.0289 | 0.537 | 29.9 | 1.7 | 1.000 |
+
+Paired over the thirty instances:
+
+| comparison | difference | interval |
+|---|---|---|
+| **feasibility minus quality, the deciding number** | **-0.0033** | **[-0.0084, +0.0018]** |
+| quality minus frozen | +0.0060 | [-0.0025, +0.0145] |
+| **feasibility minus frozen** | **+0.0094** | **[+0.0025, +0.0163]** |
+
+**The kill criterion was an upper bound on the deciding number below 0.002 and it is 0.0018, so
+this configuration is dead.** The quality reward did not beat the same budget spent on the
+feasibility reward; the difference is negative in the mean and quality was better on ten of
+thirty instances, so the sign is wrong and not only the size. Conditional quality optimisation on
+the physics observation, over forty updates at this cell, adds nothing.
+
+**What survives is the control.** Forty updates of the feasibility reward improve residual over
+the frozen policy by +0.0094 [+0.0025, +0.0163] and solve probability from 0.354 to 0.402, on
+thirty instances with the interval clear of zero. Training the constructor improves the quality of
+what it builds; rewarding it for quality does not improve it further.
+
+**And the branch measurement says why.** At a single branch point the residual spread across four
+legal actions is 0.0572, more than twice the 0.0268 that separates the policy from minorminer,
+and the policy picks the better action 0.298 of the time against a chance rate of 0.250. A
+terminal reward cannot teach that: every decision in the trajectory receives the same advantage,
+so a good final embedding never identifies the choice that produced it. The quality available is
+large, local, and invisible to the estimator being used.
+
+`results/quality_study/pegasus3_physics_*_s0.log`.
