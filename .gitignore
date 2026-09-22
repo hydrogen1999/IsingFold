@@ -13,3 +13,6 @@ artifacts/
 *.pt
 *.joblib
 /audit/
+
+# Target numbers for a design mock-up, never measurements. Local only.
+results_demo_back/
