@@ -21,7 +21,7 @@ import plot_utils                                       # noqa: E402
 import matplotlib.pyplot as plt                         # noqa: E402
 import numpy as np                                      # noqa: E402
 
-SRC = "docs/paper/results/f3_pareto_resource_quality.json"
+SRC = "docs/paper/results/f2_pareto_resource_quality.json"
 OUT = "docs/paper/figures/f2_pareto_resource_quality"
 
 

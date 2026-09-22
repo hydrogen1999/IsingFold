@@ -1,5 +1,5 @@
 {
-  "figure": "F3",
+  "figure": "F2",
   "title": "resource-quality Pareto",
   "question": "does spending qubits buy quality",
   "resource_axis": "physical qubits used by the embedding",

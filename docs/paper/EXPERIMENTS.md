@@ -4,8 +4,12 @@ Design document. Every entry names the claim it carries, the numbers it holds, t
 under `results/` that holds them, and the reviewer objection it is there to close. The JSON
 files carry numbers only; this file is the map.
 
-Budget: five figures and five tables in the main paper, the rest in the appendix. Regenerate
-every JSON with `python3 probes/export_paper_results.py`.
+Budget: five figures and five tables in the main paper, the rest in the appendix. Table and
+figure identifiers are the same in this file, in the JSON filenames and in the paper, so `T7` is
+always `t7_branch_decomposition.json`. The numbers are not consecutive and that is deliberate:
+renumbering them when a table moves between the main paper and the appendix is how a citation
+ends up pointing at the wrong table. Regenerate every JSON with
+`python3 probes/export_paper_results.py`.
 
 Protocol common to all of it: classical simulated annealing, beta range 0.1 to 2.0, 200 sweeps,
 selection and assessment always on disjoint read blocks. No QPU result exists and none is claimed.
@@ -20,7 +24,7 @@ Two drawings side by side, one chosen by fewest qubits and one chosen by a 256-r
 with a metric strip underneath: qubits, mean chain, longest chain, broken fraction, residual,
 solve probability. Both are valid embeddings of one instance from the router's own eight draws.
 
-Numbers: `f3_pareto_resource_quality.json`, population `router_draws`, any instance whose
+Numbers: `f2_pareto_resource_quality.json`, population `router_draws`, any instance whose
 front size is 1. Pick the instance where the fewest-qubit draw and the measured-best draw differ
 most in solve probability.
 
@@ -67,7 +71,7 @@ bounds the effect below a detection floor rather than showing the effect is zero
 ratio are in the JSON under `resolution`. Panel B carries the same claim with a floor that is
 actually measured: 18.3 qubits move solve probability by less than 0.025.
 
-Numbers: `f3_pareto_resource_quality.json`. It holds all 1020 measurements, each with host, task,
+Numbers: `f2_pareto_resource_quality.json`. It holds all 1020 measurements, each with host, task,
 qubits, quality, standard error where one exists, and whether it sits on its instance's front.
 Per-instance non-dominated sets average 1.73 of eight draws in panel A. Under a real tradeoff they
 would be long.
@@ -105,7 +109,7 @@ Numbers: `t2_quality_mechanism.json`. Recomputed from `data/figures/fig_chain_br
 Closes: "you have shown a negative result and nothing else." The positive mechanism is here, and
 it is actionable: at a fixed length a chain with a cycle in it breaks less than a path.
 
-### T3. Feasibility from an empty host
+### T4. Feasibility from an empty host
 
 The ladder. Held-out unseen instances, evaluation always from empty, minorminer forbidden after
 generation. Six rungs from 24 variables on a full 5,640-qubit Pegasus 16 to the congested
@@ -116,7 +120,7 @@ Numbers: `t4_feasibility_ladder.json`.
 Closes: "the learned method only works on toys." It reaches 1.00 and 0.95 on full hardware, and
 the table is honest about the cell where it reaches 0.00.
 
-### T4. The quality objective, against its matched control
+### T6. The quality objective, against its matched control
 
 Three arms from one checkpoint, the same forty updates, the same thirty held-out instances,
 differing only in the reward. Plus the paired differences and the registered kill criterion.
@@ -129,9 +133,9 @@ Numbers: `t6_quality_arms.json`. Recomputed from `data/figures/fig_paired_qualit
 
 Closes: "you reported a win without a control." The control is the row that killed the headline.
 
-### T5 and F4. Why the quality reward cannot work as posed
+### T7 and F4. Why the quality reward cannot work as posed
 
-T5: from one construction prefix, four competing legal actions, each finished under matched
+T7: from one construction prefix, four competing legal actions, each finished under matched
 randomness and measured. 518 branch points over 102 instances. The residual spread across four
 actions at one branch point is 0.0491 [0.0468, 0.0516], against a policy-to-router gap of 0.0268.
 The policy's preferred action was the best on 0.230 [0.193, 0.266] of points against a chance

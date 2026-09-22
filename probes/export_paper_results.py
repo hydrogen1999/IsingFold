@@ -252,7 +252,7 @@ def pareto():
         "sign_convention": "p_solve higher is better, residual lower is better, qubits lower is better"})
 
     return {
-        "figure": "F3",
+        "figure": "F2",
         "title": "resource-quality Pareto",
         "question": "does spending qubits buy quality",
         "resource_axis": "physical qubits used by the embedding",
@@ -734,7 +734,7 @@ def transcribed():
 
 def main():
     written = []
-    for name, payload in [("f3_pareto_resource_quality.json", pareto()),
+    for name, payload in [("f2_pareto_resource_quality.json", pareto()),
                           ("t1_selection_signal.json", t1_selection_signal()),
                           ("t2_quality_mechanism.json", t2_quality_mechanism()),
                           ("t6_quality_arms.json", t6_quality_arms()),
