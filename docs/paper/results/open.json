@@ -1,0 +1,29 @@
+{
+  "entries": [
+    {
+      "item": "the quality objective failed its pre-registered test",
+      "why": "the quality at a decision is 0.0491 [0.0467, 0.0515] and neither the policy nor a model fitted to the measured orderings can find it from the rows the environment offers",
+      "next": "the action representation, not the reward"
+    },
+    {
+      "item": "the congested cells have a benchmark result and no method result",
+      "variables_range": [
+        93,
+        116
+      ],
+      "fill_values": [
+        0.9,
+        0.95
+      ],
+      "minorminer_valid": 0,
+      "of": 12,
+      "constructor_valid": 0.0,
+      "technique_under_test": "reverse-start curriculum",
+      "status": "prefix frozen at 0.969 and 0.959, training validity 0.274 to 0.364 against a 0.8 advance threshold"
+    },
+    {
+      "item": "no QPU result exists",
+      "scope": "every quality statement is classical simulated annealing under the registered schedule"
+    }
+  ]
+}

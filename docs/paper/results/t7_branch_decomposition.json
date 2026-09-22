@@ -1,0 +1,46 @@
+{
+  "table": "T7",
+  "claim": "one decision carries about twice the whole performance gap, and the policy chooses at chance",
+  "recomputed_from": "data/figures/fig_branch_points.csv",
+  "source": [
+    "results/quality/branch_all.jsonl",
+    "results/quality/branch_p3.log"
+  ],
+  "branch_points": 518,
+  "residual_spread_across_four_actions": {
+    "mean": 0.049115,
+    "ci95": [
+      0.046763,
+      0.051584
+    ]
+  },
+  "policy_pick_was_best": {
+    "n": 518,
+    "rate": 0.22973,
+    "ci95": [
+      0.19305,
+      0.266409
+    ],
+    "chance": 0.25
+  },
+  "policy_minus_minorminer_gap": {
+    "derivation": "transcribed",
+    "value": 0.0268
+  },
+  "supervised_on_measured_orderings": {
+    "derivation": "transcribed",
+    "source": "probes/branch_learnable.py",
+    "folds": 5,
+    "grouped_by": "instance",
+    "chance": 0.25,
+    "linear": {
+      "held_out": 0.257,
+      "fitted": 0.321
+    },
+    "small_network": {
+      "held_out": 0.29,
+      "fitted": 0.692,
+      "standard_errors_from_chance": 2.1
+    }
+  }
+}

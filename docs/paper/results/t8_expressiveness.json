@@ -1,0 +1,70 @@
+{
+  "table": "T8",
+  "claim": "the observation carries real signal but capacity and the physics channels are not the binding constraint",
+  "protocol": {
+    "records": "candidate rows cached at each witness decision",
+    "split": "over training instances, because a held-out instance carries no witness",
+    "loss": "one ranking loss for both models"
+  },
+  "caveat": "the witness is one valid solution among many, so a move that is not witness-consistent may still be good",
+  "source": [
+    "results/quality/express4_p3.log",
+    "results/quality/express_big*.log"
+  ],
+  "rows": [
+    {
+      "paths": 8,
+      "decisions": 272,
+      "schema": "physics32",
+      "model": "linear",
+      "fitted": 0.276,
+      "held_out": 0.278,
+      "chance": 0.031
+    },
+    {
+      "paths": 8,
+      "decisions": 272,
+      "schema": "physics32",
+      "model": "small network",
+      "fitted": 0.522,
+      "held_out": 0.187,
+      "chance": 0.031
+    },
+    {
+      "paths": 39,
+      "decisions": 1293,
+      "schema": "physics32",
+      "model": "linear",
+      "fitted": 0.363,
+      "held_out": 0.234,
+      "chance": 0.026
+    },
+    {
+      "paths": 39,
+      "decisions": 1293,
+      "schema": "physics32",
+      "model": "small network",
+      "fitted": 0.512,
+      "held_out": 0.267,
+      "chance": 0.026
+    },
+    {
+      "paths": 39,
+      "decisions": 1293,
+      "schema": "local20",
+      "model": "linear",
+      "fitted": 0.354,
+      "held_out": 0.249,
+      "chance": 0.026
+    },
+    {
+      "paths": 39,
+      "decisions": 1293,
+      "schema": "local20",
+      "model": "small network",
+      "fitted": 0.396,
+      "held_out": 0.261,
+      "chance": 0.026
+    }
+  ]
+}

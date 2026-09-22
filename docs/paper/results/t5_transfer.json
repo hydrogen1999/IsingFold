@@ -1,0 +1,87 @@
+{
+  "table": "T5",
+  "claim": "training at hardware scale transfers across sizes and across topologies",
+  "protocol": {
+    "decisions": 400,
+    "seconds": 300,
+    "episodes_per_instance": 5,
+    "checkpoints": "frozen",
+    "trained_on_variables": 24
+  },
+  "caveat": "both lists were opened once at a looser budget before this rerun, so they are development diagnostics",
+  "source": [
+    "results/transfer/m_*.log"
+  ],
+  "tests": [
+    {
+      "test_host": "pegasus16",
+      "checkpoint": "trained on Pegasus 16",
+      "overall": 0.6,
+      "by_variables": {
+        "24": 0.9,
+        "48": 0.65,
+        "100": 0.43
+      }
+    },
+    {
+      "test_host": "pegasus16",
+      "checkpoint": "trained on Zephyr 15, cross-topology",
+      "overall": 0.55,
+      "by_variables": {
+        "24": 0.9,
+        "48": 0.62,
+        "100": 0.33
+      }
+    },
+    {
+      "test_host": "pegasus16",
+      "checkpoint": "fragment, never trained at scale",
+      "overall": 0.38,
+      "by_variables": {
+        "24": 0.7,
+        "48": 0.33,
+        "100": 0.33
+      }
+    },
+    {
+      "test_host": "zephyr15",
+      "checkpoint": "trained on Zephyr 15",
+      "overall": 0.81,
+      "by_variables": {
+        "24": 0.93,
+        "48": 1.0,
+        "100": 0.52
+      }
+    },
+    {
+      "test_host": "zephyr15",
+      "checkpoint": "trained on Pegasus 16, cross-topology",
+      "overall": 0.84,
+      "by_variables": {
+        "24": 0.95,
+        "48": 0.93,
+        "100": 0.6
+      }
+    },
+    {
+      "test_host": "zephyr15",
+      "checkpoint": "fragment, never trained at scale",
+      "overall": 0.73,
+      "by_variables": {
+        "24": 0.93,
+        "48": 0.8,
+        "100": 0.36
+      }
+    }
+  ],
+  "effects": {
+    "scale_training_over_fragment": [
+      0.22,
+      0.08
+    ],
+    "cross_topology_cost": [
+      -0.05,
+      0.03
+    ]
+  }
+}

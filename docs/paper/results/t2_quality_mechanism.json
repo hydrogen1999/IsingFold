@@ -1,0 +1,196 @@
+{
+  "table": "T2",
+  "claim": "chain breaking decides quality, and at a fixed length redundancy decides breaking",
+  "chains_total": 1347,
+  "chains_multi_qubit": 639,
+  "singleton_fraction": 0.5256,
+  "singletons_excluded_because": "a one-qubit chain cannot break",
+  "recomputed_from": "data/figures/fig_chain_breaking.csv",
+  "source": [
+    "results/quality/breakpred2_p3.log"
+  ],
+  "within_instance_vs_break_rate": {
+    "length": {
+      "instances": 16,
+      "rho": 0.405913,
+      "ci95": [
+        0.321494,
+        0.488049
+      ]
+    },
+    "internal_edges": {
+      "instances": 16,
+      "rho": 0.362113,
+      "ci95": [
+        0.27272,
+        0.449771
+      ]
+    },
+    "redundancy": {
+      "instances": 16,
+      "rho": -0.069055,
+      "ci95": [
+        -0.142848,
+        0.010101
+      ]
+    },
+    "cut_vertices": {
+      "instances": 16,
+      "rho": 0.504941,
+      "ci95": [
+        0.435848,
+        0.568861
+      ]
+    },
+    "logical_degree": {
+      "instances": 16,
+      "rho": 0.120055,
+      "ci95": [
+        0.019086,
+        0.218775
+      ]
+    },
+    "coupling_mass": {
+      "instances": 16,
+      "rho": 0.130887,
+      "ci95": [
+        0.022989,
+        0.225942
+      ]
+    },
+    "contacts": {
+      "instances": 16,
+      "rho": 0.076317,
+      "ci95": [
+        -0.008055,
+        0.165404
+      ]
+    },
+    "mass_per_contact": {
+      "instances": 16,
+      "rho": 0.084894,
+      "ci95": [
+        -0.024435,
+        0.180043
+      ]
+    },
+    "max_contact_load": {
+      "instances": 16,
+      "rho": 0.203952,
+      "ci95": [
+        0.107167,
+        0.286926
+      ]
+    },
+    "load_concentration": {
+      "instances": 16,
+      "rho": 0.169451,
+      "ci95": [
+        0.104217,
+        0.23903
+      ]
+    }
+  },
+  "at_fixed_length_vs_break_rate": {
+    "internal_edges": {
+      "groups": 18,
+      "rho": -0.43908,
+      "ci95": [
+        -0.571416,
+        -0.283095
+      ]
+    },
+    "redundancy": {
+      "groups": 18,
+      "rho": -0.43908,
+      "ci95": [
+        -0.571416,
+        -0.283095
+      ]
+    },
+    "cut_vertices": {
+      "groups": 18,
+      "rho": 0.326079,
+      "ci95": [
+        0.150744,
+        0.481737
+      ]
+    },
+    "logical_degree": {
+      "groups": 41,
+      "rho": -0.055873,
+      "ci95": [
+        -0.170692,
+        0.058767
+      ]
+    },
+    "coupling_mass": {
+      "groups": 41,
+      "rho": 0.01688,
+      "ci95": [
+        -0.11153,
+        0.14583
+      ]
+    },
+    "contacts": {
+      "groups": 41,
+      "rho": -0.17909,
+      "ci95": [
+        -0.285992,
+        -0.066241
+      ]
+    },
+    "mass_per_contact": {
+      "groups": 41,
+      "rho": 0.144332,
+      "ci95": [
+        0.028691,
+        0.256101
+      ]
+    },
+    "max_contact_load": {
+      "groups": 41,
+      "rho": 0.18221,
+      "ci95": [
+        0.072141,
+        0.291492
+      ]
+    },
+    "load_concentration": {
+      "groups": 41,
+      "rho": 0.000634,
+      "ci95": [
+        -0.095786,
+        0.096172
+      ]
+    }
+  },
+  "residual_predictors": {
+    "derivation": "transcribed",
+    "source": "results/quality/broken_*.log",
+    "unit": "within-instance Spearman with residual",
+    "embeddings_per_instance": 9,
+    "instances": 20,
+    "broken_chain_fraction": {
+      "rho": 0.728,
+      "ci95": [
+        0.568,
+        0.888
+      ]
+    },
+    "qubit_count": {
+      "rho": 0.439,
+      "ci95": [
+        0.303,
+        0.576
+      ]
+    },
+    "broken_with_qubits": {
+      "rho": 0.686,
+      "ci95": [
+        0.602,
+        0.769
+      ]
+    }
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "table": "T4",
+  "claim": "held-out feasibility from an empty host, minorminer forbidden after generation",
+  "protocol": {
+    "evaluation_start": "empty",
+    "instances": "held out, unseen"
+  },
+  "source": [
+    "results/inkdrop/ink24_*.log",
+    "results/quality/r30_*.log",
+    "results/quality/r39_*.log",
+    "results/curriculum/w[23]_f9*.log"
+  ],
+  "rungs": [
+    {
+      "cell": "ink-drop, full Pegasus 16",
+      "host_qubits": 5640,
+      "variables": 24,
+      "fill": 0.02,
+      "initial": 0.1,
+      "final": 1.0,
+      "seeds": 1
+    },
+    {
+      "cell": "ink-drop, full Zephyr 15",
+      "host_qubits": 7440,
+      "variables": 24,
+      "fill": 0.02,
+      "initial": 0.35,
+      "final": 0.95,
+      "seeds": 1
+    },
+    {
+      "cell": "Pegasus 3 and Zephyr 2",
+      "variables": 28,
+      "fill": 0.3,
+      "initial_range": [
+        0.75,
+        1.0
+      ],
+      "final": 1.0,
+      "seeds": 4
+    },
+    {
+      "cell": "Pegasus 3",
+      "variables": 39,
+      "fill": 0.5,
+      "initial_range": [
+        0.05,
+        0.11
+      ],
+      "final_per_seed": [
+        1.0,
+        0.94
+      ],
+      "seeds": 2
+    },
+    {
+      "cell": "Zephyr 2",
+      "variables": 39,
+      "fill": 0.5,
+      "initial_range": [
+        0.0,
+        0.05
+      ],
+      "final_per_seed": [
+        0.61,
+        0.44
+      ],
+      "seeds": 2
+    },
+    {
+      "cell": "Pegasus 3 and Zephyr 2",
+      "variables_range": [
+        93,
+        116
+      ],
+      "fill_values": [
+        0.9,
+        0.95
+      ],
+      "initial": 0.0,
+      "final": 0.0,
+      "minorminer_valid_at_300s": 0.0
+    }
+  ]
+}

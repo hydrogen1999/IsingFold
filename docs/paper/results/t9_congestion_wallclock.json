@@ -1,0 +1,196 @@
+{
+  "table": "T9",
+  "claim": "the shape of the target embedding defeats the router, not its occupancy",
+  "protocol": {
+    "router": "minorminer restarting until a shared deadline",
+    "deadline_seconds": 300,
+    "instances_per_cell": 12
+  },
+  "recomputed_from": "data/figures/fig_congestion_wallclock.csv",
+  "source": [
+    "results/control/anytime_pegasus3_300.log",
+    "results/control/anytime_zephyr2_300.log"
+  ],
+  "cells": [
+    {
+      "host": "pegasus3",
+      "fill": 0.7,
+      "chain_shape": "long",
+      "instances": 12,
+      "valid_at_60s": 1.0,
+      "valid_at_300s": 1.0,
+      "mean_attempts": 1.0
+    },
+    {
+      "host": "pegasus3",
+      "fill": 0.7,
+      "chain_shape": "short",
+      "instances": 12,
+      "valid_at_60s": 1.0,
+      "valid_at_300s": 1.0,
+      "mean_attempts": 3.4
+    },
+    {
+      "host": "pegasus3",
+      "fill": 0.8,
+      "chain_shape": "long",
+      "instances": 12,
+      "valid_at_60s": 0.83,
+      "valid_at_300s": 0.92,
+      "mean_attempts": 81.4
+    },
+    {
+      "host": "pegasus3",
+      "fill": 0.8,
+      "chain_shape": "short",
+      "instances": 12,
+      "valid_at_60s": 0.33,
+      "valid_at_300s": 0.42,
+      "mean_attempts": 345.3
+    },
+    {
+      "host": "pegasus3",
+      "fill": 0.85,
+      "chain_shape": "long",
+      "instances": 12,
+      "valid_at_60s": 1.0,
+      "valid_at_300s": 1.0,
+      "mean_attempts": 10.0
+    },
+    {
+      "host": "pegasus3",
+      "fill": 0.85,
+      "chain_shape": "short",
+      "instances": 12,
+      "valid_at_60s": 0.0,
+      "valid_at_300s": 0.0,
+      "mean_attempts": 479.2
+    },
+    {
+      "host": "pegasus3",
+      "fill": 0.9,
+      "chain_shape": "long",
+      "instances": 12,
+      "valid_at_60s": 0.5,
+      "valid_at_300s": 0.58,
+      "mean_attempts": 280.0
+    },
+    {
+      "host": "pegasus3",
+      "fill": 0.9,
+      "chain_shape": "short",
+      "instances": 12,
+      "valid_at_60s": 0.0,
+      "valid_at_300s": 0.0,
+      "mean_attempts": 488.1
+    },
+    {
+      "host": "pegasus3",
+      "fill": 0.95,
+      "chain_shape": "long",
+      "instances": 12,
+      "valid_at_60s": 0.17,
+      "valid_at_300s": 0.25,
+      "mean_attempts": 410.0
+    },
+    {
+      "host": "pegasus3",
+      "fill": 0.95,
+      "chain_shape": "short",
+      "instances": 12,
+      "valid_at_60s": 0.0,
+      "valid_at_300s": 0.0,
+      "mean_attempts": 452.8
+    },
+    {
+      "host": "zephyr2",
+      "fill": 0.7,
+      "chain_shape": "long",
+      "instances": 12,
+      "valid_at_60s": 1.0,
+      "valid_at_300s": 1.0,
+      "mean_attempts": 1.0
+    },
+    {
+      "host": "zephyr2",
+      "fill": 0.7,
+      "chain_shape": "short",
+      "instances": 12,
+      "valid_at_60s": 1.0,
+      "valid_at_300s": 1.0,
+      "mean_attempts": 1.2
+    },
+    {
+      "host": "zephyr2",
+      "fill": 0.8,
+      "chain_shape": "long",
+      "instances": 12,
+      "valid_at_60s": 1.0,
+      "valid_at_300s": 1.0,
+      "mean_attempts": 1.0
+    },
+    {
+      "host": "zephyr2",
+      "fill": 0.8,
+      "chain_shape": "short",
+      "instances": 12,
+      "valid_at_60s": 0.0,
+      "valid_at_300s": 0.08,
+      "mean_attempts": 270.9
+    },
+    {
+      "host": "zephyr2",
+      "fill": 0.85,
+      "chain_shape": "long",
+      "instances": 12,
+      "valid_at_60s": 1.0,
+      "valid_at_300s": 1.0,
+      "mean_attempts": 2.0
+    },
+    {
+      "host": "zephyr2",
+      "fill": 0.85,
+      "chain_shape": "short",
+      "instances": 12,
+      "valid_at_60s": 0.0,
+      "valid_at_300s": 0.0,
+      "mean_attempts": 291.6
+    },
+    {
+      "host": "zephyr2",
+      "fill": 0.9,
+      "chain_shape": "long",
+      "instances": 12,
+      "valid_at_60s": 0.75,
+      "valid_at_300s": 0.83,
+      "mean_attempts": 59.7
+    },
+    {
+      "host": "zephyr2",
+      "fill": 0.9,
+      "chain_shape": "short",
+      "instances": 12,
+      "valid_at_60s": 0.0,
+      "valid_at_300s": 0.0,
+      "mean_attempts": 262.5
+    },
+    {
+      "host": "zephyr2",
+      "fill": 0.95,
+      "chain_shape": "long",
+      "instances": 12,
+      "valid_at_60s": 0.08,
+      "valid_at_300s": 0.25,
+      "mean_attempts": 266.5
+    },
+    {
+      "host": "zephyr2",
+      "fill": 0.95,
+      "chain_shape": "short",
+      "instances": 12,
+      "valid_at_60s": 0.0,
+      "valid_at_300s": 0.0,
+      "mean_attempts": 223.8
+    }
+  ]
+}

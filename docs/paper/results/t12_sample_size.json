@@ -1,0 +1,45 @@
+{
+  "table": "T12",
+  "claim": "0.017 residual is the measurable bar and it is thirty-seven percent of the gap to the router",
+  "evaluation_noise": {
+    "paired_per_instance_spread": [
+      0.0231,
+      0.0454
+    ],
+    "measured_by": "the same arm evaluated twice on the same instances"
+  },
+  "design": {
+    "confidence": 0.95,
+    "power": 0.8,
+    "test": "paired"
+  },
+  "rows": [
+    {
+      "effect": 0.005,
+      "instances_at_sd_0.023": 166,
+      "instances_at_sd_0.045": 636,
+      "core_hours_per_evaluation_at_24_instances": [
+        69,
+        265
+      ]
+    },
+    {
+      "effect": 0.017,
+      "instances_at_sd_0.023": 15,
+      "instances_at_sd_0.045": 55,
+      "core_hours_per_evaluation_at_24_instances": [
+        10,
+        20
+      ]
+    }
+  ],
+  "full_study": {
+    "arms": 3,
+    "evaluations": 3,
+    "seeds": 3,
+    "core_hours_at_effect_0.005": [
+      1900,
+      7000
+    ]
+  }
+}

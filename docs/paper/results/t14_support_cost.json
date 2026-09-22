@@ -1,0 +1,48 @@
+{
+  "table": "T14",
+  "claim": "the wide candidate registration is required, and a hinted replay cannot establish that",
+  "source": [
+    "results/quality/replay_*.log",
+    "results/control/replay_p3_f90_*.log"
+  ],
+  "rows": [
+    {
+      "replay": "unhinted",
+      "support": "registered 64 candidates",
+      "fill": 0.5,
+      "valid": 0,
+      "of": 6,
+      "failure": "states offering no legal placement while variables remain"
+    },
+    {
+      "replay": "unhinted",
+      "support": "wide 512 candidates",
+      "fill": 0.5,
+      "valid": 6,
+      "of": 6,
+      "decisions": 58,
+      "seconds": 13.9
+    },
+    {
+      "replay": "unhinted",
+      "support": "registered 64 candidates",
+      "fill": 0.9,
+      "valid": 1,
+      "of": 4
+    },
+    {
+      "replay": "unhinted",
+      "support": "wide 512 candidates",
+      "fill": 0.9,
+      "valid": 4,
+      "of": 4,
+      "decisions": 107,
+      "seconds": 80.7
+    }
+  ],
+  "step_cost": {
+    "support": "wide",
+    "qubits": 115,
+    "seconds": 0.53
+  }
+}

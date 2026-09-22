@@ -1,0 +1,50 @@
+{
+  "table": "T10",
+  "claim": "named fill overstates the occupancy an embedding actually needs",
+  "note": "both the witness and its pruning are sufficient occupancies, neither is a minimum",
+  "source": [
+    "results/frontier/prune_*.log"
+  ],
+  "rows": [
+    {
+      "host": "pegasus2",
+      "named_fill": 0.9,
+      "variables": 30,
+      "pruned_fill": 0.84,
+      "lower_bound": 0.75,
+      "minorminer_valid_at_200_tries": 0.58
+    },
+    {
+      "host": "pegasus3",
+      "named_fill": 0.9,
+      "variables": 93,
+      "pruned_fill": 0.86,
+      "lower_bound": 0.72,
+      "minorminer_valid_at_200_tries": 0.0
+    },
+    {
+      "host": "pegasus6",
+      "named_fill": 0.9,
+      "variables": 488,
+      "pruned_fill": 0.87,
+      "lower_bound": 0.72,
+      "minorminer_valid_at_200_tries": 0.0
+    },
+    {
+      "host": "zephyr1",
+      "named_fill": 0.95,
+      "variables": 38,
+      "pruned_fill": 0.92,
+      "lower_bound": 0.79,
+      "minorminer_valid_at_200_tries": 0.17
+    },
+    {
+      "host": "zephyr2",
+      "named_fill": 0.9,
+      "variables": 116,
+      "pruned_fill": 0.87,
+      "lower_bound": 0.72,
+      "minorminer_valid_at_200_tries": 0.0
+    }
+  ]
+}

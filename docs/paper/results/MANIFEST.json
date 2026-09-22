@@ -1,0 +1,92 @@
+{
+  "protocol": {
+    "sampler": "classical simulated annealing",
+    "beta_range": [
+      0.1,
+      2.0
+    ],
+    "sweeps": 200,
+    "selection_and_assessment": "disjoint read blocks",
+    "qpu": "no QPU result exists and none is claimed"
+  },
+  "conventions": {
+    "ci95": "95 percent interval",
+    "residual": "normalized energy residual, lower is better",
+    "p_solve": "decoded solve probability, higher is better",
+    "derivation": "recomputed from the exported figure data unless a field says transcribed"
+  },
+  "files": [
+    {
+      "file": "f3_pareto_resource_quality.json",
+      "bytes": 352577
+    },
+    {
+      "file": "t1_selection_signal.json",
+      "bytes": 2148
+    },
+    {
+      "file": "t2_quality_mechanism.json",
+      "bytes": 3555
+    },
+    {
+      "file": "t6_quality_arms.json",
+      "bytes": 3896
+    },
+    {
+      "file": "t7_branch_decomposition.json",
+      "bytes": 1032
+    },
+    {
+      "file": "t9_congestion_wallclock.json",
+      "bytes": 4329
+    },
+    {
+      "file": "t13_ablations.json",
+      "bytes": 25791
+    },
+    {
+      "file": "t15_solvability_decay.json",
+      "bytes": 170937
+    },
+    {
+      "file": "open.json",
+      "bytes": 969
+    },
+    {
+      "file": "retractions.json",
+      "bytes": 2406
+    },
+    {
+      "file": "t10_fill_certification.json",
+      "bytes": 1187
+    },
+    {
+      "file": "t11_reward_channel.json",
+      "bytes": 954
+    },
+    {
+      "file": "t12_sample_size.json",
+      "bytes": 921
+    },
+    {
+      "file": "t14_support_cost.json",
+      "bytes": 1028
+    },
+    {
+      "file": "t3_resource_interventions.json",
+      "bytes": 788
+    },
+    {
+      "file": "t4_feasibility_ladder.json",
+      "bytes": 1634
+    },
+    {
+      "file": "t5_transfer.json",
+      "bytes": 1864
+    },
+    {
+      "file": "t8_expressiveness.json",
+      "bytes": 1692
+    }
+  ]
+}

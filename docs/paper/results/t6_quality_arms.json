@@ -1,0 +1,190 @@
+{
+  "table": "T6",
+  "claim": "training improves what the constructor builds; rewarding quality does not improve it further",
+  "recomputed_from": "data/figures/fig_paired_quality_study.csv",
+  "source": [
+    "results/quality_study/pegasus3_physics_*_s0.log"
+  ],
+  "arms": [
+    {
+      "study": "pegasus3",
+      "schema": "local",
+      "arm": "continued_feasibility",
+      "n": 4,
+      "residual": 0.108892,
+      "residual_ci95": [
+        0.058806,
+        0.174599
+      ],
+      "p_solve": 0.206116
+    },
+    {
+      "study": "pegasus3",
+      "schema": "local",
+      "arm": "frozen",
+      "n": 4,
+      "residual": 0.087736,
+      "residual_ci95": [
+        0.052247,
+        0.127169
+      ],
+      "p_solve": 0.237366
+    },
+    {
+      "study": "pegasus3",
+      "schema": "local",
+      "arm": "quality",
+      "n": 4,
+      "residual": 0.091348,
+      "residual_ci95": [
+        0.051695,
+        0.140227
+      ],
+      "p_solve": 0.245056
+    },
+    {
+      "study": "pegasus3",
+      "schema": "physics",
+      "arm": "continued_feasibility",
+      "n": 30,
+      "residual": 0.055707,
+      "residual_ci95": [
+        0.044521,
+        0.067906
+      ],
+      "p_solve": 0.40188
+    },
+    {
+      "study": "pegasus3",
+      "schema": "physics",
+      "arm": "frozen",
+      "n": 30,
+      "residual": 0.064696,
+      "residual_ci95": [
+        0.051555,
+        0.078528
+      ],
+      "p_solve": 0.365916
+    },
+    {
+      "study": "pegasus3",
+      "schema": "physics",
+      "arm": "quality",
+      "n": 30,
+      "residual": 0.058994,
+      "residual_ci95": [
+        0.048159,
+        0.070635
+      ],
+      "p_solve": 0.372721
+    },
+    {
+      "study": "zephyr2",
+      "schema": "local",
+      "arm": "continued_feasibility",
+      "n": 4,
+      "residual": 0.134566,
+      "residual_ci95": [
+        0.086232,
+        0.184168
+      ],
+      "p_solve": 0.099792
+    },
+    {
+      "study": "zephyr2",
+      "schema": "local",
+      "arm": "frozen",
+      "n": 4,
+      "residual": 0.112801,
+      "residual_ci95": [
+        0.090422,
+        0.13518
+      ],
+      "p_solve": 0.065369
+    },
+    {
+      "study": "zephyr2",
+      "schema": "local",
+      "arm": "quality",
+      "n": 4,
+      "residual": 0.12107,
+      "residual_ci95": [
+        0.092851,
+        0.137671
+      ],
+      "p_solve": 0.07137
+    }
+  ],
+  "headline": {
+    "derivation": "transcribed",
+    "instances": 30,
+    "updates": 40,
+    "seed": 1,
+    "deployment_seconds": 300,
+    "per_arm": [
+      {
+        "arm": "frozen",
+        "residual": 0.0647,
+        "p_solve": 0.354,
+        "qubits": 67.4,
+        "longest_chain": 6.5,
+        "valid": 0.967
+      },
+      {
+        "arm": "feasibility_reward",
+        "residual": 0.0557,
+        "p_solve": 0.402,
+        "qubits": 68.8,
+        "longest_chain": 6.6,
+        "valid": 1.0
+      },
+      {
+        "arm": "quality_reward",
+        "residual": 0.059,
+        "p_solve": 0.373,
+        "qubits": 68.9,
+        "longest_chain": 6.1,
+        "valid": 1.0
+      },
+      {
+        "arm": "minorminer",
+        "residual": 0.0289,
+        "p_solve": 0.537,
+        "qubits": 29.9,
+        "longest_chain": 1.7,
+        "valid": 1.0
+      }
+    ],
+    "paired_differences": [
+      {
+        "name": "feasibility_minus_quality",
+        "value": -0.0033,
+        "ci95": [
+          -0.0084,
+          0.0018
+        ],
+        "registered_kill_threshold_upper": 0.002,
+        "verdict": "configuration dead",
+        "quality_better_on_instances": 10,
+        "of": 30
+      },
+      {
+        "name": "quality_minus_frozen",
+        "value": 0.006,
+        "ci95": [
+          -0.0025,
+          0.0145
+        ]
+      },
+      {
+        "name": "feasibility_minus_frozen",
+        "value": 0.0094,
+        "ci95": [
+          0.0025,
+          0.0163
+        ],
+        "verdict": "clear of zero"
+      }
+    ]
+  }
+}

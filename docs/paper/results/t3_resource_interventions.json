@@ -1,0 +1,29 @@
+{
+  "table": "T3",
+  "claim": "two independent interventions on the resource axis, both effective on resources, both inert on quality",
+  "source": [
+    "results/quality/excess_*.log",
+    "results/quality/excess20_*_p3.log"
+  ],
+  "interventions": [
+    {
+      "name": "greedy pruning, every contact preserved",
+      "qubits_change": -0.34,
+      "broken_change": -0.12,
+      "residual_recovered": 0.0022,
+      "of_gap": 0.08
+    },
+    {
+      "name": "cloning the witness construction, 250 epochs",
+      "qubits_change": -0.42,
+      "broken_change": -0.18,
+      "residual_change": -0.02,
+      "ci95": [
+        -0.0428,
+        0.0028
+      ],
+      "instances": 20,
+      "note": "reversed sign between an eight-instance sample and a twenty-instance replication"
+    }
+  ]
+}

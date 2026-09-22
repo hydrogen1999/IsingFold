@@ -1,0 +1,82 @@
+{
+  "note": "every entry was reported and then withdrawn by a later measurement",
+  "entries": [
+    {
+      "claim": "solve probability is exactly zero at scale",
+      "withdrawn_by": "zero hits in 512 reads bounds the rate below 0.006"
+    },
+    {
+      "claim": "annealing deeper erases the embedding signal",
+      "withdrawn_by": "the table compared each embedding's own best chain strength on the block it was scored on",
+      "corrected_value": -0.0005,
+      "ci95": [
+        -0.0036,
+        0.0026
+      ]
+    },
+    {
+      "claim": "residual separates embeddings at the congested cell",
+      "withdrawn_by": "a fresh twenty-four instances",
+      "first": {
+        "value": 0.0042,
+        "ci95": [
+          0.0008,
+          0.0076
+        ],
+        "instances": 12
+      },
+      "replication": {
+        "value": 0.0004,
+        "ci95": [
+          -0.0031,
+          0.0038
+        ],
+        "instances": 24
+      }
+    },
+    {
+      "claim": "the cold-start pair is a curriculum ablation",
+      "withdrawn_by": "both logs hold only the initial evaluations and not one training iteration"
+    },
+    {
+      "claim": "the congested cell runs inside the registered support",
+      "withdrawn_by": "unhinted, the registered support reaches a COMMIT on 0 of 6"
+    },
+    {
+      "claim": "cloning closes 46 percent of the quality gap",
+      "withdrawn_by": "a twenty-instance replication",
+      "first": {
+        "value": 0.0366,
+        "ci95": [
+          -0.0029,
+          0.0761
+        ],
+        "instances": 8
+      },
+      "replication": {
+        "value": -0.02,
+        "ci95": [
+          -0.0428,
+          0.0028
+        ],
+        "instances": 20
+      }
+    },
+    {
+      "claim": "twenty updates of the feasibility reward take 53 percent of the gap",
+      "withdrawn_by": "a mid-training evaluation on four instances; the arm ended worse than it started"
+    },
+    {
+      "claim": "named fill is the certified congestion",
+      "withdrawn_by": "pruning shows a fill-0.90 witness needs 0.84 to 0.87"
+    },
+    {
+      "claim": "stage P and Z are the full Pegasus 16 and Zephyr 15",
+      "withdrawn_by": "they are 32 to 64 qubit fragments of Pegasus 3 and Zephyr 2"
+    },
+    {
+      "claim": "qubit count is not a quality signal",
+      "withdrawn_by": "it is, at rank correlation 0.15 to 0.27; measurement is three to four times stronger"
+    }
+  ]
+}

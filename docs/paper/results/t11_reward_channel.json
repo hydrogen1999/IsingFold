@@ -1,0 +1,40 @@
+{
+  "table": "T11",
+  "claim": "residual trains, solve probability assesses",
+  "protocol": {
+    "embeddings_per_instance": 8,
+    "blocks_per_embedding": 8,
+    "reads_per_block": 256,
+    "instances_per_host": 12,
+    "method": "measurement variance removed from between-candidate variance"
+  },
+  "source": [
+    "results/quality/reward_*.log"
+  ],
+  "rows": [
+    {
+      "host": "pegasus3",
+      "channel": "solve probability",
+      "snr_at_256_reads": 2.75,
+      "assessed_gain_from_ranking": 0.038
+    },
+    {
+      "host": "pegasus3",
+      "channel": "residual",
+      "snr_at_256_reads": 19.1,
+      "assessed_gain_from_ranking": 0.027
+    },
+    {
+      "host": "zephyr2",
+      "channel": "solve probability",
+      "snr_at_256_reads": 0.73,
+      "assessed_gain_from_ranking": 0.007
+    },
+    {
+      "host": "zephyr2",
+      "channel": "residual",
+      "snr_at_256_reads": 39.8,
+      "assessed_gain_from_ranking": 0.032
+    }
+  ]
+}

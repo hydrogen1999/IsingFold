@@ -1,0 +1,100 @@
+{
+  "table": "T1",
+  "claim": "a short measurement orders candidates better than qubit count",
+  "unit": "within-instance Spearman against a disjoint assessment block",
+  "recomputed_from": "data/figures/fig_selection_signal_rho.csv",
+  "source": [
+    "results/rules/pegasus6.log",
+    "results/rules/zephyr4.log"
+  ],
+  "rows": [
+    {
+      "host": "pegasus6",
+      "rule": "256-read measurement",
+      "instances": 30,
+      "defined_on": 30,
+      "rho": 0.814339,
+      "ci95": [
+        0.713944,
+        0.889754
+      ],
+      "qubit_spread": 2.8333
+    },
+    {
+      "host": "pegasus6",
+      "rule": "fewest qubits",
+      "instances": 27,
+      "defined_on": 27,
+      "rho": 0.265374,
+      "ci95": [
+        0.138164,
+        0.382732
+      ],
+      "qubit_spread": 3.1481
+    },
+    {
+      "host": "pegasus6",
+      "rule": "shortest chain",
+      "instances": 12,
+      "defined_on": 12,
+      "rho": 0.312207,
+      "ci95": [
+        0.119703,
+        0.47639
+      ],
+      "qubit_spread": 3.25
+    },
+    {
+      "host": "zephyr4",
+      "rule": "256-read measurement",
+      "instances": 30,
+      "defined_on": 30,
+      "rho": 0.872076,
+      "ci95": [
+        0.798646,
+        0.931427
+      ],
+      "qubit_spread": 1.8667
+    },
+    {
+      "host": "zephyr4",
+      "rule": "fewest qubits",
+      "instances": 28,
+      "defined_on": 28,
+      "rho": 0.213238,
+      "ci95": [
+        0.064321,
+        0.35709
+      ],
+      "qubit_spread": 2.0
+    },
+    {
+      "host": "zephyr4",
+      "rule": "shortest chain",
+      "instances": 2,
+      "defined_on": 2,
+      "rho": 0.395196,
+      "ci95": [
+        -0.082479,
+        0.872872
+      ],
+      "qubit_spread": 3.0
+    }
+  ],
+  "utility_gain_over_first_draw": {
+    "derivation": "transcribed",
+    "source": "results/signal/ranking.log",
+    "unit": "solve probability gained over the first draw, eight draws an instance",
+    "pegasus6": {
+      "measured": 0.147,
+      "fewest_qubits": 0.042,
+      "oracle": 0.163
+    },
+    "zephyr4": {
+      "measured": 0.153,
+      "fewest_qubits": 0.041,
+      "oracle": 0.163
+    },
+    "instances_per_host": 30
+  }
+}
